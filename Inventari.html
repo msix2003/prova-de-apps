@@ -880,8 +880,31 @@ function tornarHub() {
 }
 
 /* ============================================================
-   SINCRONITZACIÓ SUPABASE
+   SINCRONITZACIÓ I AUTENTICACIÓ AUTOMÀTICA SUPABASE
    ============================================================ */
+
+// 🔐 AUTO-CONNECT: Això detecta automàticament la sessió del Hub principal al carregar la pàgina
+if (typeof supabaseClient !== 'undefined') {
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    console.log("🔐 [Supabase Auth] Canvi d'estat detectat:", event);
+    if (session) {
+      supabaseUser = session.user;
+      console.log("👤 [Supabase Auth] Sessió activa per a:", supabaseUser.email);
+      
+      // Actualitzem l'estat visual dels botons de la teva interfície
+      const btnLoginTxt = document.getElementById('btn-login-text');
+      if (btnLoginTxt) btnLoginTxt.textContent = "Tancar Sessió";
+      
+      // Carreguem automàticament les dades d'aquest compte
+      await loadFromSupabase();
+    } else {
+      supabaseUser = null;
+      console.log("👤 [Supabase Auth] Sense sessió (Mode Convidat).");
+      setSyncStatus('pending', 'Mode Convidat', 'Només desat en local');
+    }
+  });
+}
+
 function setSyncStatus(status, main, sub) {
   const dot  = document.getElementById('sync-dot');
   const txt  = document.getElementById('sync-status-text');
@@ -889,16 +912,21 @@ function setSyncStatus(status, main, sub) {
   if (!dot) return;
   dot.className = 'sync-dot ' + status;
   if (txt)  txt.textContent  = main;
-  if (stxt) stxt.textContent = sub || '—';
+  if (stxt) stxt.textContent = sub;
 }
 
 async function loadFromSupabase() {
   if (!supabaseUser) return;
+  console.log("🔄 [Supabase] Carregant dades del compte:", supabaseUser.id);
   setSyncStatus('syncing', 'Connectant amb el núvol...', 'Un moment...');
-
+  
+  // Paracaigudes de 8 segons per si la xarxa és molt lenta
   const timeoutId = setTimeout(() => {
+    console.warn("⚠️ [Supabase] El paracaigudes ha saltat per lentitud.");
     setSyncStatus('error', 'Connexió lenta', 'Treballant en local');
-    renderDesades(); renderResum(); renderDashboard();
+    if (typeof renderDesades === 'function') renderDesades();
+    if (typeof renderResum === 'function') renderResum();
+    if (typeof renderDashboard === 'function') renderDashboard();
   }, 8000);
 
   try {
@@ -909,68 +937,84 @@ async function loadFromSupabase() {
 
     if (error) throw error;
 
-    clearTimeout(timeoutId);
-
     if (data && data.length > 0 && data[0].parcelles) {
+      clearTimeout(timeoutId);
       state.parcelles = data[0].parcelles;
-      try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch(_) {}
+      try {
+        localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles));
+      } catch(e) {}
+      
       lastSyncTime = data[0].updated_at;
       setSyncStatus('ok', 'Dades sincronitzades', 'Última: ' + formatSyncTime(lastSyncTime));
     } else {
+      console.log("ℹ️ [Supabase] El núvol està buit. Inicialitzant primera còpia...");
+      clearTimeout(timeoutId);
       await syncToSupabase(true);
     }
   } catch(e) {
     clearTimeout(timeoutId);
+    console.error("❌ [Supabase] Error a loadFromSupabase:", e);
     setSyncStatus('error', 'Error de connexió', 'Treballant offline');
   }
-
-  renderDesades(); renderResum(); renderDashboard();
+  
+  if (typeof renderDesades === 'function') renderDesades();
+  if (typeof renderResum === 'function') renderResum();
+  if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 async function syncToSupabase(silent = false) {
   if (!supabaseUser) {
-    setSyncStatus('pending', 'Mode Convidat', 'Dades guardades al mòbil');
+    setSyncStatus('pending', 'Mode Convidat', 'Només desat en local');
     return;
   }
   if (!silent) setSyncStatus('syncing', 'Sincronitzant...', '');
-
+  
   try {
-    try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch(_) {}
+    try {
+      localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles));
+    } catch(err) {}
 
     const ara = new Date().toISOString();
 
+    // Comprovació prèvia anti-bloquejos (Evita errors amb l'upsert antic)
     const { data: existeix, error: errorCheck } = await supabaseClient
-      .from('user_data').select('user_id').eq('user_id', supabaseUser.id);
+      .from('user_data')
+      .select('user_id')
+      .eq('user_id', supabaseUser.id);
 
     if (errorCheck) throw errorCheck;
 
     let result;
     if (existeix && existeix.length > 0) {
-      result = await supabaseClient.from('user_data')
+      result = await supabaseClient
+        .from('user_data')
         .update({ parcelles: state.parcelles, updated_at: ara })
         .eq('user_id', supabaseUser.id);
     } else {
-      result = await supabaseClient.from('user_data')
+      result = await supabaseClient
+        .from('user_data')
         .insert({ user_id: supabaseUser.id, parcelles: state.parcelles, updated_at: ara });
     }
 
     if (result.error) throw result.error;
-
+    
     lastSyncTime = ara;
     syncPending = false;
     setSyncStatus('ok', 'Dades sincronitzades', 'Última: ' + formatSyncTime(lastSyncTime));
-    if (!silent) showToast('☁️ Sincronitzat amb el núvol correctament');
-
+    if (!silent && typeof showToast === 'function') showToast('☁️ Sincronitzat amb el núvol');
+    
   } catch(e) {
+    console.error("❌ [Supabase] Error a syncToSupabase:", e);
     syncPending = true;
     setSyncStatus('error', 'Error de sincronització', 'Es reintentarà en desar');
-    if (!silent) showToast('⚠️ Guardat en local. Error al núvol.');
+    if (!silent && typeof showToast === 'function') showToast('⚠️ Guardat en local. Error al núvol.');
   }
 }
 
 async function syncManual() {
   if (!supabaseUser) {
-    showToast('Inicia sessió al Hub per sincronitzar');
+    showToast('Inicia sessió per sincronitzar');
+    showLoginOverlay();
     return;
   }
   await loadFromSupabase();
@@ -979,13 +1023,36 @@ async function syncManual() {
 function formatSyncTime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  const diff = Math.floor((new Date() - d) / 1000);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
   if (diff < 10) return 'ara mateix';
   if (diff < 60) return `fa ${diff}s`;
   if (diff < 3600) return `fa ${Math.floor(diff/60)}min`;
   return d.toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' });
 }
 
+const state = {
+  arbres: [],           
+  parcelles: [],        
+};
+
+// Dreceres DN i llistats de la teva App (Mantinguts 100% iguals per seguretat)
+const DN_DRECERES = [10, 12.5, 15, 17.5, 20, 25, 30, 35, 40, 50];
+const VIGOR_NOMS = {
+  '1':'Dominant','2':'Codominant','3':'Intermedi',
+  '4':'Suprimit','5':'Mort dret','6':'Mort caigut'
+};
+const FITOSAN_NOMS = {
+  '1':'Sa','2':'Debilitat lleu','3':'Debilitat greu',
+  '4':'Plaga-Malaltia','5':'Mort recent'
+};
+const ESPECIE_NOMS = {
+  'Psy':'Pinus sylvestris','Pni':'Pinus nigra','Pha':'Pinus halepensis',
+  'Ppi':'Pinus pinaster','Ppn':'Pinus pinea','Pun':'Pinus uncinata',
+  'Qil':'Quercus ilex','Qpu':'Quercus pubescens','Qsu':'Quercus suber',
+  'Qce':'Quercus cerrioides','Fsy':'Fagus sylvatica','Aal':'Abies alba',
+  'Pop':'Populus sp.','Rob':'Robinia pseudoacacia','ALT':'Altres'
+};
 /* ============================================================
    AUTH UI
    ============================================================ */
