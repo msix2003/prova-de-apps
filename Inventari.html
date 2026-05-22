@@ -883,28 +883,6 @@ function tornarHub() {
    SINCRONITZACIÓ I AUTENTICACIÓ AUTOMÀTICA SUPABASE
    ============================================================ */
 
-// 🔐 AUTO-CONNECT: Això detecta automàticament la sessió del Hub principal al carregar la pàgina
-if (typeof supabaseClient !== 'undefined') {
-  supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    console.log("🔐 [Supabase Auth] Canvi d'estat detectat:", event);
-    if (session) {
-      supabaseUser = session.user;
-      console.log("👤 [Supabase Auth] Sessió activa per a:", supabaseUser.email);
-      
-      // Actualitzem l'estat visual dels botons de la teva interfície
-      const btnLoginTxt = document.getElementById('btn-login-text');
-      if (btnLoginTxt) btnLoginTxt.textContent = "Tancar Sessió";
-      
-      // Carreguem automàticament les dades d'aquest compte
-      await loadFromSupabase();
-    } else {
-      supabaseUser = null;
-      console.log("👤 [Supabase Auth] Sense sessió (Mode Convidat).");
-      setSyncStatus('pending', 'Mode Convidat', 'Només desat en local');
-    }
-  });
-}
-
 function setSyncStatus(status, main, sub) {
   const dot  = document.getElementById('sync-dot');
   const txt  = document.getElementById('sync-status-text');
@@ -912,7 +890,7 @@ function setSyncStatus(status, main, sub) {
   if (!dot) return;
   dot.className = 'sync-dot ' + status;
   if (txt)  txt.textContent  = main;
-  if (stxt) stxt.textContent = sub;
+  if (stxt) stxt.textContent = sub || '—';
 }
 
 async function loadFromSupabase() {
@@ -976,7 +954,7 @@ async function syncToSupabase(silent = false) {
 
     const ara = new Date().toISOString();
 
-    // Comprovació prèvia anti-bloquejos (Evita errors amb l'upsert antic)
+    // Comprovació prèvia manual
     const { data: existeix, error: errorCheck } = await supabaseClient
       .from('user_data')
       .select('user_id')
@@ -1013,8 +991,7 @@ async function syncToSupabase(silent = false) {
 
 async function syncManual() {
   if (!supabaseUser) {
-    showToast('Inicia sessió per sincronitzar');
-    showLoginOverlay();
+    if (typeof showToast === 'function') showToast('Inicia sessió per sincronitzar');
     return;
   }
   await loadFromSupabase();
@@ -1023,14 +1000,40 @@ async function syncManual() {
 function formatSyncTime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  const now = new Date();
-  const diff = Math.floor((now - d) / 1000);
+  const diff = Math.floor((new Date() - d) / 1000);
   if (diff < 10) return 'ara mateix';
   if (diff < 60) return `fa ${diff}s`;
   if (diff < 3600) return `fa ${Math.floor(diff/60)}min`;
   return d.toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' });
 }
 
+/* ============================================================
+   AUTH UI
+   ============================================================ */
+function updateAccountUI() {
+  const avatar = document.getElementById('account-avatar');
+  const email = document.getElementById('account-email');
+  if (!supabaseUser) {
+    if (avatar) avatar.textContent = '👤';
+    if (email) email.textContent = 'Mode Convidat (sense compte)';
+    return;
+  }
+  const em = supabaseUser.email || '';
+  if (avatar) avatar.textContent = em.charAt(0).toUpperCase();
+  if (email) email.textContent = em;
+}
+
+async function doLogout() {
+  if (!confirm('Tancar la sessió? Es sincronitzaran les dades.')) return;
+  await syncToSupabase(true);
+  await supabaseClient.auth.signOut();
+  localStorage.removeItem('ptgmf_app_mode');
+  window.location.href = 'index.html';
+}
+
+/* ============================================================
+   ESTAT GLOBAL I INICIALITZACIÓ
+   ============================================================ */
 const state = {
   arbres: [],           
   parcelles: [],        
@@ -1053,6 +1056,89 @@ const ESPECIE_NOMS = {
   'Qce':'Quercus cerrioides','Fsy':'Fagus sylvatica','Aal':'Abies alba',
   'Pop':'Populus sp.','Rob':'Robinia pseudoacacia','ALT':'Altres'
 };
+
+// 🏁 INICIALITZACIÓ DE L'APLICACIÓ (Arregla la congelació)
+function initSupabaseFromHubState() {
+  const appMode = readAppMode();
+
+  try {
+    if (typeof window.supabase !== 'undefined') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch(e) {
+    console.error('Supabase init error:', e);
+  }
+
+  // Si no carrega Supabase correctament, s'evita la congelació usant una simulació buida
+  if (!supabaseClient) {
+    supabaseClient = {
+      auth: {
+        onAuthStateChange: () => {},
+        getSession: async () => ({ data: { session: null } })
+      }
+    };
+  }
+
+  if (appMode && appMode.mode === 'guest') {
+    setSyncStatus('pending', 'Mode Convidat', 'Dades guardades localment');
+    updateAccountUI();
+    return;
+  }
+
+  let sessionHandled = false;
+  try {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      supabaseUser = session ? session.user : null;
+      updateAccountUI();
+      if (supabaseUser) {
+        sessionHandled = true;
+        await loadFromSupabase();
+      } else {
+        sessionHandled = true;
+        setSyncStatus('pending', 'Sense sessió', 'Inicia sessió al Hub per sincronitzar');
+        if (typeof renderDesades === 'function') renderDesades();
+        if (typeof renderResum === 'function') renderResum();
+        if (typeof renderDashboard === 'function') renderDashboard();
+      }
+    });
+
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      setTimeout(() => {
+        if (!sessionHandled) {
+          supabaseUser = session ? session.user : null;
+          updateAccountUI();
+          if (supabaseUser) {
+            loadFromSupabase();
+          } else {
+            setSyncStatus('pending', 'Sense sessió', 'Inicia sessió al Hub per sincronitzar');
+          }
+        }
+      }, 3000);
+    });
+  } catch(e) {
+    console.error("Error en escoltar sessió:", e);
+  }
+}
+
+// 🚀 ARRENCADA IMMEDIATA
+// Carreguem primer les dades que hi hagi desades en local
+try {
+  const localParc = localStorage.getItem('ptgmf_parcelles');
+  if (localParc) state.parcelles = JSON.parse(localParc);
+} catch(e) {}
+
+// Generem els botons de la teva graella de diàmetres
+const grid = document.getElementById('dn-grid');
+if (grid) {
+  grid.innerHTML = DN_DRECERES.map(v => `<button class="dn-btn" onclick="setDnDirecte(${v})">${v}</button>`).join('');
+}
+
+// Arrenquem finalment Supabase i dibuixem la pantalla
+initSupabaseFromHubState();
+if (typeof renderDesades === 'function') renderDesades();
+if (typeof renderResum === 'function') renderResum();
+if (typeof renderDashboard === 'function') renderDashboard();
+   
 /* ============================================================
    AUTH UI
    ============================================================ */
