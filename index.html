@@ -66,6 +66,7 @@ button { cursor: pointer; border: none; }
   padding: calc(var(--safe-t) + 24px) 24px calc(var(--safe-b) + 24px);
   background: linear-gradient(160deg, var(--v-fosc2) 0%, var(--v) 60%, #52b788 100%);
   min-height: 100dvh;
+  position: relative; /* needed for absolute lang button */
 }
 .login-logo {
   width: 84px; height: 84px;
@@ -181,6 +182,24 @@ button { cursor: pointer; border: none; }
   line-height: 1.6;
 }
 
+/* ── LANGUAGE BUTTON ── */
+.lang-btn {
+  background: rgba(255,255,255,.13);
+  border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.9);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--ff-s);
+  padding: 6px 10px;
+  cursor: pointer;
+  letter-spacing: .6px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .2s;
+}
+.lang-btn:active { background: rgba(255,255,255,.26); }
+
 /* ── HUB SCREEN ── */
 #hub-screen {
   display: none;
@@ -195,7 +214,7 @@ button { cursor: pointer; border: none; }
   padding: calc(var(--safe-t) + 14px) 18px 14px;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,.25);
   position: sticky;
   top: 0;
@@ -391,36 +410,41 @@ button { cursor: pointer; border: none; }
 
   <!-- ═══ PANTALLA LOGIN ═══ -->
   <div id="login-screen">
+
+    <!-- Botó d'idioma (posicionat absolutament) -->
+    <button class="lang-btn" id="login-lang-btn" onclick="cycleLang()"
+            style="position:absolute;top:calc(env(safe-area-inset-top,0px)+14px);right:16px;z-index:10;">CA</button>
+
     <img src="icon-512.png" class="login-logo" alt="PTGMF" onerror="this.style.display='none'">
-    <div class="login-title">PTGMF · Hub Forestal</div>
-    <div class="login-subtitle">Accedeix o continua sense compte</div>
+    <div class="login-title"    data-i18n="loginTitle">PTGMF · Hub Forestal</div>
+    <div class="login-subtitle" data-i18n="loginSubtitle">Accedeix o continua sense compte</div>
 
     <div class="login-card">
       <div class="login-tabs">
-        <button class="login-tab-btn active" id="ltab-login"    onclick="switchLoginTab('login')">Iniciar sessió</button>
-        <button class="login-tab-btn"        id="ltab-register" onclick="switchLoginTab('register')">Registrar-se</button>
+        <button class="login-tab-btn active" id="ltab-login"    onclick="switchLoginTab('login')"    data-i18n="tabLogin">Iniciar sessió</button>
+        <button class="login-tab-btn"        id="ltab-register" onclick="switchLoginTab('register')" data-i18n="tabRegister">Registrar-se</button>
       </div>
 
       <!-- Login -->
       <div id="login-form">
-        <input class="login-input" type="email"    id="login-email"    placeholder="Correu electrònic" autocomplete="email">
-        <input class="login-input" type="password" id="login-password" placeholder="Contrasenya"       autocomplete="current-password">
-        <button class="login-btn-primary" id="login-submit-btn" onclick="doLogin()">Entrar</button>
+        <input class="login-input" type="email"    id="login-email"    data-i18n-ph="loginEmailPh" placeholder="Correu electrònic" autocomplete="email">
+        <input class="login-input" type="password" id="login-password" data-i18n-ph="loginPassPh"  placeholder="Contrasenya"       autocomplete="current-password">
+        <button class="login-btn-primary" id="login-submit-btn" onclick="doLogin()" data-i18n="loginBtn">Entrar</button>
       </div>
 
       <!-- Register -->
       <div id="register-form" style="display:none;">
-        <input class="login-input" type="email"    id="reg-email"     placeholder="Correu electrònic"              autocomplete="email">
-        <input class="login-input" type="password" id="reg-password"  placeholder="Contrasenya (mínim 6 caràcters)" autocomplete="new-password">
-        <input class="login-input" type="password" id="reg-password2" placeholder="Repetir contrasenya"             autocomplete="new-password">
-        <button class="login-btn-primary" id="register-submit-btn" onclick="doRegister()">Crear compte</button>
+        <input class="login-input" type="email"    id="reg-email"     data-i18n-ph="regEmailPh"  placeholder="Correu electrònic"               autocomplete="email">
+        <input class="login-input" type="password" id="reg-password"  data-i18n-ph="regPassPh"   placeholder="Contrasenya (mínim 6 caràcters)"  autocomplete="new-password">
+        <input class="login-input" type="password" id="reg-password2" data-i18n-ph="regPass2Ph"  placeholder="Repetir contrasenya"              autocomplete="new-password">
+        <button class="login-btn-primary" id="register-submit-btn" onclick="doRegister()" data-i18n="regBtn">Crear compte</button>
       </div>
 
       <div class="login-error" id="login-error"></div>
-      <button class="login-btn-ghost" onclick="continuarConvidat()">Continuar sense registrar-se →</button>
+      <button class="login-btn-ghost" onclick="continuarConvidat()" data-i18n="guestBtn">Continuar sense registrar-se →</button>
     </div>
 
-    <div class="login-footer">
+    <div class="login-footer" id="login-footer-el">
       Les teves dades s'emmagatzemen de forma segura al núvol.<br>
       Cada usuari només pot veure les seves pròpies dades.
     </div>
@@ -435,7 +459,9 @@ button { cursor: pointer; border: none; }
         <div class="hub-header-title" id="hub-user-name">Carregant...</div>
         <div class="hub-header-sub"   id="hub-user-sub">PTGMF · Hub d'Aplicacions</div>
       </div>
-      <button class="hub-logout-btn" onclick="doLogout()">Sortir</button>
+      <!-- Botó d'idioma al header del hub -->
+      <button class="lang-btn" id="hub-lang-btn" onclick="cycleLang()">CA</button>
+      <button class="hub-logout-btn" id="hub-logout-btn" data-i18n="hubLogout" onclick="doLogout()">Sortir</button>
     </header>
 
     <!-- Body -->
@@ -444,15 +470,15 @@ button { cursor: pointer; border: none; }
       <!-- Sync -->
       <div class="hub-sync-bar">
         <div class="sync-dot" id="hub-sync-dot"></div>
-        <div class="sync-bar-text" id="hub-sync-text">Comprovant connexió...</div>
+        <div class="sync-bar-text" id="hub-sync-text" data-i18n="syncChecking">Comprovant connexió...</div>
       </div>
 
-      <div class="hub-section-title">Aplicacions disponibles</div>
+      <div class="hub-section-title" data-i18n="hubSectionApps">Aplicacions disponibles</div>
       <div class="app-grid" id="app-grid">
         <!-- generat dinàmicament per JS -->
       </div>
 
-      <div class="hub-credits"><p>🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
+      <div class="hub-credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
     </div>
   </div>
 
@@ -461,7 +487,7 @@ button { cursor: pointer; border: none; }
 
 <script>
 /* ============================================================
-   SUPABASE CONFIG (claus reals de l'app)
+   SUPABASE CONFIG
    ============================================================ */
 const SUPABASE_URL      = 'https://hkkxgzdopvimgarmxdnj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM';
@@ -470,48 +496,211 @@ let sbClient  = null;
 let sbUser    = null;
 
 /* ============================================================
+   SISTEMA D'IDIOMES
+   ============================================================ */
+const LANGS       = ['ca', 'es', 'en'];
+const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
+
+const T = {
+  ca: {
+    loginTitle:       'PTGMF · Hub Forestal',
+    loginSubtitle:    'Accedeix o continua sense compte',
+    tabLogin:         'Iniciar sessió',
+    tabRegister:      'Registrar-se',
+    loginEmailPh:     'Correu electrònic',
+    loginPassPh:      'Contrasenya',
+    loginBtn:         'Entrar',
+    loginBtnLoading:  'Entrant...',
+    regEmailPh:       'Correu electrònic',
+    regPassPh:        'Contrasenya (mínim 6 caràcters)',
+    regPass2Ph:       'Repetir contrasenya',
+    regBtn:           'Crear compte',
+    regBtnLoading:    'Creant compte...',
+    guestBtn:         'Continuar sense registrar-se →',
+    loginFooterHtml:  'Les teves dades s\'emmagatzemen de forma segura al núvol.<br>Cada usuari només pot veure les seves pròpies dades.',
+    hubSectionApps:   'Aplicacions disponibles',
+    hubLogout:        'Sortir',
+    hubSubLogged:     'Compte registrat · PTGMF Hub',
+    hubSubGuest:      'Dades guardades localment',
+    hubUserGuest:     'Mode Convidat',
+    syncChecking:     'Comprovant connexió...',
+    syncActive:       'Sessió activa · ',
+    syncGuest:        'Mode Convidat · Sense còpia al núvol',
+    logoutConfirm:    'Tancar la sessió?',
+    toastLogout:      'Sessió tancada correctament.',
+    credits:          '🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
+    appInventariName: 'Inventari Forestal',
+    appInventariDesc: 'Parcel·les, dasometria i vegetació',
+    errEmailPass:     'Introdueix correu i contrasenya.',
+    errPassMatch:     'Les contrasenyes no coincideixen.',
+    errPassLen:       'La contrasenya ha de tenir mínim 6 caràcters.',
+    accountCreated:   '✅ Compte creat! Ara pots iniciar sessió.',
+    authErrInvalid:   'Correu o contrasenya incorrectes.',
+    authErrUnconfirmed:'Cal confirmar el correu electrònic.',
+    authErrExists:    'Aquest correu ja té un compte.',
+  },
+  es: {
+    loginTitle:       'PTGMF · Hub Forestal',
+    loginSubtitle:    'Accede o continúa sin cuenta',
+    tabLogin:         'Iniciar sesión',
+    tabRegister:      'Registrarse',
+    loginEmailPh:     'Correo electrónico',
+    loginPassPh:      'Contraseña',
+    loginBtn:         'Entrar',
+    loginBtnLoading:  'Entrando...',
+    regEmailPh:       'Correo electrónico',
+    regPassPh:        'Contraseña (mínimo 6 caracteres)',
+    regPass2Ph:       'Repetir contraseña',
+    regBtn:           'Crear cuenta',
+    regBtnLoading:    'Creando cuenta...',
+    guestBtn:         'Continuar sin registrarse →',
+    loginFooterHtml:  'Tus datos se almacenan de forma segura en la nube.<br>Cada usuario solo puede ver sus propios datos.',
+    hubSectionApps:   'Aplicaciones disponibles',
+    hubLogout:        'Salir',
+    hubSubLogged:     'Cuenta registrada · PTGMF Hub',
+    hubSubGuest:      'Datos guardados localmente',
+    hubUserGuest:     'Modo Invitado',
+    syncChecking:     'Comprobando conexión...',
+    syncActive:       'Sesión activa · ',
+    syncGuest:        'Modo Invitado · Sin copia en la nube',
+    logoutConfirm:    '¿Cerrar la sesión?',
+    toastLogout:      'Sesión cerrada correctamente.',
+    credits:          '🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
+    appInventariName: 'Inventario Forestal',
+    appInventariDesc: 'Parcelas, dasometría y vegetación',
+    errEmailPass:     'Introduce correo y contraseña.',
+    errPassMatch:     'Las contraseñas no coinciden.',
+    errPassLen:       'La contraseña debe tener mínimo 6 caracteres.',
+    accountCreated:   '✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
+    authErrInvalid:   'Correo o contraseña incorrectos.',
+    authErrUnconfirmed:'Debes confirmar el correo electrónico.',
+    authErrExists:    'Este correo ya tiene una cuenta.',
+  },
+  en: {
+    loginTitle:       'PTGMF · Forest Hub',
+    loginSubtitle:    'Sign in or continue without an account',
+    tabLogin:         'Sign in',
+    tabRegister:      'Register',
+    loginEmailPh:     'Email address',
+    loginPassPh:      'Password',
+    loginBtn:         'Sign in',
+    loginBtnLoading:  'Signing in...',
+    regEmailPh:       'Email address',
+    regPassPh:        'Password (minimum 6 characters)',
+    regPass2Ph:       'Repeat password',
+    regBtn:           'Create account',
+    regBtnLoading:    'Creating account...',
+    guestBtn:         'Continue without signing in →',
+    loginFooterHtml:  'Your data is stored securely in the cloud.<br>Each user can only see their own data.',
+    hubSectionApps:   'Available applications',
+    hubLogout:        'Sign out',
+    hubSubLogged:     'Registered account · PTGMF Hub',
+    hubSubGuest:      'Data saved locally',
+    hubUserGuest:     'Guest mode',
+    syncChecking:     'Checking connection...',
+    syncActive:       'Active session · ',
+    syncGuest:        'Guest mode · No cloud backup',
+    logoutConfirm:    'Sign out?',
+    toastLogout:      'Successfully signed out.',
+    credits:          '🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
+    appInventariName: 'Forest Inventory',
+    appInventariDesc: 'Plots, stand metrics and vegetation',
+    errEmailPass:     'Enter your email and password.',
+    errPassMatch:     'Passwords do not match.',
+    errPassLen:       'Password must be at least 6 characters.',
+    accountCreated:   '✅ Account created! You can now sign in.',
+    authErrInvalid:   'Incorrect email or password.',
+    authErrUnconfirmed:'Please confirm your email address.',
+    authErrExists:    'This email already has an account.',
+  }
+};
+
+function getLang() {
+  return localStorage.getItem('ptgmf_lang') || 'ca';
+}
+function setLang(lang) {
+  localStorage.setItem('ptgmf_lang', lang);
+  applyLang(lang);
+}
+function cycleLang() {
+  const cur  = getLang();
+  const next = LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length];
+  setLang(next);
+}
+function updateLangBtns(lang) {
+  ['login-lang-btn', 'hub-lang-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+  });
+}
+function applyLang(lang) {
+  const t = T[lang] || T.ca;
+  document.documentElement.lang = lang;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // Footer usa innerHTML (conté <br>)
+  const footer = document.getElementById('login-footer-el');
+  if (footer) footer.innerHTML = t.loginFooterHtml;
+
+  updateLangBtns(lang);
+  buildAppGrid();
+
+  // Actualitza contingut dinàmic del hub si és visible
+  const hubScreen = document.getElementById('hub-screen');
+  if (hubScreen && hubScreen.style.display !== 'none') {
+    const sub = document.getElementById('hub-user-sub');
+    if (sub) sub.textContent = sbUser ? t.hubSubLogged : t.hubSubGuest;
+    const nameEl = document.getElementById('hub-user-name');
+    if (nameEl && !sbUser) nameEl.textContent = t.hubUserGuest;
+  }
+}
+
+/* ============================================================
    CATÀLEG D'APLICACIONS
-   Per afegir una nova app: afegeix un objecte a aquest array
-   i posa el fitxer HTML al servidor. Sense tocar res més.
+   Per afegir una nova app: afegeix un objecte a APPS i crea el fitxer HTML.
    ============================================================ */
 const APPS = [
   {
-    name: 'Inventari Forestal',
-    desc: 'Parcel·les, dasometria i vegetació',
-    icon: '🌲',
-    url:  'Inventari.html',
-    badge: 'v10',
-    active: true,
+    nameKey: 'appInventariName',
+    descKey: 'appInventariDesc',
+    icon:    '🌲',
+    url:     'Inventari.html',
+    badge:   'v10',
+    active:  true,
   },
-  // Exemple d'app futura (comment out per deshabilitar):
-  // {
-  //   name: 'Mapa Forestal',
-  //   desc: 'Visualització cartogràfica de rodals',
-  //   icon: '🗺️',
-  //   url:  'mapa.html',
-  //   badge: 'Aviat',
-  //   active: false,
-  // },
+  // Exemple app futura:
+  // { nameKey:'appMapaName', descKey:'appMapaDesc', icon:'🗺️', url:'mapa.html', badge:'Aviat', active:false },
 ];
 
 /* ============================================================
    INIT
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  buildAppGrid();
+  applyLang(getLang());
   initSupabase();
 });
 
 function buildAppGrid() {
+  const t    = T[getLang()] || T.ca;
   const grid = document.getElementById('app-grid');
   grid.innerHTML = APPS.map(app => {
+    const name = t[app.nameKey] || app.nameKey;
+    const desc = t[app.descKey] || app.descKey;
     if (app.active) {
       return `
         <a class="app-card" href="${app.url}" onclick="navigateToApp(event,'${app.url}')">
           <div class="app-card-icon">${app.icon}</div>
           <div>
-            <div class="app-card-name">${app.name}</div>
-            <div class="app-card-desc">${app.desc}</div>
+            <div class="app-card-name">${name}</div>
+            <div class="app-card-desc">${desc}</div>
           </div>
           ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
         </a>`;
@@ -520,8 +709,8 @@ function buildAppGrid() {
         <div class="app-card coming-soon">
           <div class="app-card-icon">${app.icon}</div>
           <div>
-            <div class="app-card-name">${app.name}</div>
-            <div class="app-card-desc">${app.desc}</div>
+            <div class="app-card-name">${name}</div>
+            <div class="app-card-desc">${desc}</div>
           </div>
           ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
         </div>`;
@@ -530,9 +719,7 @@ function buildAppGrid() {
 }
 
 function navigateToApp(e, url) {
-  // Guardar mode actual al localStorage perquè l'app el pugui llegir
   setAppMode(sbUser ? 'logged_in' : 'guest');
-  // La navegació normal continua (no cancel·lem l'event)
 }
 
 /* ============================================================
@@ -540,7 +727,7 @@ function navigateToApp(e, url) {
    ============================================================ */
 function setAppMode(mode) {
   const payload = {
-    mode,   // 'logged_in' | 'guest'
+    mode,
     userId: sbUser ? sbUser.id    : null,
     email:  sbUser ? sbUser.email : null,
     ts:     Date.now(),
@@ -562,7 +749,6 @@ function initSupabase() {
     sbClient = makeFallbackClient();
   }
 
-  // Escolta canvis d'auth
   try {
     sbClient.auth.onAuthStateChange(async (event, session) => {
       sbUser = session ? session.user : null;
@@ -576,7 +762,6 @@ function initSupabase() {
       handleAuthState();
     });
   } catch(e) {
-    // Si Supabase falla del tot, comprova si hi havia sessió guardada
     const saved = localStorage.getItem('ptgmf_app_mode');
     if (saved) {
       try {
@@ -589,16 +774,17 @@ function initSupabase() {
 }
 
 function handleAuthState() {
+  const t = T[getLang()] || T.ca;
   if (sbUser) {
     showHub(true);
-    setSyncStatus('ok', `Sessió activa · ${sbUser.email}`);
+    setSyncStatus('ok', t.syncActive + sbUser.email);
   } else {
     const saved = localStorage.getItem('ptgmf_app_mode');
     let mode = null;
     try { mode = JSON.parse(saved).mode; } catch(_) {}
     if (mode === 'guest') {
       showHub(false);
-      setSyncStatus('pending', 'Mode Convidat · Sense còpia al núvol');
+      setSyncStatus('pending', t.syncGuest);
     } else {
       showLogin();
     }
@@ -621,53 +807,58 @@ function setLoginError(msg) {
 }
 
 async function doLogin() {
+  const t = T[getLang()] || T.ca;
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-password').value;
-  if (!email || !pass) { setLoginError('Introdueix correu i contrasenya.'); return; }
+  if (!email || !pass) { setLoginError(t.errEmailPass); return; }
   const btn = document.getElementById('login-submit-btn');
-  btn.disabled = true; btn.textContent = 'Entrant...';
+  btn.disabled = true; btn.textContent = t.loginBtnLoading;
   setLoginError('');
   const { error } = await sbClient.auth.signInWithPassword({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Entrar';
+  btn.disabled = false; btn.textContent = t.loginBtn;
   if (error) setLoginError(translateAuthError(error.message));
 }
 
 async function doRegister() {
+  const t = T[getLang()] || T.ca;
   const email = document.getElementById('reg-email').value.trim();
   const pass  = document.getElementById('reg-password').value;
   const pass2 = document.getElementById('reg-password2').value;
-  if (!email || !pass) { setLoginError('Introdueix correu i contrasenya.'); return; }
-  if (pass !== pass2)  { setLoginError('Les contrasenyes no coincideixen.'); return; }
-  if (pass.length < 6) { setLoginError('La contrasenya ha de tenir mínim 6 caràcters.'); return; }
+  if (!email || !pass) { setLoginError(t.errEmailPass); return; }
+  if (pass !== pass2)  { setLoginError(t.errPassMatch); return; }
+  if (pass.length < 6) { setLoginError(t.errPassLen); return; }
   const btn = document.getElementById('register-submit-btn');
-  btn.disabled = true; btn.textContent = 'Creant compte...';
+  btn.disabled = true; btn.textContent = t.regBtnLoading;
   setLoginError('');
   const { error } = await sbClient.auth.signUp({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Crear compte';
+  btn.disabled = false; btn.textContent = t.regBtn;
   if (error) { setLoginError(translateAuthError(error.message)); return; }
-  setLoginError('✅ Compte creat! Ara pots iniciar sessió.');
+  setLoginError(t.accountCreated);
 }
 
 function continuarConvidat() {
+  const t = T[getLang()] || T.ca;
   localStorage.setItem('ptgmf_app_mode', JSON.stringify({ mode: 'guest', userId: null, email: null, ts: Date.now() }));
   showHub(false);
-  setSyncStatus('pending', 'Mode Convidat · Dades guardades localment');
+  setSyncStatus('pending', t.syncGuest);
 }
 
 async function doLogout() {
-  if (!confirm('Tancar la sessió?')) return;
+  const t = T[getLang()] || T.ca;
+  if (!confirm(t.logoutConfirm)) return;
   localStorage.removeItem('ptgmf_app_mode');
   await sbClient.auth.signOut();
   sbUser = null;
   showLogin();
-  showToast('Sessió tancada correctament.');
+  showToast(t.toastLogout);
 }
 
 function translateAuthError(msg) {
-  if (msg.includes('Invalid login'))           return 'Correu o contrasenya incorrectes.';
-  if (msg.includes('Email not confirmed'))     return 'Cal confirmar el correu electrònic.';
-  if (msg.includes('User already registered')) return 'Aquest correu ja té un compte.';
-  if (msg.includes('Password should be at least')) return 'La contrasenya ha de tenir mínim 6 caràcters.';
+  const t = T[getLang()] || T.ca;
+  if (msg.includes('Invalid login'))                return t.authErrInvalid;
+  if (msg.includes('Email not confirmed'))          return t.authErrUnconfirmed;
+  if (msg.includes('User already registered'))      return t.authErrExists;
+  if (msg.includes('Password should be at least'))  return t.errPassLen;
   return msg;
 }
 
@@ -680,6 +871,7 @@ function showLogin() {
 }
 
 function showHub(loggedIn) {
+  const t = T[getLang()] || T.ca;
   document.getElementById('login-screen').style.display = 'none';
   const hubScreen = document.getElementById('hub-screen');
   hubScreen.style.display = 'flex';
@@ -690,14 +882,13 @@ function showHub(loggedIn) {
 
   if (loggedIn && sbUser) {
     const email  = sbUser.email || '';
-    const letter = email.charAt(0).toUpperCase();
-    avatar.textContent = letter;
+    avatar.textContent = email.charAt(0).toUpperCase();
     name.textContent   = email;
-    sub.textContent    = 'Compte registrat · PTGMF Hub';
+    sub.textContent    = t.hubSubLogged;
   } else {
     avatar.textContent = '👤';
-    name.textContent   = 'Mode Convidat';
-    sub.textContent    = 'Dades guardades localment';
+    name.textContent   = t.hubUserGuest;
+    sub.textContent    = t.hubSubGuest;
   }
 }
 
@@ -713,11 +904,11 @@ function setSyncStatus(state, text) {
    ============================================================ */
 let toastTimer = null;
 function showToast(msg, ms = 2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  const t2 = document.getElementById('toast');
+  t2.textContent = msg;
+  t2.classList.add('show');
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+  toastTimer = setTimeout(() => t2.classList.remove('show'), ms);
 }
 
 /* ============================================================
