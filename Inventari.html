@@ -15,7 +15,6 @@
 <meta name="apple-mobile-web-app-title" content="Inventari">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- Supabase: SenseNSE defer per tenir-lo disponible immediatament -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.mini.min.js"></script>
 <style>
@@ -378,122 +377,122 @@ input[type=range]::-moz-range-thumb {
 <div id="app">
 
   <nav class="navbar">
-    <button class="navbar-back" onclick="window.location.href='index.html'">← Hub</button>
-    <span class="navbar-title">🌲 Inventari Forestal PTGMF</span>
+    <button class="navbar-back" onclick="window.location.href='index.html'" data-i18n="navBack">← Hub</button>
+    <span class="navbar-title" data-i18n="navTitle">🌲 Inventari Forestal PTGMF</span>
   </nav>
 
   <div class="tabs-content">
 
     <!-- TAB GENERAL -->
     <div class="tab-panel active" id="tab-general">
-      <div class="block-title">Identificació</div>
+      <div class="block-title" data-i18n="sIdentificacio">Identificació</div>
       <div class="list-group">
-        <div class="list-item"><span class="item-label">Rodal / UA (*)</span><input class="item-input" id="ua" type="text" placeholder="Ex: Rodal 3"></div>
-        <div class="list-item"><span class="item-label">Codi parcel·la (*)</span><input class="item-input" id="codi" type="text" placeholder="Ex: P-001"></div>
-        <div class="list-item"><span class="item-label">Nom de la finca</span><input class="item-input" id="finca" type="text" placeholder="Ex: Can Roca"></div>
-        <div class="list-item"><span class="item-label">UTM 31N X (m)</span><input class="item-input" id="utm_x" type="number" placeholder="Ex: 358425"></div>
-        <div class="list-item"><span class="item-label">UTM 31N Y (m)</span><input class="item-input" id="utm_y" type="number" placeholder="Ex: 4642130"></div>
-        <div class="list-item"><span class="item-label">Radi mostreig (m)</span><input class="item-input" id="radi" type="number" value="10" step="0.5" min="1" max="50"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbRodal">Rodal / UA (*)</span><input class="item-input" id="ua" type="text" data-i18n-ph="rodalPh" placeholder="Ex: Rodal 3"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbCodi">Codi parcel·la (*)</span><input class="item-input" id="codi" type="text" data-i18n-ph="codiPh" placeholder="Ex: P-001"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbFinca">Nom de la finca</span><input class="item-input" id="finca" type="text" data-i18n-ph="fincaPh" placeholder="Ex: Can Roca"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbUtmX">UTM 31N X (m)</span><input class="item-input" id="utm_x" type="number" data-i18n-ph="utmXPh" placeholder="Ex: 358425"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbUtmY">UTM 31N Y (m)</span><input class="item-input" id="utm_y" type="number" data-i18n-ph="utmYPh" placeholder="Ex: 4642130"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbRadi">Radi mostreig (m)</span><input class="item-input" id="radi" type="number" value="10" step="0.5" min="1" max="50"></div>
       </div>
-      <div class="block-title">Topografia i sòl</div>
+      <div class="block-title" data-i18n="sTopografia">Topografia i sòl</div>
       <div class="list-group">
-        <div class="list-item"><span class="item-label">Altitud (m)</span><input class="item-input" id="altitud" type="number" value="500" step="10"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbAltitud">Altitud (m)</span><input class="item-input" id="altitud" type="number" value="500" step="10"></div>
         <div class="slider-row">
-          <div class="slider-header"><span class="slider-label">Pendent (%)</span><span class="slider-val" id="pendent-val">0%</span></div>
+          <div class="slider-header"><span class="slider-label" data-i18n="lbPendent">Pendent (%)</span><span class="slider-val" id="pendent-val">0%</span></div>
           <input type="range" id="pendent" min="0" max="100" value="0" oninput="document.getElementById('pendent-val').textContent=this.value+'%'">
         </div>
-        <div class="list-item"><span class="item-label">Orientació</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbOrientacio">Orientació</span>
           <select class="item-select" id="orientacio">
             <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE">SE</option>
             <option value="S">S</option><option value="SO">SO</option><option value="O">O</option><option value="NO">NO</option><option value="PL">Pla</option>
           </select>
         </div>
-        <div class="list-item"><span class="item-label">Tipus de roca</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbRoca">Tipus de roca</span>
           <select class="item-select" id="roca">
             <option value="Calc">Calcària</option><option value="Gran">Granit</option><option value="Piss">Pissarres</option>
             <option value="Gres">Grès</option><option value="Cong">Conglomerat</option><option value="Marg">Marga</option><option value="Alt">Altres</option>
           </select>
         </div>
-        <div class="list-item"><span class="item-label">Erosió</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbErosio">Erosió</span>
           <select class="item-select" id="erosio">
             <option value="0">Nul·la</option><option value="1">Superficial</option><option value="2">Xaragalls</option>
             <option value="3">Rases V</option><option value="4">Rases U</option><option value="5">Lliscament</option>
           </select>
         </div>
-        <div class="list-item"><span class="item-label">Pedregositat</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbPedregositat">Pedregositat</span>
           <select class="item-select" id="pedregositat">
             <option value="0">Nul·la &lt;5%</option><option value="1">Lleugera 5-25%</option>
             <option value="2">Moderada 25-50%</option><option value="3">Alta &gt;50%</option>
           </select>
         </div>
       </div>
-      <div class="credits"><p>🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
+      <div class="credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
     </div>
 
     <!-- TAB VEGETACIÓ -->
     <div class="tab-panel" id="tab-veg">
-      <div class="block-title">Estrat arbori</div>
+      <div class="block-title" data-i18n="sEstratArbori">Estrat arbori</div>
       <div class="list-group">
         <div class="slider-row">
-          <div class="slider-header"><span class="slider-label">Fcc Total (%)</span><span class="slider-val" id="fcc_total-val">70%</span></div>
+          <div class="slider-header"><span class="slider-label" data-i18n="lbFccTotal">Fcc Total (%)</span><span class="slider-val" id="fcc_total-val">70%</span></div>
           <input type="range" id="fcc_total" min="0" max="100" value="70" oninput="document.getElementById('fcc_total-val').textContent=this.value+'%'">
         </div>
         <div class="slider-row">
-          <div class="slider-header"><span class="slider-label">Fcc Arbori (%)</span><span class="slider-val" id="fcc_arbori-val">60%</span></div>
+          <div class="slider-header"><span class="slider-label" data-i18n="lbFccArbori">Fcc Arbori (%)</span><span class="slider-val" id="fcc_arbori-val">60%</span></div>
           <input type="range" id="fcc_arbori" min="0" max="100" value="60" oninput="document.getElementById('fcc_arbori-val').textContent=this.value+'%'">
         </div>
       </div>
-      <div class="block-title">Estrat arbustiu</div>
+      <div class="block-title" data-i18n="sEstratArbustiu">Estrat arbustiu</div>
       <div class="list-group">
         <div class="slider-row">
-          <div class="slider-header"><span class="slider-label">Fcc Arbustiu (%)</span><span class="slider-val" id="fcc_arbustiu-val">20%</span></div>
+          <div class="slider-header"><span class="slider-label" data-i18n="lbFccArbustiu">Fcc Arbustiu (%)</span><span class="slider-val" id="fcc_arbustiu-val">20%</span></div>
           <input type="range" id="fcc_arbustiu" min="0" max="100" value="20" oninput="document.getElementById('fcc_arbustiu-val').textContent=this.value+'%'">
         </div>
-        <div class="list-item"><span class="item-label">Alçada arbustiu (m)</span><input class="item-input" id="h_arbustiu" type="number" value="1" step="0.1" min="0"></div>
+        <div class="list-item"><span class="item-label" data-i18n="lbHArbustiu">Alçada arbustiu (m)</span><input class="item-input" id="h_arbustiu" type="number" value="1" step="0.1" min="0"></div>
       </div>
-      <div class="block-title">Distribució i estat</div>
+      <div class="block-title" data-i18n="sDistribucio">Distribució i estat</div>
       <div class="list-group">
-        <div class="list-item"><span class="item-label">Distribució espacial</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbDistEspacial">Distribució espacial</span>
           <select class="item-select" id="dist_espacial">
             <option value="1">Uniforme</option><option value="2">En clapes</option><option value="3">Individus aïllats</option>
           </select>
         </div>
-        <div class="list-item"><span class="item-label">Regeneració natural</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbRegeneracio">Regeneració natural</span>
           <select class="item-select" id="regeneracio">
             <option value="1">Abundant</option><option value="2">Moderada</option><option value="3">Escassa</option><option value="4">Nul·la</option>
           </select>
         </div>
-        <div class="list-item"><span class="item-label">Estat sanitari</span>
+        <div class="list-item"><span class="item-label" data-i18n="lbEstatSanitari">Estat sanitari</span>
           <select class="item-select" id="estat_sanitari">
             <option value="1">Bo</option><option value="2">Regular</option><option value="3">Dolent</option>
           </select>
         </div>
       </div>
-      <div class="block-title">Observacions</div>
+      <div class="block-title" data-i18n="sObservacions">Observacions</div>
       <div class="list-group">
         <div class="list-item" style="align-items:flex-start;padding:12px 14px;">
-          <textarea class="obs-textarea" id="obs_veg" placeholder="Espècies, danys, invasores..."></textarea>
+          <textarea class="obs-textarea" id="obs_veg" data-i18n-ph="obsVegPh" placeholder="Espècies, danys, invasores..."></textarea>
         </div>
       </div>
-      <div class="credits"><p>🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
+      <div class="credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
     </div>
 
     <!-- TAB ARBRES -->
     <div class="tab-panel" id="tab-arbres">
       <div class="dashboard">
-        <div class="dash-item"><div class="dash-val" id="dash-N">0</div><div class="dash-lbl">N arbres</div></div>
+        <div class="dash-item"><div class="dash-val" id="dash-N">0</div><div class="dash-lbl" data-i18n="dashNLbl">N arbres</div></div>
         <div class="dash-sep"></div>
-        <div class="dash-item"><div class="dash-val" id="dash-G">0.00</div><div class="dash-lbl">G (m²/ha)</div></div>
+        <div class="dash-item"><div class="dash-val" id="dash-G">0.00</div><div class="dash-lbl" data-i18n="dashGLbl">G (m²/ha)</div></div>
         <div class="dash-sep"></div>
-        <div class="dash-item"><div class="dash-val" id="dash-Dg">-</div><div class="dash-lbl">Dg (cm)</div></div>
+        <div class="dash-item"><div class="dash-val" id="dash-Dg">-</div><div class="dash-lbl" data-i18n="dashDgLbl">Dg (cm)</div></div>
         <div class="dash-sep"></div>
-        <div class="dash-item"><div class="dash-val" id="dash-Hm">-</div><div class="dash-lbl">Hm (m)</div></div>
+        <div class="dash-item"><div class="dash-val" id="dash-Hm">-</div><div class="dash-lbl" data-i18n="dashHmLbl">Hm (m)</div></div>
       </div>
 
-      <div class="block-title">Afegir arbre</div>
+      <div class="block-title" data-i18n="sAfegirArbre">Afegir arbre</div>
       <div class="card" style="padding:0 0 8px;">
         <div class="list-item" style="border-bottom:1px solid var(--borde);">
-          <span class="item-label">Espècie</span>
+          <span class="item-label" data-i18n="lbEspecie">Espècie</span>
           <select class="item-select" id="especie" onchange="onEspecieChange()">
             <option value="Psy">Pinus sylvestris</option><option value="Pni">Pinus nigra</option>
             <option value="Pha">Pinus halepensis</option><option value="Ppi">Pinus pinaster</option>
@@ -506,42 +505,45 @@ input[type=range]::-moz-range-thumb {
           </select>
         </div>
         <div class="list-item especie-text-row" id="especie-text-row" style="border-bottom:1px solid var(--borde);">
-          <span class="item-label">Nom espècie</span>
-          <input class="item-input" id="especie_text" type="text" placeholder="Nom científic o comú">
+          <span class="item-label" data-i18n="lbNomEspecie">Nom espècie</span>
+          <input class="item-input" id="especie_text" type="text" data-i18n-ph="especiePh" placeholder="Nom científic o comú">
         </div>
         <div class="toggle-row">
-          <div class="toggle-labels"><span class="toggle-main">Mantenir espècie</span><span class="toggle-sub">No reseteja en afegir</span></div>
+          <div class="toggle-labels">
+            <span class="toggle-main" data-i18n="lbMantenir">Mantenir espècie</span>
+            <span class="toggle-sub"  data-i18n="lbMantenirSub">No reseteja en afegir</span>
+          </div>
           <label class="toggle-switch"><input type="checkbox" id="mantenir_especie"><span class="toggle-slider"></span></label>
         </div>
         <div class="dn-wrapper">
-          <div class="dn-label">Diàmetre Normal DN (cm)</div>
+          <div class="dn-label" data-i18n="lbDN">Diàmetre Normal DN (cm)</div>
           <input id="dn_text" type="number" inputmode="decimal" class="dn-input"
-                 placeholder="Ex: 22.5" step="0.1" min="7.5" max="250" oninput="onDnInput()">
+                 data-i18n-ph="dnPh" placeholder="Ex: 22.5" step="0.1" min="7.5" max="250" oninput="onDnInput()">
         </div>
-        <div class="block-title" style="margin-top:10px;">Dreceres DN (cm)</div>
+        <div class="block-title" style="margin-top:10px;" data-i18n="sDreceres">Dreceres DN (cm)</div>
         <div class="dn-grid" id="dn-grid"></div>
         <div class="dn-wrapper" style="padding:8px 16px;">
-          <div class="dn-label">Alçada H (m) [Opcional ~3 arbres/parcel·la]</div>
+          <div class="dn-label" data-i18n="lbHArbre">Alçada H (m) [Opcional ~3 arbres/parcel·la]</div>
           <input id="h_arbre" type="number" inputmode="decimal" class="dn-input"
-                 style="font-size:20px;padding:10px;" placeholder="Deixar buit si no es mesura" step="0.5" min="0">
+                 style="font-size:20px;padding:10px;" data-i18n-ph="hArbPh" placeholder="Deixar buit si no es mesura" step="0.5" min="0">
         </div>
         <div class="list-item" style="border-top:1px solid var(--borde);">
-          <span class="item-label">Posició sociològica</span>
+          <span class="item-label" data-i18n="lbVigor">Posició sociològica</span>
           <select class="item-select" id="vigor">
             <option value="1">Dominant</option><option value="2">Codominant</option><option value="3">Intermedi</option>
             <option value="4">Suprimit</option><option value="5">Mort dret</option><option value="6">Mort caigut</option>
           </select>
         </div>
         <div class="list-item" style="border-top:1px solid var(--borde);">
-          <span class="item-label">Estat fitosanitari</span>
+          <span class="item-label" data-i18n="lbFitosan">Estat fitosanitari</span>
           <select class="item-select" id="fitosan">
             <option value="1">Sa</option><option value="2">Debilitat lleu</option><option value="3">Debilitat greu</option>
             <option value="4">Plaga-Malaltia</option><option value="5">Mort recent</option>
           </select>
         </div>
         <div class="list-item" style="border-top:1px solid var(--borde);align-items:flex-start;">
-          <span class="item-label">Obs. arbre</span>
-          <textarea class="obs-textarea" id="obs_arbre" placeholder="bifurcat, cavitat, dany..."></textarea>
+          <span class="item-label" data-i18n="lbObsArbre">Obs. arbre</span>
+          <textarea class="obs-textarea" id="obs_arbre" data-i18n-ph="obsArbPh" placeholder="bifurcat, cavitat, dany..."></textarea>
         </div>
         <button class="btn-acc btn-disabled" id="btn-add" onclick="afegirArbre()" style="margin-top:10px;" disabled>
           + Afegir arbre (DN invàlid o buit)
@@ -552,17 +554,24 @@ input[type=range]::-moz-range-thumb {
       <div class="card" style="overflow-x:auto;padding:0;">
         <p style="color:#9ca3af;font-style:italic;padding:14px 16px;font-size:13px;" id="taula-empty">Cap arbre afegit.</p>
         <table class="taula-arb" id="taula-arbres" style="display:none;">
-          <thead><tr><th>Espècie</th><th>DN(cm)</th><th>H(m)</th><th>Vigor</th><th>AB(m²)</th><th>Obs</th></tr></thead>
+          <thead><tr>
+            <th data-i18n="thEspecie">Espècie</th>
+            <th data-i18n="thDN">DN(cm)</th>
+            <th data-i18n="thH">H(m)</th>
+            <th data-i18n="thVigor">Vigor</th>
+            <th data-i18n="thAB">AB(m²)</th>
+            <th data-i18n="thObs">Obs</th>
+          </tr></thead>
           <tbody id="taula-body"></tbody>
         </table>
       </div>
       <button class="btn-acc btn-danger" id="btn-esborrar-darrer" style="display:none;" onclick="esborrarDarrer()">Eliminar darrer arbre</button>
-      <div class="credits"><p>🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
+      <div class="credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
     </div>
 
     <!-- TAB DESAR -->
     <div class="tab-panel" id="tab-desar">
-      <div class="block-title">Parcel·la actual</div>
+      <div class="block-title" data-i18n="sParcellaActual">Parcel·la actual</div>
       <div class="resum-guard" id="resum-actual"></div>
       <button class="btn-acc btn-disabled" id="btn-desar" onclick="desarParcella()" disabled>
         💾 Desar (cal Rodal + Codi + almenys 1 arbre)
@@ -573,43 +582,47 @@ input[type=range]::-moz-range-thumb {
       <div id="llista-desades"><div class="empty-list-msg">📋 Cap parcel·la desada encara.</div></div>
 
       <div style="margin:4px 16px 8px;">
-        <button class="btn-acc btn-outline" onclick="descarregarExcel()">↓ Descarregar Excel de totes les parcel·les</button>
+        <button class="btn-acc btn-outline" data-i18n="btnExcel" onclick="descarregarExcel()">↓ Descarregar Excel de totes les parcel·les</button>
       </div>
-      <button class="btn-acc btn-danger" id="btn-esborrar-tot" style="display:none;" onclick="esborrarTot()">
+      <button class="btn-acc btn-danger" id="btn-esborrar-tot" style="display:none;" data-i18n="btnEsborrarTot" onclick="esborrarTot()">
         ⚠️ Eliminar totes les parcel·les desades
       </button>
 
-      <div class="block-title">Compte i Sincronització</div>
+      <div class="block-title" data-i18n="sCompte">Compte i Sincronització</div>
       <div class="account-card">
         <div class="account-avatar" id="account-avatar">?</div>
         <div class="account-email"  id="account-email">Carregant...</div>
-        <button class="account-logout" onclick="doLogout()">Sortir</button>
+        <button class="account-logout" data-i18n="btnSortir" onclick="doLogout()">Sortir</button>
       </div>
       <div class="sync-bar">
         <div class="sync-dot" id="sync-dot"></div>
         <div class="sync-info">
-          <div class="sync-info-main" id="sync-status-text">Comprovant...</div>
+          <div class="sync-info-main" id="sync-status-text" data-i18n="syncComprovant">Comprovant...</div>
           <div class="sync-info-sub"  id="sync-status-sub">—</div>
         </div>
-        <button class="sync-btn-small" onclick="syncManual()">↑↓ Sincronitzar</button>
+        <button class="sync-btn-small" data-i18n="btnSync" onclick="syncManual()">↑↓ Sincronitzar</button>
       </div>
-      <div class="credits"><p>🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
+      <div class="credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
     </div>
 
   </div><!-- /tabs-content -->
 
   <nav class="tabbar">
     <button class="tab-btn active" id="tbtn-general" onclick="switchTab('general')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>General
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span data-i18n="tabGeneral">General</span>
     </button>
     <button class="tab-btn" id="tbtn-veg" onclick="switchTab('veg')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 7 3 2 3c0 5 3.5 9 8 10M12 12c0-5 5-9 10-9-1 5-4.5 9-10 10"/></svg>Vegetació
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 7 3 2 3c0 5 3.5 9 8 10M12 12c0-5 5-9 10-9-1 5-4.5 9-10 10"/></svg>
+      <span data-i18n="tabVeg">Vegetació</span>
     </button>
     <button class="tab-btn" id="tbtn-arbres" onclick="switchTab('arbres')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Arbres
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span data-i18n="tabArbres">Arbres</span>
     </button>
     <button class="tab-btn" id="tbtn-desar" onclick="switchTab('desar')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Desar
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span data-i18n="tabDesar">Desar</span>
     </button>
   </nav>
 
@@ -618,12 +631,12 @@ input[type=range]::-moz-range-thumb {
 
 <script>
 /* ============================================================
-   CREDENCIALS SUPABASE — IDÈNTIQUES AL HUB (index.html)
+   CREDENCIALS SUPABASE
    ============================================================ */
 const SUPABASE_URL      = 'https://hkkxgzdopvimgarmxdnj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM';
 
-/* ── Estat global (una sola declaració de cada variable) ── */
+/* ── Estat global ── */
 let sbClient     = null;
 let sbUser       = null;
 let lastSyncTime = null;
@@ -633,17 +646,323 @@ const state = {
   parcelles: [],
 };
 
-/* ── Constants ── */
+/* ── Constants mutables (s'actualitzen amb l'idioma) ── */
+const VIGOR_NOMS   = { '1':'Dominant','2':'Codominant','3':'Intermedi','4':'Suprimit','5':'Mort dret','6':'Mort caigut' };
+const FITOSAN_NOMS = { '1':'Sa','2':'Debilitat lleu','3':'Debilitat greu','4':'Plaga-Malaltia','5':'Mort recent' };
+
+/* ── Constants fixes ── */
 const DN_DRECERES = [10, 12.5, 15, 17.5, 20, 25, 30, 35, 40, 50];
-const VIGOR_NOMS  = { '1':'Dominant','2':'Codominant','3':'Intermedi','4':'Suprimit','5':'Mort dret','6':'Mort caigut' };
-const FITOSAN_NOMS= { '1':'Sa','2':'Debilitat lleu','3':'Debilitat greu','4':'Plaga-Malaltia','5':'Mort recent' };
-const ESPECIE_NOMS= {
+const ESPECIE_NOMS = {
   'Psy':'Pinus sylvestris','Pni':'Pinus nigra','Pha':'Pinus halepensis',
   'Ppi':'Pinus pinaster','Ppn':'Pinus pinea','Pun':'Pinus uncinata',
   'Qil':'Quercus ilex','Qpu':'Quercus pubescens','Qsu':'Quercus suber',
   'Qce':'Quercus cerrioides','Fsy':'Fagus sylvatica','Aal':'Abies alba',
   'Pop':'Populus sp.','Rob':'Robinia pseudoacacia','ALT':'Altres'
 };
+
+/* ============================================================
+   SISTEMA D'IDIOMES
+   ============================================================ */
+const T = {
+  ca: {
+    navBack: '← Hub', navTitle: '🌲 Inventari Forestal PTGMF',
+    tabGeneral: 'General', tabVeg: 'Vegetació', tabArbres: 'Arbres', tabDesar: 'Desar',
+    // General
+    sIdentificacio: 'Identificació', sTopografia: 'Topografia i sòl',
+    lbRodal: 'Rodal / UA (*)', lbCodi: 'Codi parcel·la (*)', lbFinca: 'Nom de la finca',
+    lbUtmX: 'UTM 31N X (m)', lbUtmY: 'UTM 31N Y (m)', lbRadi: 'Radi mostreig (m)',
+    lbAltitud: 'Altitud (m)', lbPendent: 'Pendent (%)', lbOrientacio: 'Orientació',
+    lbRoca: 'Tipus de roca', lbErosio: 'Erosió', lbPedregositat: 'Pedregositat',
+    rodalPh: 'Ex: Rodal 3', codiPh: 'Ex: P-001', fincaPh: 'Ex: Can Roca',
+    utmXPh: 'Ex: 358425', utmYPh: 'Ex: 4642130',
+    // Selects General
+    orientacioOpts: [['N','N'],['NE','NE'],['E','E'],['SE','SE'],['S','S'],['SO','SO'],['O','O'],['NO','NO'],['PL','Pla']],
+    rocaOpts: [['Calc','Calcària'],['Gran','Granit'],['Piss','Pissarres'],['Gres','Grès'],['Cong','Conglomerat'],['Marg','Marga'],['Alt','Altres']],
+    erosioOpts: [['0','Nul·la'],['1','Superficial'],['2','Xaragalls'],['3','Rases V'],['4','Rases U'],['5','Lliscament']],
+    pedregositatOpts: [['0','Nul·la <5%'],['1','Lleugera 5-25%'],['2','Moderada 25-50%'],['3','Alta >50%']],
+    // Vegetació
+    sEstratArbori: 'Estrat arbori', sEstratArbustiu: 'Estrat arbustiu',
+    sDistribucio: 'Distribució i estat', sObservacions: 'Observacions',
+    lbFccTotal: 'Fcc Total (%)', lbFccArbori: 'Fcc Arbori (%)', lbFccArbustiu: 'Fcc Arbustiu (%)',
+    lbHArbustiu: 'Alçada arbustiu (m)', lbDistEspacial: 'Distribució espacial',
+    lbRegeneracio: 'Regeneració natural', lbEstatSanitari: 'Estat sanitari',
+    obsVegPh: 'Espècies, danys, invasores...',
+    distOpts: [['1','Uniforme'],['2','En clapes'],['3','Individus aïllats']],
+    regOpts:  [['1','Abundant'],['2','Moderada'],['3','Escassa'],['4','Nul·la']],
+    estatOpts:[['1','Bo'],['2','Regular'],['3','Dolent']],
+    // Arbres
+    dashNLbl: 'N arbres', dashGLbl: 'G (m²/ha)', dashDgLbl: 'Dg (cm)', dashHmLbl: 'Hm (m)',
+    sAfegirArbre: 'Afegir arbre', lbEspecie: 'Espècie', lbNomEspecie: 'Nom espècie',
+    especiePh: 'Nom científic o comú', lbMantenir: 'Mantenir espècie',
+    lbMantenirSub: 'No reseteja en afegir', lbDN: 'Diàmetre Normal DN (cm)',
+    dnPh: 'Ex: 22.5', sDreceres: 'Dreceres DN (cm)',
+    lbHArbre: 'Alçada H (m) [Opcional ~3 arbres/parcel·la]',
+    hArbPh: 'Deixar buit si no es mesura',
+    lbVigor: 'Posició sociològica', lbFitosan: 'Estat fitosanitari',
+    lbObsArbre: 'Obs. arbre', obsArbPh: 'bifurcat, cavitat, dany...',
+    btnAfegirOk: '+ Afegir arbre', btnAfegirInv: '+ Afegir arbre (DN invàlid o buit)',
+    especieOpts: [
+      ['Psy','Pinus sylvestris'],['Pni','Pinus nigra'],['Pha','Pinus halepensis'],
+      ['Ppi','Pinus pinaster'],['Ppn','Pinus pinea'],['Pun','Pinus uncinata'],
+      ['Qil','Quercus ilex'],['Qpu','Quercus pubescens'],['Qsu','Quercus suber'],
+      ['Qce','Quercus cerrioides'],['Fsy','Fagus sylvatica'],['Aal','Abies alba'],
+      ['Pop','Populus sp.'],['Rob','Robinia pseudoacacia'],['ALT','Altres']
+    ],
+    vigorOpts: [['1','Dominant'],['2','Codominant'],['3','Intermedi'],['4','Suprimit'],['5','Mort dret'],['6','Mort caigut']],
+    vigorNoms: {'1':'Dominant','2':'Codominant','3':'Intermedi','4':'Suprimit','5':'Mort dret','6':'Mort caigut'},
+    fitosanOpts: [['1','Sa'],['2','Debilitat lleu'],['3','Debilitat greu'],['4','Plaga-Malaltia'],['5','Mort recent']],
+    fitosanNoms: {'1':'Sa','2':'Debilitat lleu','3':'Debilitat greu','4':'Plaga-Malaltia','5':'Mort recent'},
+    especieDef: 'Altres',
+    thEspecie:'Espècie',thDN:'DN(cm)',thH:'H(m)',thVigor:'Vigor',thAB:'AB(m²)',thObs:'Obs',
+    titolArbresPrefix: 'Arbres d\'aquesta parcel·la: ',
+    tableEmpty: 'Cap arbre afegit.', btnEsborrarDarrer: 'Eliminar darrer arbre',
+    // Desar
+    sParcellaActual: 'Parcel·la actual', sCompte: 'Compte i Sincronització',
+    resumRodal: 'Rodal / UA', resumCodi: 'Codi parcel·la', resumFinca: 'Finca',
+    resumArbres: 'Arbres introduïts', resumG: 'G actual (m²/ha)', resumBuit: '(buit - obligatori)',
+    btnDesarOk: '💾 Desar parcel·la i començar una de nova',
+    btnDesarInv: '💾 Desar (cal Rodal + Codi + almenys 1 arbre)',
+    msgDesar: 'Emplena les dades i afegeix almenys un arbre, després prem "Desar".',
+    titolDesadesPrefix: 'Parcel·les desades (', emptyDesades: '📋 Cap parcel·la desada encara.',
+    btnExcel: '↓ Descarregar Excel de totes les parcel·les',
+    btnEsborrarTot: '⚠️ Eliminar totes les parcel·les desades',
+    btnSync: '↑↓ Sincronitzar', btnSortir: 'Sortir',
+    cardDesada: '📅 Desada: ', cardEliminar: 'Eliminar',
+    statNLbl:'N arbres', statGLbl:'G (m²/ha)', statDgLbl:'Dg (cm)', statHmLbl:'Hm (m)',
+    // Sync
+    syncComprovant: 'Comprovant...', syncOk: 'Sincronitzat', syncUltima: 'Última: ',
+    syncSincronitzant: 'Sincronitzant amb el núvol...', syncUnMoment: 'Un moment...',
+    syncSincronitzant2: 'Sincronitzant...', syncConvidat: 'Mode Convidat',
+    syncLocalSaved: 'Dades guardades localment', syncError: 'Error de connexió',
+    syncTreballantLocal: 'Treballant localment', syncErrorSync: 'Error sincronització',
+    syncRetentarDesar: 'Es reintentarà en desar', syncErrSupabase: 'Error carregant Supabase',
+    sessionError: 'Error de sessió', sessionErrorSub: 'Treballant localment',
+    accountConvidat: 'Mode Convidat (sense compte)',
+    // Toasts
+    toastAfegitPre: '✅ Afegit: ', toastDN: ' DN=', toastH: ' H=',
+    toastDesadaPre: '✅ Parcel·la \'', toastDesadaSuf: '\' desada!',
+    toastEliminadaPre: 'Parcel·la \'', toastEliminadaSuf: '\' eliminada.',
+    toastEsborrat: 'Totes les parcel·les eliminades.',
+    toastExcel: '📥 Excel descarregat!', toastSyncOk: '☁️ Sincronitzat correctament',
+    toastSyncErr: '⚠️ Guardat en local. Error al núvol.',
+    toastLoginHub: 'Inicia sessió al Hub per sincronitzar',
+    confirmEsborrarTot: 'Eliminar TOTES les parcel·les desades?',
+    logoutConfirm: 'Tancar la sessió?',
+    syncAraMateix: 'ara mateix', syncFa: 'fa ', syncS: 's', syncMin: 'min',
+    credits: '🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
+  },
+  es: {
+    navBack: '← Hub', navTitle: '🌲 Inventario Forestal PTGMF',
+    tabGeneral: 'General', tabVeg: 'Vegetación', tabArbres: 'Árboles', tabDesar: 'Guardar',
+    sIdentificacio: 'Identificación', sTopografia: 'Topografía y suelo',
+    lbRodal: 'Rodal / UA (*)', lbCodi: 'Código parcela (*)', lbFinca: 'Nombre de la finca',
+    lbUtmX: 'UTM 31N X (m)', lbUtmY: 'UTM 31N Y (m)', lbRadi: 'Radio muestreo (m)',
+    lbAltitud: 'Altitud (m)', lbPendent: 'Pendiente (%)', lbOrientacio: 'Orientación',
+    lbRoca: 'Tipo de roca', lbErosio: 'Erosión', lbPedregositat: 'Pedregosidad',
+    rodalPh: 'Ej: Rodal 3', codiPh: 'Ej: P-001', fincaPh: 'Ej: Can Roca',
+    utmXPh: 'Ej: 358425', utmYPh: 'Ej: 4642130',
+    orientacioOpts: [['N','N'],['NE','NE'],['E','E'],['SE','SE'],['S','S'],['SO','SO'],['O','O'],['NO','NO'],['PL','Llano']],
+    rocaOpts: [['Calc','Caliza'],['Gran','Granito'],['Piss','Pizarras'],['Gres','Arenisca'],['Cong','Conglomerado'],['Marg','Marga'],['Alt','Otros']],
+    erosioOpts: [['0','Nula'],['1','Superficial'],['2','Cárcavas'],['3','Zanjas V'],['4','Zanjas U'],['5','Deslizamiento']],
+    pedregositatOpts: [['0','Nula <5%'],['1','Ligera 5-25%'],['2','Moderada 25-50%'],['3','Alta >50%']],
+    sEstratArbori: 'Estrato arbóreo', sEstratArbustiu: 'Estrato arbustivo',
+    sDistribucio: 'Distribución y estado', sObservacions: 'Observaciones',
+    lbFccTotal: 'Fcc Total (%)', lbFccArbori: 'Fcc Arbóreo (%)', lbFccArbustiu: 'Fcc Arbustivo (%)',
+    lbHArbustiu: 'Altura arbustivo (m)', lbDistEspacial: 'Distribución espacial',
+    lbRegeneracio: 'Regeneración natural', lbEstatSanitari: 'Estado sanitario',
+    obsVegPh: 'Especies, daños, invasoras...',
+    distOpts: [['1','Uniforme'],['2','En manchas'],['3','Individuos aislados']],
+    regOpts:  [['1','Abundante'],['2','Moderada'],['3','Escasa'],['4','Nula']],
+    estatOpts:[['1','Bueno'],['2','Regular'],['3','Malo']],
+    dashNLbl: 'N árboles', dashGLbl: 'G (m²/ha)', dashDgLbl: 'Dg (cm)', dashHmLbl: 'Hm (m)',
+    sAfegirArbre: 'Añadir árbol', lbEspecie: 'Especie', lbNomEspecie: 'Nombre especie',
+    especiePh: 'Nombre científico o común', lbMantenir: 'Mantener especie',
+    lbMantenirSub: 'No reinicia al añadir', lbDN: 'Diámetro Normal DN (cm)',
+    dnPh: 'Ej: 22.5', sDreceres: 'Accesos directos DN (cm)',
+    lbHArbre: 'Altura H (m) [Opcional ~3 árboles/parcela]',
+    hArbPh: 'Dejar vacío si no se mide',
+    lbVigor: 'Posición sociológica', lbFitosan: 'Estado fitosanitario',
+    lbObsArbre: 'Obs. árbol', obsArbPh: 'bifurcado, cavidad, daño...',
+    btnAfegirOk: '+ Añadir árbol', btnAfegirInv: '+ Añadir árbol (DN inválido o vacío)',
+    especieOpts: [
+      ['Psy','Pinus sylvestris'],['Pni','Pinus nigra'],['Pha','Pinus halepensis'],
+      ['Ppi','Pinus pinaster'],['Ppn','Pinus pinea'],['Pun','Pinus uncinata'],
+      ['Qil','Quercus ilex'],['Qpu','Quercus pubescens'],['Qsu','Quercus suber'],
+      ['Qce','Quercus cerrioides'],['Fsy','Fagus sylvatica'],['Aal','Abies alba'],
+      ['Pop','Populus sp.'],['Rob','Robinia pseudoacacia'],['ALT','Otros']
+    ],
+    vigorOpts: [['1','Dominante'],['2','Codominante'],['3','Intermedio'],['4','Suprimido'],['5','Muerto en pie'],['6','Muerto caído']],
+    vigorNoms: {'1':'Dominante','2':'Codominante','3':'Intermedio','4':'Suprimido','5':'Muerto en pie','6':'Muerto caído'},
+    fitosanOpts: [['1','Sano'],['2','Debilitado leve'],['3','Debilitado grave'],['4','Plaga-Enfermedad'],['5','Muerto reciente']],
+    fitosanNoms: {'1':'Sano','2':'Debilitado leve','3':'Debilitado grave','4':'Plaga-Enfermedad','5':'Muerto reciente'},
+    especieDef: 'Otros',
+    thEspecie:'Especie',thDN:'DN(cm)',thH:'H(m)',thVigor:'Vigor',thAB:'AB(m²)',thObs:'Obs',
+    titolArbresPrefix: 'Árboles de esta parcela: ',
+    tableEmpty: 'Ningún árbol añadido.', btnEsborrarDarrer: 'Eliminar último árbol',
+    sParcellaActual: 'Parcela actual', sCompte: 'Cuenta y Sincronización',
+    resumRodal: 'Rodal / UA', resumCodi: 'Código parcela', resumFinca: 'Finca',
+    resumArbres: 'Árboles introducidos', resumG: 'G actual (m²/ha)', resumBuit: '(vacío - obligatorio)',
+    btnDesarOk: '💾 Guardar parcela y comenzar una nueva',
+    btnDesarInv: '💾 Guardar (necesita Rodal + Código + al menos 1 árbol)',
+    msgDesar: 'Rellena los datos y añade al menos un árbol, luego pulsa "Guardar".',
+    titolDesadesPrefix: 'Parcelas guardadas (', emptyDesades: '📋 Ninguna parcela guardada todavía.',
+    btnExcel: '↓ Descargar Excel de todas las parcelas',
+    btnEsborrarTot: '⚠️ Eliminar todas las parcelas guardadas',
+    btnSync: '↑↓ Sincronizar', btnSortir: 'Salir',
+    cardDesada: '📅 Guardada: ', cardEliminar: 'Eliminar',
+    statNLbl:'N árboles', statGLbl:'G (m²/ha)', statDgLbl:'Dg (cm)', statHmLbl:'Hm (m)',
+    syncComprovant: 'Comprobando...', syncOk: 'Sincronizado', syncUltima: 'Última: ',
+    syncSincronitzant: 'Sincronizando con la nube...', syncUnMoment: 'Un momento...',
+    syncSincronitzant2: 'Sincronizando...', syncConvidat: 'Modo Invitado',
+    syncLocalSaved: 'Datos guardados localmente', syncError: 'Error de conexión',
+    syncTreballantLocal: 'Trabajando localmente', syncErrorSync: 'Error de sincronización',
+    syncRetentarDesar: 'Se reintentará al guardar', syncErrSupabase: 'Error cargando Supabase',
+    sessionError: 'Error de sesión', sessionErrorSub: 'Trabajando localmente',
+    accountConvidat: 'Modo Invitado (sin cuenta)',
+    toastAfegitPre: '✅ Añadido: ', toastDN: ' DN=', toastH: ' H=',
+    toastDesadaPre: '✅ Parcela \'', toastDesadaSuf: '\' guardada!',
+    toastEliminadaPre: 'Parcela \'', toastEliminadaSuf: '\' eliminada.',
+    toastEsborrat: 'Todas las parcelas eliminadas.',
+    toastExcel: '📥 ¡Excel descargado!', toastSyncOk: '☁️ Sincronizado correctamente',
+    toastSyncErr: '⚠️ Guardado en local. Error en la nube.',
+    toastLoginHub: 'Inicia sesión en el Hub para sincronizar',
+    confirmEsborrarTot: '¿Eliminar TODAS las parcelas guardadas?',
+    logoutConfirm: '¿Cerrar la sesión?',
+    syncAraMateix: 'ahora mismo', syncFa: 'hace ', syncS: 's', syncMin: 'min',
+    credits: '🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
+  },
+  en: {
+    navBack: '← Hub', navTitle: '🌲 Forest Inventory PTGMF',
+    tabGeneral: 'General', tabVeg: 'Vegetation', tabArbres: 'Trees', tabDesar: 'Save',
+    sIdentificacio: 'Identification', sTopografia: 'Topography & soil',
+    lbRodal: 'Stand / UA (*)', lbCodi: 'Plot code (*)', lbFinca: 'Estate name',
+    lbUtmX: 'UTM 31N X (m)', lbUtmY: 'UTM 31N Y (m)', lbRadi: 'Sampling radius (m)',
+    lbAltitud: 'Elevation (m)', lbPendent: 'Slope (%)', lbOrientacio: 'Aspect',
+    lbRoca: 'Rock type', lbErosio: 'Erosion', lbPedregositat: 'Stoniness',
+    rodalPh: 'E.g.: Stand 3', codiPh: 'E.g.: P-001', fincaPh: 'E.g.: Can Roca',
+    utmXPh: 'E.g.: 358425', utmYPh: 'E.g.: 4642130',
+    orientacioOpts: [['N','N'],['NE','NE'],['E','E'],['SE','SE'],['S','S'],['SO','SW'],['O','W'],['NO','NW'],['PL','Flat']],
+    rocaOpts: [['Calc','Limestone'],['Gran','Granite'],['Piss','Slate'],['Gres','Sandstone'],['Cong','Conglomerate'],['Marg','Marl'],['Alt','Other']],
+    erosioOpts: [['0','None'],['1','Superficial'],['2','Rills'],['3','V-gullies'],['4','U-gullies'],['5','Landslide']],
+    pedregositatOpts: [['0','None <5%'],['1','Slight 5-25%'],['2','Moderate 25-50%'],['3','High >50%']],
+    sEstratArbori: 'Tree layer', sEstratArbustiu: 'Shrub layer',
+    sDistribucio: 'Distribution & condition', sObservacions: 'Observations',
+    lbFccTotal: 'Total Fcc (%)', lbFccArbori: 'Tree Fcc (%)', lbFccArbustiu: 'Shrub Fcc (%)',
+    lbHArbustiu: 'Shrub height (m)', lbDistEspacial: 'Spatial distribution',
+    lbRegeneracio: 'Natural regeneration', lbEstatSanitari: 'Health status',
+    obsVegPh: 'Species, damage, invasives...',
+    distOpts: [['1','Uniform'],['2','In patches'],['3','Isolated individuals']],
+    regOpts:  [['1','Abundant'],['2','Moderate'],['3','Scarce'],['4','None']],
+    estatOpts:[['1','Good'],['2','Fair'],['3','Poor']],
+    dashNLbl: 'N trees', dashGLbl: 'G (m²/ha)', dashDgLbl: 'Dg (cm)', dashHmLbl: 'Hm (m)',
+    sAfegirArbre: 'Add tree', lbEspecie: 'Species', lbNomEspecie: 'Species name',
+    especiePh: 'Scientific or common name', lbMantenir: 'Keep species',
+    lbMantenirSub: 'Does not reset on add', lbDN: 'Normal diameter DN (cm)',
+    dnPh: 'E.g.: 22.5', sDreceres: 'DN shortcuts (cm)',
+    lbHArbre: 'Height H (m) [Optional ~3 trees/plot]',
+    hArbPh: 'Leave empty if not measured',
+    lbVigor: 'Sociological position', lbFitosan: 'Phytosanitary status',
+    lbObsArbre: 'Tree obs.', obsArbPh: 'forked, cavity, damage...',
+    btnAfegirOk: '+ Add tree', btnAfegirInv: '+ Add tree (invalid or empty DN)',
+    especieOpts: [
+      ['Psy','Pinus sylvestris'],['Pni','Pinus nigra'],['Pha','Pinus halepensis'],
+      ['Ppi','Pinus pinaster'],['Ppn','Pinus pinea'],['Pun','Pinus uncinata'],
+      ['Qil','Quercus ilex'],['Qpu','Quercus pubescens'],['Qsu','Quercus suber'],
+      ['Qce','Quercus cerrioides'],['Fsy','Fagus sylvatica'],['Aal','Abies alba'],
+      ['Pop','Populus sp.'],['Rob','Robinia pseudoacacia'],['ALT','Other']
+    ],
+    vigorOpts: [['1','Dominant'],['2','Co-dominant'],['3','Intermediate'],['4','Suppressed'],['5','Standing dead'],['6','Fallen dead']],
+    vigorNoms: {'1':'Dominant','2':'Co-dominant','3':'Intermediate','4':'Suppressed','5':'Standing dead','6':'Fallen dead'},
+    fitosanOpts: [['1','Healthy'],['2','Mildly weakened'],['3','Severely weakened'],['4','Pest-Disease'],['5','Recently dead']],
+    fitosanNoms: {'1':'Healthy','2':'Mildly weakened','3':'Severely weakened','4':'Pest-Disease','5':'Recently dead'},
+    especieDef: 'Other',
+    thEspecie:'Species',thDN:'DN(cm)',thH:'H(m)',thVigor:'Vigor',thAB:'AB(m²)',thObs:'Obs',
+    titolArbresPrefix: 'Trees in this plot: ',
+    tableEmpty: 'No trees added.', btnEsborrarDarrer: 'Remove last tree',
+    sParcellaActual: 'Current plot', sCompte: 'Account & Sync',
+    resumRodal: 'Stand / UA', resumCodi: 'Plot code', resumFinca: 'Estate',
+    resumArbres: 'Trees entered', resumG: 'Current G (m²/ha)', resumBuit: '(empty - required)',
+    btnDesarOk: '💾 Save plot and start a new one',
+    btnDesarInv: '💾 Save (need Stand + Code + at least 1 tree)',
+    msgDesar: 'Fill in the data and add at least one tree, then press "Save".',
+    titolDesadesPrefix: 'Saved plots (', emptyDesades: '📋 No plots saved yet.',
+    btnExcel: '↓ Download Excel of all plots',
+    btnEsborrarTot: '⚠️ Delete all saved plots',
+    btnSync: '↑↓ Sync', btnSortir: 'Sign out',
+    cardDesada: '📅 Saved: ', cardEliminar: 'Delete',
+    statNLbl:'N trees', statGLbl:'G (m²/ha)', statDgLbl:'Dg (cm)', statHmLbl:'Hm (m)',
+    syncComprovant: 'Checking...', syncOk: 'Synced', syncUltima: 'Last: ',
+    syncSincronitzant: 'Syncing with cloud...', syncUnMoment: 'Just a moment...',
+    syncSincronitzant2: 'Syncing...', syncConvidat: 'Guest mode',
+    syncLocalSaved: 'Data saved locally', syncError: 'Connection error',
+    syncTreballantLocal: 'Working locally', syncErrorSync: 'Sync error',
+    syncRetentarDesar: 'Will retry on save', syncErrSupabase: 'Error loading Supabase',
+    sessionError: 'Session error', sessionErrorSub: 'Working locally',
+    accountConvidat: 'Guest mode (no account)',
+    toastAfegitPre: '✅ Added: ', toastDN: ' DN=', toastH: ' H=',
+    toastDesadaPre: '✅ Plot \'', toastDesadaSuf: '\' saved!',
+    toastEliminadaPre: 'Plot \'', toastEliminadaSuf: '\' deleted.',
+    toastEsborrat: 'All plots deleted.',
+    toastExcel: '📥 Excel downloaded!', toastSyncOk: '☁️ Synced successfully',
+    toastSyncErr: '⚠️ Saved locally. Cloud error.',
+    toastLoginHub: 'Sign in to Hub to sync',
+    confirmEsborrarTot: 'Delete ALL saved plots?',
+    logoutConfirm: 'Sign out?',
+    syncAraMateix: 'just now', syncFa: '', syncS: 's ago', syncMin: 'min ago',
+    credits: '🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
+  }
+};
+
+function getLang() {
+  return localStorage.getItem('ptgmf_lang') || 'ca';
+}
+
+function applyLang(lang) {
+  const t = T[lang] || T.ca;
+  document.documentElement.lang = lang;
+
+  // Textos estàtics via data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  // Placeholders via data-i18n-ph
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // Reconstrueix tots els selects traduïbles
+  rebuildSelect('orientacio',     t.orientacioOpts);
+  rebuildSelect('roca',           t.rocaOpts);
+  rebuildSelect('erosio',         t.erosioOpts);
+  rebuildSelect('pedregositat',   t.pedregositatOpts);
+  rebuildSelect('dist_espacial',  t.distOpts);
+  rebuildSelect('regeneracio',    t.regOpts);
+  rebuildSelect('estat_sanitari', t.estatOpts);
+  rebuildSelect('vigor',          t.vigorOpts);
+  rebuildSelect('fitosan',        t.fitosanOpts);
+  rebuildSelect('especie',        t.especieOpts);
+
+  // Actualitza els mapes de noms (per a arbres nous que s'afegeixin)
+  Object.assign(VIGOR_NOMS,   t.vigorNoms);
+  Object.assign(FITOSAN_NOMS, t.fitosanNoms);
+
+  // Actualitza el botó d'afegir arbre (depèn del valor DN actual)
+  onDnInput();
+
+  // Re-renderitza tot el contingut dinàmic
+  renderAll();
+}
+
+function rebuildSelect(id, opts) {
+  const el = document.getElementById(id);
+  if (!el || !opts) return;
+  const saved = el.value;
+  el.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+  el.value = saved;
+  if (!el.value && opts.length > 0) el.value = opts[0][0];
+}
 
 /* ============================================================
    INIT
@@ -671,49 +990,46 @@ document.addEventListener('DOMContentLoaded', function () {
     grid.appendChild(btn);
   });
 
-  /* 3. Pintada inicial (local) */
-  renderAll();
+  /* 3. Aplica idioma (crida renderAll internament) */
+  applyLang(getLang());
 
-  /* 4. Supabase — la sessió ja existeix al localStorage gràcies al hub */
+  /* 4. Supabase */
   initSupabase();
 });
 
 /* ============================================================
    SUPABASE INIT
-   La clau és que supabase-js v2 desa la sessió automàticament
-   al localStorage. Amb les mateixes credencials que el hub,
-   createClient() la troba i getSession() la retorna de seguida.
    ============================================================ */
 function initSupabase() {
+  const t = T[getLang()] || T.ca;
   try {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     console.error('Error init Supabase:', e);
-    setSyncStatus('error', 'Error carregant Supabase', '');
+    setSyncStatus('error', t.syncErrSupabase, '');
     return;
   }
 
-  /* Escoltem canvis (login/logout des d'una altra pestanya) */
   sbClient.auth.onAuthStateChange((event, session) => {
     sbUser = session ? session.user : null;
     updateAccountUI();
   });
 
-  /* Llegim la sessió existent (la que va desar el hub) */
   sbClient.auth.getSession().then(({ data: { session }, error }) => {
     if (error) {
       console.error('getSession error:', error);
-      setSyncStatus('error', 'Error de sessió', 'Treballant localment');
+      const t2 = T[getLang()] || T.ca;
+      setSyncStatus('error', t2.sessionError, t2.sessionErrorSub);
       return;
     }
     sbUser = session ? session.user : null;
     updateAccountUI();
 
     if (sbUser) {
-      loadFromSupabase();      /* usuari registrat → sincronitzem */
+      loadFromSupabase();
     } else {
-      /* convidat o sense sessió → només local */
-      setSyncStatus('pending', 'Mode Convidat', 'Dades guardades localment');
+      const t2 = T[getLang()] || T.ca;
+      setSyncStatus('pending', t2.syncConvidat, t2.syncLocalSaved);
     }
   });
 }
@@ -725,14 +1041,15 @@ function setSyncStatus(status, main, sub) {
   const dot  = document.getElementById('sync-dot');
   const txt  = document.getElementById('sync-status-text');
   const stxt = document.getElementById('sync-status-sub');
-  if (dot)  dot.className     = 'sync-dot ' + status;
-  if (txt)  txt.textContent   = main;
-  if (stxt) stxt.textContent  = sub || '—';
+  if (dot)  dot.className    = 'sync-dot ' + status;
+  if (txt)  txt.textContent  = main;
+  if (stxt) stxt.textContent = sub || '—';
 }
 
 async function loadFromSupabase() {
   if (!sbUser) return;
-  setSyncStatus('syncing', 'Sincronitzant amb el núvol...', 'Un moment...');
+  const t = T[getLang()] || T.ca;
+  setSyncStatus('syncing', t.syncSincronitzant, t.syncUnMoment);
 
   try {
     const { data, error } = await sbClient
@@ -746,32 +1063,32 @@ async function loadFromSupabase() {
       state.parcelles = data[0].parcelles;
       try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
       lastSyncTime = data[0].updated_at;
-      setSyncStatus('ok', 'Sincronitzat', 'Última: ' + formatSyncTime(lastSyncTime));
+      setSyncStatus('ok', t.syncOk, t.syncUltima + formatSyncTime(lastSyncTime));
     } else {
-      /* El núvol està buit: primera vegada, pugem les dades locals */
       await syncToSupabase(true);
     }
   } catch (e) {
     console.error('loadFromSupabase error:', e);
-    setSyncStatus('error', 'Error de connexió', 'Treballant localment');
+    const t2 = T[getLang()] || T.ca;
+    setSyncStatus('error', t2.syncError, t2.syncTreballantLocal);
   }
 
   renderAll();
 }
 
 async function syncToSupabase(silent = false) {
+  const t = T[getLang()] || T.ca;
   if (!sbUser) {
-    setSyncStatus('pending', 'Mode Convidat', 'Dades guardades localment');
+    setSyncStatus('pending', t.syncConvidat, t.syncLocalSaved);
     return;
   }
-  if (!silent) setSyncStatus('syncing', 'Sincronitzant...', '');
+  if (!silent) setSyncStatus('syncing', t.syncSincronitzant2, '');
 
   try {
     try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
 
     const ara = new Date().toISOString();
 
-    /* Comprovem si ja existeix una fila per a aquest usuari */
     const { data: existing, error: checkErr } = await sbClient
       .from('user_data')
       .select('user_id')
@@ -791,49 +1108,55 @@ async function syncToSupabase(silent = false) {
     if (result.error) throw result.error;
 
     lastSyncTime = ara;
-    setSyncStatus('ok', 'Sincronitzat', 'Última: ' + formatSyncTime(lastSyncTime));
-    if (!silent) showToast('☁️ Sincronitzat correctament');
+    setSyncStatus('ok', t.syncOk, t.syncUltima + formatSyncTime(lastSyncTime));
+    if (!silent) showToast(t.toastSyncOk);
 
   } catch (e) {
     console.error('syncToSupabase error:', e);
-    setSyncStatus('error', 'Error sincronització', 'Es reintentarà en desar');
-    if (!silent) showToast('⚠️ Guardat en local. Error al núvol.');
+    const t2 = T[getLang()] || T.ca;
+    setSyncStatus('error', t2.syncErrorSync, t2.syncRetentarDesar);
+    if (!silent) showToast(t2.toastSyncErr);
   }
 }
 
 async function syncManual() {
-  if (!sbUser) { showToast('Inicia sessió al Hub per sincronitzar'); return; }
+  const t = T[getLang()] || T.ca;
+  if (!sbUser) { showToast(t.toastLoginHub); return; }
   await loadFromSupabase();
 }
 
 function guardarLocalStorage() {
+  const t = T[getLang()] || T.ca;
   try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
   if (sbUser) {
     syncToSupabase(true);
   } else {
-    setSyncStatus('pending', 'Mode Convidat', 'Dades guardades localment');
+    setSyncStatus('pending', t.syncConvidat, t.syncLocalSaved);
   }
 }
 
 function formatSyncTime(iso) {
+  const t = T[getLang()] || T.ca;
   if (!iso) return '—';
   const d    = new Date(iso);
   const diff = Math.floor((new Date() - d) / 1000);
-  if (diff < 10)   return 'ara mateix';
-  if (diff < 60)   return `fa ${diff}s`;
-  if (diff < 3600) return `fa ${Math.floor(diff / 60)}min`;
-  return d.toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' });
+  if (diff < 10)   return t.syncAraMateix;
+  if (diff < 60)   return t.syncFa + diff + t.syncS;
+  if (diff < 3600) return t.syncFa + Math.floor(diff / 60) + t.syncMin;
+  const locales = { ca: 'ca-ES', es: 'es-ES', en: 'en-GB' };
+  return d.toLocaleTimeString(locales[getLang()] || 'ca-ES', { hour: '2-digit', minute: '2-digit' });
 }
 
 /* ============================================================
    AUTH UI
    ============================================================ */
 function updateAccountUI() {
+  const t      = T[getLang()] || T.ca;
   const avatar = document.getElementById('account-avatar');
   const email  = document.getElementById('account-email');
   if (!sbUser) {
     if (avatar) avatar.textContent = '👤';
-    if (email)  email.textContent  = 'Mode Convidat (sense compte)';
+    if (email)  email.textContent  = t.accountConvidat;
     return;
   }
   const em = sbUser.email || '';
@@ -842,7 +1165,8 @@ function updateAccountUI() {
 }
 
 async function doLogout() {
-  if (!confirm('Tancar la sessió?')) return;
+  const t = T[getLang()] || T.ca;
+  if (!confirm(t.logoutConfirm)) return;
   await syncToSupabase(true);
   await sbClient.auth.signOut();
   window.location.href = 'index.html';
@@ -903,17 +1227,20 @@ function renderDashboard() {
 }
 
 function renderTaulaArbres() {
+  const t     = T[getLang()] || T.ca;
   const tbody = document.getElementById('taula-body');
   const taula = document.getElementById('taula-arbres');
   const empty = document.getElementById('taula-empty');
   const btn   = document.getElementById('btn-esborrar-darrer');
   const titol = document.getElementById('titol-arbres');
-  titol.textContent = `Arbres d'aquesta parcel·la: ${state.arbres.length}`;
+  titol.textContent = t.titolArbresPrefix + state.arbres.length;
   if (state.arbres.length === 0) {
-    taula.style.display = 'none'; empty.style.display = 'block'; btn.style.display = 'none';
+    taula.style.display = 'none'; empty.style.display = 'block';
+    empty.textContent = t.tableEmpty; btn.style.display = 'none';
     tbody.innerHTML = ''; return;
   }
   empty.style.display = 'none'; taula.style.display = 'table'; btn.style.display = 'block';
+  btn.textContent = t.btnEsborrarDarrer;
   tbody.innerHTML = state.arbres.map(a => `<tr>
     <td>${a.Especie}</td><td>${a.DN_cm}</td>
     <td>${a.H_m !== null && a.H_m !== undefined ? a.H_m : '-'}</td>
@@ -922,6 +1249,7 @@ function renderTaulaArbres() {
 }
 
 function renderResum() {
+  const t    = T[getLang()] || T.ca;
   const ua   = document.getElementById('ua').value.trim();
   const codi = document.getElementById('codi').value.trim();
   const finca= document.getElementById('finca').value.trim();
@@ -929,41 +1257,40 @@ function renderResum() {
   const d    = calcDas(state.arbres, document.getElementById('radi').value || 10);
 
   let html = `
-    <div class="resum-row"><span class="resum-key">Rodal / UA</span>
-      <span class="resum-val ${ua ? 'ok' : 'warn'}">${ua || '(buit - obligatori)'}</span></div>
-    <div class="resum-row"><span class="resum-key">Codi parcel·la</span>
-      <span class="resum-val ${codi ? 'ok' : 'warn'}">${codi || '(buit - obligatori)'}</span></div>`;
-  if (finca) html += `<div class="resum-row"><span class="resum-key">Finca</span><span class="resum-val">${finca}</span></div>`;
-  html += `<div class="resum-row"><span class="resum-key">Arbres introduïts</span>
+    <div class="resum-row"><span class="resum-key">${t.resumRodal}</span>
+      <span class="resum-val ${ua ? 'ok' : 'warn'}">${ua || t.resumBuit}</span></div>
+    <div class="resum-row"><span class="resum-key">${t.resumCodi}</span>
+      <span class="resum-val ${codi ? 'ok' : 'warn'}">${codi || t.resumBuit}</span></div>`;
+  if (finca) html += `<div class="resum-row"><span class="resum-key">${t.resumFinca}</span><span class="resum-val">${finca}</span></div>`;
+  html += `<div class="resum-row"><span class="resum-key">${t.resumArbres}</span>
     <span class="resum-val ${n > 0 ? 'ok' : 'warn'}">${n}</span></div>`;
-  if (n > 0) html += `<div class="resum-row"><span class="resum-key">G actual (m²/ha)</span>
+  if (n > 0) html += `<div class="resum-row"><span class="resum-key">${t.resumG}</span>
     <span class="resum-val">${d.G.toFixed(2)}</span></div>`;
 
   document.getElementById('resum-actual').innerHTML = html;
 
   const potDesar = ua && codi && n > 0;
   const btn = document.getElementById('btn-desar');
-  btn.textContent = potDesar
-    ? '💾 Desar parcel·la i començar una de nova'
-    : '💾 Desar (cal Rodal + Codi + almenys 1 arbre)';
-  btn.className = 'btn-acc ' + (potDesar ? 'btn-add' : 'btn-disabled');
-  btn.disabled  = !potDesar;
+  btn.textContent = potDesar ? t.btnDesarOk : t.btnDesarInv;
+  btn.className   = 'btn-acc ' + (potDesar ? 'btn-add' : 'btn-disabled');
+  btn.disabled    = !potDesar;
 
   const msg = document.getElementById('msg-desar');
   if (state.parcelles.length === 0) {
     msg.style.display = 'block';
-    msg.textContent   = 'Emplena les dades i afegeix almenys un arbre, després prem "Desar".';
+    msg.textContent   = t.msgDesar;
   } else {
     msg.style.display = 'none';
   }
 }
 
 function renderDesades() {
+  const t = T[getLang()] || T.ca;
   const n = state.parcelles.length;
-  document.getElementById('titol-desades').textContent = `Parcel·les desades (${n})`;
+  document.getElementById('titol-desades').textContent = t.titolDesadesPrefix + n + ')';
   document.getElementById('btn-esborrar-tot').style.display = n > 0 ? 'block' : 'none';
   const cont = document.getElementById('llista-desades');
-  if (n === 0) { cont.innerHTML = '<div class="empty-list-msg">📋 Cap parcel·la desada encara.</div>'; return; }
+  if (n === 0) { cont.innerHTML = `<div class="empty-list-msg">${t.emptyDesades}</div>`; return; }
   cont.innerHTML = [...state.parcelles].reverse().map((p, iRev) => {
     const idx = state.parcelles.length - 1 - iRev;
     const d   = calcDas(p.arbres || [], p.radi || 10);
@@ -973,15 +1300,15 @@ function renderDesades() {
           <div class="parc-title">${esc(p.ua)} — ${esc(p.codi)}</div>
           ${p.finca ? `<div class="parc-sub">🏡 ${esc(p.finca)}</div>` : ''}
         </div>
-        <button class="btn-del-parc" onclick="eliminarParcella(${idx})">Eliminar</button>
+        <button class="btn-del-parc" onclick="eliminarParcella(${idx})">${t.cardEliminar}</button>
       </div>
       <div class="parc-stats">
-        <div class="parc-stat"><div class="parc-stat-val">${d.N}</div><div class="parc-stat-lbl">N arbres</div></div>
-        <div class="parc-stat"><div class="parc-stat-val">${d.G.toFixed(2)}</div><div class="parc-stat-lbl">G (m²/ha)</div></div>
-        <div class="parc-stat"><div class="parc-stat-val">${d.Dg !== null ? d.Dg.toFixed(1) : '-'}</div><div class="parc-stat-lbl">Dg (cm)</div></div>
-        <div class="parc-stat"><div class="parc-stat-val">${d.Hm !== null ? d.Hm.toFixed(1) : '-'}</div><div class="parc-stat-lbl">Hm (m)</div></div>
+        <div class="parc-stat"><div class="parc-stat-val">${d.N}</div><div class="parc-stat-lbl">${t.statNLbl}</div></div>
+        <div class="parc-stat"><div class="parc-stat-val">${d.G.toFixed(2)}</div><div class="parc-stat-lbl">${t.statGLbl}</div></div>
+        <div class="parc-stat"><div class="parc-stat-val">${d.Dg !== null ? d.Dg.toFixed(1) : '-'}</div><div class="parc-stat-lbl">${t.statDgLbl}</div></div>
+        <div class="parc-stat"><div class="parc-stat-val">${d.Hm !== null ? d.Hm.toFixed(1) : '-'}</div><div class="parc-stat-lbl">${t.statHmLbl}</div></div>
       </div>
-      <div class="parc-ts">📅 Desada: ${esc(p.timestamp)}</div>
+      <div class="parc-ts">${t.cardDesada}${esc(p.timestamp)}</div>
     </div>`;
   }).join('');
 }
@@ -996,12 +1323,14 @@ function esc(s) {
    VALIDACIÓ DN
    ============================================================ */
 function onDnInput() {
+  const t   = T[getLang()] || T.ca;
   const el  = document.getElementById('dn_text');
   const btn = document.getElementById('btn-add');
-  const v   = parseFloat(el.value);
-  const ok  = !isNaN(v) && v >= 7.5 && v <= 250;
+  if (!el || !btn) return;
+  const v  = parseFloat(el.value);
+  const ok = !isNaN(v) && v >= 7.5 && v <= 250;
   el.classList.toggle('invalid', el.value !== '' && !ok);
-  btn.textContent = ok ? '+ Afegir arbre' : '+ Afegir arbre (DN invàlid o buit)';
+  btn.textContent = ok ? t.btnAfegirOk : t.btnAfegirInv;
   btn.className   = 'btn-acc ' + (ok ? 'btn-add' : 'btn-disabled');
   btn.disabled    = !ok;
 }
@@ -1015,6 +1344,7 @@ function onEspecieChange() {
    AFEGIR / ESBORRAR ARBRE
    ============================================================ */
 function afegirArbre() {
+  const t    = T[getLang()] || T.ca;
   const dnEl = document.getElementById('dn_text');
   const dn   = parseFloat(dnEl.value);
   if (isNaN(dn) || dn < 7.5 || dn > 250) return;
@@ -1024,7 +1354,7 @@ function afegirArbre() {
 
   const espVal = document.getElementById('especie').value;
   let espFinal = espVal === 'ALT'
-    ? (document.getElementById('especie_text').value.trim() || 'Altres')
+    ? (document.getElementById('especie_text').value.trim() || t.especieDef)
     : (ESPECIE_NOMS[espVal] || espVal);
 
   state.arbres.push({
@@ -1047,13 +1377,13 @@ function afegirArbre() {
   document.getElementById('obs_arbre').value = '';
 
   const btn = document.getElementById('btn-add');
-  btn.textContent = '+ Afegir arbre (DN invàlid o buit)';
+  btn.textContent = t.btnAfegirInv;
   btn.className   = 'btn-acc btn-disabled';
   btn.disabled    = true;
 
   renderTaulaArbres();
   renderDashboard();
-  showToast(`✅ Afegit: ${espFinal} DN=${dn}cm${hFin !== null ? ' H='+hFin+'m' : ''}`);
+  showToast(`${t.toastAfegitPre}${espFinal}${t.toastDN}${dn}cm${hFin !== null ? t.toastH + hFin + 'm' : ''}`);
 }
 
 function esborrarDarrer() {
@@ -1068,6 +1398,7 @@ function esborrarDarrer() {
    DESAR PARCEL·LA
    ============================================================ */
 function desarParcella() {
+  const t    = T[getLang()] || T.ca;
   const ua   = document.getElementById('ua').value.trim();
   const codi = document.getElementById('codi').value.trim();
   if (!ua || !codi || state.arbres.length === 0) return;
@@ -1103,7 +1434,7 @@ function desarParcella() {
   guardarLocalStorage();
   resetFormulari();
   renderAll();
-  showToast(`✅ Parcel·la '${codi}' desada!`, 3500);
+  showToast(`${t.toastDesadaPre}${codi}${t.toastDesadaSuf}`, 3500);
 }
 
 function resetFormulari() {
@@ -1131,25 +1462,28 @@ function resetFormulari() {
 }
 
 function eliminarParcella(idx) {
+  const t   = T[getLang()] || T.ca;
   const nom = state.parcelles[idx] ? state.parcelles[idx].codi : '';
   state.parcelles.splice(idx, 1);
   guardarLocalStorage();
   renderDesades(); renderResum();
-  showToast(`Parcel·la '${nom}' eliminada.`);
+  showToast(`${t.toastEliminadaPre}${nom}${t.toastEliminadaSuf}`);
 }
 
 function esborrarTot() {
-  if (!confirm('Eliminar TOTES les parcel·les desades?')) return;
+  const t = T[getLang()] || T.ca;
+  if (!confirm(t.confirmEsborrarTot)) return;
   state.parcelles = [];
   guardarLocalStorage();
   renderDesades(); renderResum();
-  showToast('Totes les parcel·les eliminades.');
+  showToast(t.toastEsborrat);
 }
 
 /* ============================================================
    EXCEL
    ============================================================ */
 function descarregarExcel() {
+  const t  = T[getLang()] || T.ca;
   const pd = state.parcelles;
   const capParc = ['ID_Parcella','Rodal_UA','Finca','UTM_X','UTM_Y','Radi_m',
     'Altitud_m','Pendent_pct','Orientacio','Roca','Erosio','Pedregositat',
@@ -1190,7 +1524,7 @@ function descarregarExcel() {
   const avui = new Date();
   const d = `${avui.getFullYear()}${String(avui.getMonth()+1).padStart(2,'0')}${String(avui.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb, `${finca0}_${d}.xlsx`);
-  showToast('📥 Excel descarregat!');
+  showToast(t.toastExcel);
 }
 
 /* ============================================================
@@ -1198,10 +1532,10 @@ function descarregarExcel() {
    ============================================================ */
 let _toastTimer = null;
 function showToast(msg, ms = 2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  const t2 = document.getElementById('toast');
+  t2.textContent = msg; t2.classList.add('show');
   if (_toastTimer) clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+  _toastTimer = setTimeout(() => t2.classList.remove('show'), ms);
 }
 
 /* ============================================================
@@ -1215,8 +1549,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-ENDOFFILE
-echo "Done"
-Output
-
-Done
