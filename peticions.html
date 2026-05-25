@@ -9,7 +9,7 @@
 <title>PTGMF · Proposar Millora</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --v-fosc:  #1a3d2b;
@@ -162,15 +162,12 @@ input, select, textarea, button { font-family: var(--ff-s); -webkit-appearance: 
 <div class="toast" id="toast"></div>
 
 <script>
-// mateixes credencials que el teu index.html
 const SUPABASE_URL      = 'https://hkkxgzdopvimgarmxdnj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM';
-
-// ⚠️ ESCRIU AQUÍ EL TEU CORREU ELECTRÒNIC PER REBRE LES NOTIFICACIONS DIRECTES
-const EL_TEU_CORREU = 'msi6@alumnes.udl.cat'; 
+const EL_TEU_CORREU     = 'msi6@alumnes.udl.cat'; 
 
 let sbClient = null;
-let sbUser   = null;
+let localUserData = null;
 
 const LANGS       = ['ca', 'es', 'en'];
 const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
@@ -178,14 +175,14 @@ const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
 const T = {
   ca: {
     btnBack: '← Hub', pageTitle: 'Proposar Millora',
-    warnTitle: 'Accés restringit', warnDesc: 'Has d'iniciar sessió amb un compte registrat per poder enviar propostes de millora.',
+    warnTitle: 'Accés restringit', warnDesc: 'Has d\'iniciar sessió amb un compte registrat per poder enviar propostes de millora.',
     labelType: 'Tipus de proposta', labelDesc: 'Descripció detallada',
-    placeholderDesc: 'Explica detalladament la teva idea o l'error detectat...',
-    optBug: 'Error a l'aplicació (Bug)', optFeature: 'Nova funcionalitat / Idea',
+    placeholderDesc: 'Explica detalladament la teva idea o l\'error detectat...',
+    optBug: 'Error a l\'aplicació (Bug)', optFeature: 'Nova funcionalitat / Idea',
     optDesign: 'Disseny o Interfície', optOther: 'Altres suggeriments',
     btnSend: 'Enviar proposta 💡', btnSending: 'Enviant...',
-    successMsg: '🚀 Proposta enviada correctament! Gràcies pel teu feedback.',
-    errorMsg: '❌ Error en enviar la proposta. Torna-ho a provar.'
+    successMsg: '🚀 Proposta enviada correctament! Gràcies.',
+    errorMsg: '❌ Error en enviar la proposta.'
   },
   es: {
     btnBack: '← Hub', pageTitle: 'Proponer Mejora',
@@ -195,8 +192,8 @@ const T = {
     optBug: 'Error en la aplicación (Bug)', optFeature: 'Nueva funcionalidad / Idea',
     optDesign: 'Diseño o Interfaz', optOther: 'Otros sugerencias',
     btnSend: 'Enviar propuesta 💡', btnSending: 'Enviando...',
-    successMsg: '🚀 ¡Propuesta enviada correctamente! Gracias por tu feedback.',
-    errorMsg: '❌ Error al enviar la propuesta. Inténtalo de nuevo.'
+    successMsg: '🚀 ¡Propuesta enviada correctamente! Gracias.',
+    errorMsg: '❌ Error al enviar la propuesta.'
   },
   en: {
     btnBack: '← Hub', pageTitle: 'Suggest Improvement',
@@ -206,8 +203,8 @@ const T = {
     optBug: 'Application Error (Bug)', optFeature: 'New feature / Idea',
     optDesign: 'Design or Interface', optOther: 'Other suggestions',
     btnSend: 'Send proposal 💡', btnSending: 'Sending...',
-    successMsg: '🚀 Proposal sent successfully! Thanks for your feedback.',
-    errorMsg: '❌ Error sending proposal. Please try again.'
+    successMsg: '🚀 Proposal sent successfully! Thanks.',
+    errorMsg: '❌ Error sending proposal.'
   }
 };
 
@@ -238,28 +235,40 @@ document.addEventListener('DOMContentLoaded', () => {
   checkUserSession();
 });
 
-async function checkUserSession() {
-  // Comprovació ràpida per LocalStorage per evitar parpelleigs
-  const localMode = JSON.parse(localStorage.getItem('ptgmf_app_mode') || '{}');
-  
-  try {
-    if (typeof window.supabase !== 'undefined') {
-      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const { data: { session } } = await sbClient.auth.getSession();
-      sbUser = session ? session.user : null;
-    }
-  } catch(e) { console.error('Error al connectar amb Supabase:', e); }
+function checkUserSession() {
+  const localMode = localStorage.getItem('ptgmf_app_mode');
+  console.log("Dades de sessió trobades al LocalStorage:", localMode);
 
-  // Determinar si està validat reals o és convidat
-  const isGuest = (!sbUser && localMode.mode === 'guest') || (!sbUser && !localMode.userId);
-
-  if (isGuest) {
-    // Bloqueja el formulari i mostra advertència
-    document.getElementById('guest-warning').style.display = 'flex';
-    document.getElementById('suggest-type').disabled = true;
-    document.getElementById('suggest-desc').disabled = true;
-    document.getElementById('btn-submit').disabled = true;
+  if (!localMode) {
+    blockForm();
+    return;
   }
+  
+  localUserData = JSON.parse(localMode);
+  
+  if (localUserData.mode !== 'logged_in' || !localUserData.userId) {
+    console.log("Usuari en mode Convidat o no validat. Bloquejant formulari.");
+    blockForm();
+  } else {
+    console.log("Usuari autenticat correctament:", localUserData.email);
+    try {
+      if (typeof window.supabase !== 'undefined') {
+        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Client Supabase vinculat correctament.");
+      } else {
+        console.error("La llibreria de Supabase no s'ha carregat globalment.");
+      }
+    } catch(e) { 
+      console.error('Error inicialitzant Supabase:', e); 
+    }
+  }
+}
+
+function blockForm() {
+  document.getElementById('guest-warning').style.display = 'flex';
+  document.getElementById('suggest-type').disabled = true;
+  document.getElementById('suggest-desc').disabled = true;
+  document.getElementById('btn-submit').disabled = true;
 }
 
 async function doSubmit(e) {
@@ -276,47 +285,64 @@ async function doSubmit(e) {
   btn.textContent = t.btnSending;
 
   let successSupabase = false;
+  let successEmail = false;
 
-  // 1. ENVIAMENT A SUPABASE
-  if (sbClient && sbUser) {
+  // 1. INTENT D'ENVIAMENT A SUPABASE
+  if (sbClient && localUserData && localUserData.userId) {
     try {
-      const { error } = await sbClient.from('peticions').insert([{
-        user_id: sbUser.id,
-        user_email: sbUser.email,
+      console.log("Enviant dades a la taula 'peticions' de Supabase...");
+      const { data, error } = await sbClient.from('peticions').insert([{
+        user_id: localUserData.userId,
+        user_email: localUserData.email,
         tipus: tipus,
         descripcio: descripcio
       }]);
-      if (!error) successSupabase = true;
+      
+      if (error) {
+        console.error('Error de resposta a Supabase:', error.message, error);
+      } else {
+        console.log('✅ Guardat correctament a Supabase!');
+        successSupabase = true;
+      }
     } catch(err) {
-      console.error('Error enviant a Supabase:', err);
+      console.error('Excepció en connectar amb Supabase:', err);
     }
+  } else {
+    console.warn("Supabase saltat: falta el client o dades de l'usuari.");
   }
 
-  // 2. ENVIAMENT DUAL PER EMAIL (Via FormSubmit AJAX)
-  if (EL_TEU_CORREU && EL_TEU_CORREU !== 'msi6@alumnes.udl.cat') {
-    try {
-      await fetch(`https://formsubmit.co/ajax/${EL_TEU_CORREU}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          _subject: `🌳 Nova Proposta PTGMF Hub: [${tipus}]`,
-          Usuari: sbUser ? sbUser.email : 'Convidat',
-          Tipus: tipus,
-          Descripcio: descripcio
-        })
-      });
-    } catch(err) {
-      console.error('Error enviant email de notificació:', err);
+  // 2. INTENT D'ENVIAMENT DE CORREU (FormSubmit)
+  try {
+    console.log("Enviant notificació de correu a FormSubmit per a:", EL_TEU_CORREU);
+    const mailResponse = await fetch(`https://formsubmit.co/ajax/${EL_TEU_CORREU}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: `🌳 Nova Proposta PTGMF Hub: [${tipus}]`,
+        Usuari: localUserData ? localUserData.email : 'Desconegut',
+        Tipus: tipus,
+        Descripcio: descripcio
+      })
+    });
+    
+    const mailData = await mailResponse.json();
+    console.log('Resposta de FormSubmit:', mailData);
+    if (mailResponse.ok) {
+      console.log('✅ Correu processat per FormSubmit.');
+      successEmail = true;
     }
+  } catch(err) {
+    console.error('Error de xarxa en enviar el correu:', err);
   }
 
-  // Resolució final de l'estat d'enviament
-  if (successSupabase) {
+  // 3. RESOLUCIÓ FINAL DE LA PANTALLA
+  // Considerem èxit si com a mínim un dels dos mètodes ha funcionat
+  if (successSupabase || successEmail) {
     showToast(t.successMsg);
     document.getElementById('suggest-desc').value = '';
-    setTimeout(() => { window.location.href = 'index.html'; }, 2200);
+    setTimeout(() => { window.location.href = 'index.html'; }, 2500);
   } else {
-    showToast(t.errorMsg);
+    showToast(t.errorMsg + " (Revisa F12 Console)");
     btn.disabled = false;
     btn.textContent = t.btnSend;
   }
