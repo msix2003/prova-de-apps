@@ -49,12 +49,7 @@ body {
 input, button { font-family: var(--ff-s); -webkit-appearance: none; appearance: none; }
 button { cursor: pointer; border: none; }
 
-/* ── LAYOUT ── */
-#hub-root {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
+#hub-root { min-height: 100dvh; display: flex; flex-direction: column; }
 
 /* ── LOGIN SCREEN ── */
 #login-screen {
@@ -66,28 +61,11 @@ button { cursor: pointer; border: none; }
   padding: calc(var(--safe-t) + 24px) 24px calc(var(--safe-b) + 24px);
   background: linear-gradient(160deg, var(--v-fosc2) 0%, var(--v) 60%, #52b788 100%);
   min-height: 100dvh;
-  position: relative; /* needed for absolute lang button */
+  position: relative;
 }
-.login-logo {
-  width: 84px; height: 84px;
-  border-radius: 22px;
-  margin-bottom: 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.3);
-}
-.login-title {
-  color: #fff;
-  font-weight: 700;
-  font-size: 24px;
-  margin-bottom: 4px;
-  text-align: center;
-  letter-spacing: -.3px;
-}
-.login-subtitle {
-  color: rgba(255,255,255,.58);
-  font-size: 13px;
-  margin-bottom: 32px;
-  text-align: center;
-}
+.login-logo { width: 84px; height: 84px; border-radius: 22px; margin-bottom: 18px; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+.login-title { color: #fff; font-weight: 700; font-size: 24px; margin-bottom: 4px; text-align: center; letter-spacing: -.3px; }
+.login-subtitle { color: rgba(255,255,255,.58); font-size: 13px; margin-bottom: 32px; text-align: center; }
 .login-card {
   background: rgba(255,255,255,.09);
   border: 1px solid rgba(255,255,255,.14);
@@ -98,275 +76,111 @@ button { cursor: pointer; border: none; }
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
-.login-tabs {
-  display: flex;
-  background: rgba(0,0,0,.22);
-  border-radius: 11px;
-  padding: 3px;
-  margin-bottom: 22px;
-}
+.login-tabs { display: flex; background: rgba(0,0,0,.22); border-radius: 11px; padding: 3px; margin-bottom: 22px; }
 .login-tab-btn {
-  flex: 1;
-  padding: 9px;
-  border-radius: 9px;
-  background: none;
-  border: none;
-  color: rgba(255,255,255,.45);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--ff-s);
-  cursor: pointer;
-  transition: all .2s;
+  flex: 1; padding: 9px; border-radius: 9px; background: none; border: none;
+  color: rgba(255,255,255,.45); font-size: 13px; font-weight: 600; font-family: var(--ff-s);
+  cursor: pointer; transition: all .2s;
 }
 .login-tab-btn.active { background: rgba(255,255,255,.16); color: #fff; }
 .login-input {
-  width: 100%;
-  padding: 13px 15px;
-  background: rgba(255,255,255,.11);
-  border: 1px solid rgba(255,255,255,.16);
-  border-radius: 11px;
-  color: #fff;
-  font-size: 14px;
-  font-family: var(--ff-s);
-  margin-bottom: 10px;
-  outline: none;
-  -webkit-appearance: none;
-  transition: border-color .2s;
+  width: 100%; padding: 13px 15px;
+  background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.16);
+  border-radius: 11px; color: #fff; font-size: 14px; font-family: var(--ff-s);
+  margin-bottom: 10px; outline: none; -webkit-appearance: none; transition: border-color .2s;
 }
 .login-input::placeholder { color: rgba(255,255,255,.35); }
 .login-input:focus { border-color: var(--v-clar); }
 .login-btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: var(--v-mig);
-  color: #fff;
-  border: none;
-  border-radius: 11px;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: var(--ff-s);
-  cursor: pointer;
-  margin-top: 6px;
-  transition: background .2s, opacity .2s;
+  width: 100%; padding: 14px; background: var(--v-mig); color: #fff; border: none;
+  border-radius: 11px; font-size: 15px; font-weight: 700; font-family: var(--ff-s);
+  cursor: pointer; margin-top: 6px; transition: background .2s, opacity .2s;
 }
 .login-btn-primary:hover { background: var(--v-clar); }
 .login-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 .login-btn-ghost {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  color: var(--v-clar);
-  border: 2px solid rgba(116,198,157,.45);
-  border-radius: 11px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--ff-s);
-  cursor: pointer;
-  margin-top: 12px;
+  width: 100%; padding: 13px; background: transparent; color: var(--v-clar);
+  border: 2px solid rgba(116,198,157,.45); border-radius: 11px; font-size: 14px;
+  font-weight: 600; font-family: var(--ff-s); cursor: pointer; margin-top: 12px;
   transition: border-color .2s, color .2s;
 }
 .login-btn-ghost:hover { border-color: var(--v-clar); color: #fff; }
-.login-error {
-  color: #ff7675;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 10px;
-  min-height: 18px;
-}
-.login-footer {
-  color: rgba(255,255,255,.28);
-  font-size: 11px;
-  text-align: center;
-  margin-top: 22px;
-  max-width: 300px;
-  line-height: 1.6;
-}
+.login-error { color: #ff7675; font-size: 12px; text-align: center; margin-top: 10px; min-height: 18px; }
+.login-footer { color: rgba(255,255,255,.28); font-size: 11px; text-align: center; margin-top: 22px; max-width: 300px; line-height: 1.6; }
 
-/* ── LANGUAGE BUTTON ── */
 .lang-btn {
-  background: rgba(255,255,255,.13);
-  border: 1px solid rgba(255,255,255,.22);
-  color: rgba(255,255,255,.9);
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: var(--ff-s);
-  padding: 6px 10px;
-  cursor: pointer;
-  letter-spacing: .6px;
-  flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-  transition: background .2s;
+  background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.9); border-radius: 8px; font-size: 11px; font-weight: 700;
+  font-family: var(--ff-s); padding: 6px 10px; cursor: pointer; letter-spacing: .6px;
+  flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: background .2s;
 }
 .lang-btn:active { background: rgba(255,255,255,.26); }
 
 /* ── HUB SCREEN ── */
-#hub-screen {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-  min-height: 100dvh;
-}
+#hub-screen { display: none; flex: 1; flex-direction: column; min-height: 100dvh; }
 
-/* HEADER */
 .hub-header {
-  background: var(--v-fosc);
-  padding: calc(var(--safe-t) + 14px) 18px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.25);
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  background: var(--v-fosc); padding: calc(var(--safe-t) + 14px) 18px 14px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25); position: sticky; top: 0; z-index: 50;
 }
 .hub-avatar {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  background: var(--v-mig);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  flex-shrink: 0;
+  width: 38px; height: 38px; border-radius: 50%; background: var(--v-mig);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; font-weight: 700; flex-shrink: 0;
   border: 2px solid rgba(116,198,157,.35);
 }
 .hub-header-info { flex: 1; min-width: 0; }
 .hub-header-title { color: #fff; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hub-header-sub   { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 1px; }
 .hub-logout-btn {
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.13);
-  color: rgba(255,255,255,.6);
-  border-radius: 8px;
-  font-size: 12px;
-  font-family: var(--ff-s);
-  padding: 7px 11px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background .2s;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.13);
+  color: rgba(255,255,255,.6); border-radius: 8px; font-size: 12px; font-family: var(--ff-s);
+  padding: 7px 11px; cursor: pointer; flex-shrink: 0; transition: background .2s;
 }
 .hub-logout-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
 
-/* HUB BODY */
-.hub-body {
-  flex: 1;
-  padding: 24px 16px calc(var(--safe-b) + 32px);
-}
+.hub-body { flex: 1; padding: 24px 16px calc(var(--safe-b) + 100px); }
 .hub-section-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.4px;
-  color: var(--v);
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.4px; color: var(--v); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
 }
 .hub-section-title::before {
-  content: '';
-  display: inline-block;
-  width: 3px;
-  height: 13px;
-  background: var(--v-mig);
-  border-radius: 2px;
+  content: ''; display: inline-block; width: 3px; height: 13px;
+  background: var(--v-mig); border-radius: 2px;
 }
 
-/* APP GRID */
-.app-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 13px;
-  margin-bottom: 28px;
-}
+.app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; margin-bottom: 28px; }
 .app-card {
-  background: var(--card);
-  border: 1px solid var(--borde);
-  border-radius: 16px;
-  padding: 18px 16px 16px;
-  box-shadow: var(--sh);
-  cursor: pointer;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  background: var(--card); border: 1px solid var(--borde); border-radius: 16px;
+  padding: 18px 16px 16px; box-shadow: var(--sh); cursor: pointer; text-decoration: none;
+  display: flex; flex-direction: column; gap: 10px;
   transition: transform .15s, box-shadow .15s, border-color .15s;
-  -webkit-tap-highlight-color: transparent;
-  position: relative;
-  overflow: hidden;
+  -webkit-tap-highlight-color: transparent; position: relative; overflow: hidden;
 }
 .app-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--v-mig), var(--v-clar));
-  border-radius: 16px 16px 0 0;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--v-mig), var(--v-clar)); border-radius: 16px 16px 0 0;
 }
 .app-card:active { transform: scale(.96); box-shadow: 0 2px 8px rgba(45,106,79,.1); }
-.app-card-icon {
-  width: 46px; height: 46px;
-  border-radius: 12px;
-  background: var(--v-pale);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-.app-card-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.3;
-}
-.app-card-desc {
-  font-size: 11px;
-  color: var(--suau);
-  line-height: 1.4;
-}
+.app-card-icon { width: 46px; height: 46px; border-radius: 12px; background: var(--v-pale); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.app-card-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.app-card-desc { font-size: 11px; color: var(--suau); line-height: 1.4; }
 .app-card-badge {
-  position: absolute;
-  top: 12px; right: 12px;
-  background: var(--v-pale);
-  color: var(--v);
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 20px;
-  letter-spacing: .4px;
-  text-transform: uppercase;
+  position: absolute; top: 12px; right: 12px; background: var(--v-pale); color: var(--v);
+  font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+  letter-spacing: .4px; text-transform: uppercase;
 }
-
-/* COMING SOON */
-.app-card.coming-soon {
-  opacity: .55;
-  cursor: default;
-}
+.app-card.coming-soon { opacity: .55; cursor: default; }
 .app-card.coming-soon::before { background: #dce8df; }
 .app-card.coming-soon .app-card-badge { background: #f0f4f1; color: var(--suau); }
 
-/* SYNC STATUS BAR */
 .hub-sync-bar {
-  background: var(--card);
-  border: 1px solid var(--borde);
-  border-radius: 12px;
-  padding: 11px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--borde); border-radius: 12px;
+  padding: 11px 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
 }
-.sync-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: #aaa;
-  transition: background .3s;
-}
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #aaa; transition: background .3s; }
 .sync-dot.ok      { background: #27ae60; }
 .sync-dot.pending { background: #f39c12; }
 .sync-dot.error   { background: #e74c3c; }
@@ -374,32 +188,68 @@ button { cursor: pointer; border: none; }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
 .sync-bar-text { font-size: 12px; color: var(--suau); flex: 1; }
 
-/* CREDITS */
-.hub-credits {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid var(--borde);
-}
+.hub-credits { text-align: center; padding-top: 20px; border-top: 1px solid var(--borde); }
 .hub-credits p { font-weight: 700; color: var(--v-mig); font-size: 12px; }
 
-/* TOAST */
-.toast {
+/* ── FLOATING ACTION BUTTONS ── */
+.fab-group {
   position: fixed;
-  bottom: calc(var(--safe-b) + 18px);
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
+  bottom: calc(var(--safe-b) + 20px);
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  z-index: 100;
+}
+.fab-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.fab-tooltip {
+  position: absolute;
+  right: 54px;
   background: var(--v-fosc);
-  color: var(--v-pale);
-  padding: 11px 20px;
-  border-radius: 10px;
-  font-size: 13px;
+  color: #fff;
+  font-size: 11px;
   font-weight: 600;
-  max-width: calc(100vw - 32px);
-  text-align: center;
-  opacity: 0;
-  transition: opacity .3s, transform .3s;
-  z-index: 9999;
+  padding: 5px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
   pointer-events: none;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity .2s, transform .2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.fab-wrap:hover .fab-tooltip { opacity: 1; transform: translateX(0); }
+.fab-btn {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.22);
+  transition: transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+  color: #fff;
+}
+.fab-btn:active { transform: scale(.91); }
+.fab-btn-help    { background: var(--v-fosc); font-size: 18px; font-weight: 800; font-family: var(--ff-s); }
+.fab-btn-suggest { background: var(--v-mig); font-size: 18px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: calc(var(--safe-b) + 18px); left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--v-fosc); color: var(--v-pale); padding: 11px 20px;
+  border-radius: 10px; font-size: 13px; font-weight: 600;
+  max-width: calc(100vw - 32px); text-align: center; opacity: 0;
+  transition: opacity .3s, transform .3s; z-index: 9999; pointer-events: none;
   box-shadow: 0 4px 16px rgba(0,0,0,.28);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -411,7 +261,6 @@ button { cursor: pointer; border: none; }
   <!-- ═══ PANTALLA LOGIN ═══ -->
   <div id="login-screen">
 
-    <!-- Botó d'idioma (posicionat absolutament) -->
     <button class="lang-btn" id="login-lang-btn" onclick="cycleLang()"
             style="position:absolute;top:calc(env(safe-area-inset-top,0px)+14px);right:16px;z-index:10;">CA</button>
 
@@ -425,14 +274,12 @@ button { cursor: pointer; border: none; }
         <button class="login-tab-btn"        id="ltab-register" onclick="switchLoginTab('register')" data-i18n="tabRegister">Registrar-se</button>
       </div>
 
-      <!-- Login -->
       <div id="login-form">
         <input class="login-input" type="email"    id="login-email"    data-i18n-ph="loginEmailPh" placeholder="Correu electrònic" autocomplete="email">
         <input class="login-input" type="password" id="login-password" data-i18n-ph="loginPassPh"  placeholder="Contrasenya"       autocomplete="current-password">
         <button class="login-btn-primary" id="login-submit-btn" onclick="doLogin()" data-i18n="loginBtn">Entrar</button>
       </div>
 
-      <!-- Register -->
       <div id="register-form" style="display:none;">
         <input class="login-input" type="email"    id="reg-email"     data-i18n-ph="regEmailPh"  placeholder="Correu electrònic"               autocomplete="email">
         <input class="login-input" type="password" id="reg-password"  data-i18n-ph="regPassPh"   placeholder="Contrasenya (mínim 6 caràcters)"  autocomplete="new-password">
@@ -452,33 +299,38 @@ button { cursor: pointer; border: none; }
 
   <!-- ═══ PANTALLA HUB ═══ -->
   <div id="hub-screen">
-    <!-- Header -->
     <header class="hub-header">
       <div class="hub-avatar" id="hub-avatar">?</div>
       <div class="hub-header-info">
         <div class="hub-header-title" id="hub-user-name">Carregant...</div>
         <div class="hub-header-sub"   id="hub-user-sub">PTGMF · Hub d'Aplicacions</div>
       </div>
-      <!-- Botó d'idioma al header del hub -->
       <button class="lang-btn" id="hub-lang-btn" onclick="cycleLang()">CA</button>
       <button class="hub-logout-btn" id="hub-logout-btn" data-i18n="hubLogout" onclick="doLogout()">Sortir</button>
     </header>
 
-    <!-- Body -->
     <div class="hub-body">
-
-      <!-- Sync -->
       <div class="hub-sync-bar">
         <div class="sync-dot" id="hub-sync-dot"></div>
         <div class="sync-bar-text" id="hub-sync-text" data-i18n="syncChecking">Comprovant connexió...</div>
       </div>
 
       <div class="hub-section-title" data-i18n="hubSectionApps">Aplicacions disponibles</div>
-      <div class="app-grid" id="app-grid">
-        <!-- generat dinàmicament per JS -->
-      </div>
+      <div class="app-grid" id="app-grid"></div>
 
       <div class="hub-credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
+    </div>
+
+    <!-- ── BOTONS FLOTANTS: dubtes (?) i propostes (💡) ── -->
+    <div class="fab-group">
+      <div class="fab-wrap">
+        <span class="fab-tooltip" data-i18n="fabHelp">Dubtes freqüents</span>
+        <a class="fab-btn fab-btn-help" href="dubtes.html">?</a>
+      </div>
+      <div class="fab-wrap">
+        <span class="fab-tooltip" data-i18n="fabSuggest">Proposar millora</span>
+        <a class="fab-btn fab-btn-suggest" href="peticions.html">💡</a>
+      </div>
     </div>
   </div>
 
@@ -486,157 +338,106 @@ button { cursor: pointer; border: none; }
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   SUPABASE CONFIG
-   ============================================================ */
 const SUPABASE_URL      = 'https://hkkxgzdopvimgarmxdnj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM';
 
-let sbClient  = null;
-let sbUser    = null;
+let sbClient = null;
+let sbUser   = null;
 
-/* ============================================================
-   SISTEMA D'IDIOMES
-   ============================================================ */
 const LANGS       = ['ca', 'es', 'en'];
 const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
 
 const T = {
   ca: {
-    loginTitle:       'PTGMF · Hub Forestal',
-    loginSubtitle:    'Accedeix o continua sense compte',
-    tabLogin:         'Iniciar sessió',
-    tabRegister:      'Registrar-se',
-    loginEmailPh:     'Correu electrònic',
-    loginPassPh:      'Contrasenya',
-    loginBtn:         'Entrar',
-    loginBtnLoading:  'Entrant...',
-    regEmailPh:       'Correu electrònic',
-    regPassPh:        'Contrasenya (mínim 6 caràcters)',
-    regPass2Ph:       'Repetir contrasenya',
-    regBtn:           'Crear compte',
-    regBtnLoading:    'Creant compte...',
-    guestBtn:         'Continuar sense registrar-se →',
-    loginFooterHtml:  'Les teves dades s\'emmagatzemen de forma segura al núvol.<br>Cada usuari només pot veure les seves pròpies dades.',
-    hubSectionApps:   'Aplicacions disponibles',
-    hubLogout:        'Sortir',
-    hubSubLogged:     'Compte registrat · PTGMF Hub',
-    hubSubGuest:      'Dades guardades localment',
-    hubUserGuest:     'Mode Convidat',
-    syncChecking:     'Comprovant connexió...',
-    syncActive:       'Sessió activa · ',
-    syncGuest:        'Mode Convidat · Sense còpia al núvol',
-    logoutConfirm:    'Tancar la sessió?',
-    toastLogout:      'Sessió tancada correctament.',
-    credits:          '🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
-    appInventariName: 'Inventari Forestal',
-    appInventariDesc: 'Parcel·les, dasometria i vegetació',
-    errEmailPass:     'Introdueix correu i contrasenya.',
-    errPassMatch:     'Les contrasenyes no coincideixen.',
-    errPassLen:       'La contrasenya ha de tenir mínim 6 caràcters.',
-    accountCreated:   '✅ Compte creat! Ara pots iniciar sessió.',
-    authErrInvalid:   'Correu o contrasenya incorrectes.',
-    authErrUnconfirmed:'Cal confirmar el correu electrònic.',
-    authErrExists:    'Aquest correu ja té un compte.',
+    loginTitle:'PTGMF · Hub Forestal', loginSubtitle:'Accedeix o continua sense compte',
+    tabLogin:'Iniciar sessió', tabRegister:'Registrar-se',
+    loginEmailPh:'Correu electrònic', loginPassPh:'Contrasenya',
+    loginBtn:'Entrar', loginBtnLoading:'Entrant...',
+    regEmailPh:'Correu electrònic', regPassPh:'Contrasenya (mínim 6 caràcters)',
+    regPass2Ph:'Repetir contrasenya', regBtn:'Crear compte', regBtnLoading:'Creant compte...',
+    guestBtn:'Continuar sense registrar-se →',
+    loginFooterHtml:"Les teves dades s'emmagatzemen de forma segura al núvol.<br>Cada usuari només pot veure les seves pròpies dades.",
+    hubSectionApps:'Aplicacions disponibles', hubLogout:'Sortir',
+    hubSubLogged:'Compte registrat · PTGMF Hub', hubSubGuest:'Dades guardades localment',
+    hubUserGuest:'Mode Convidat', syncChecking:'Comprovant connexió...',
+    syncActive:'Sessió activa · ', syncGuest:'Mode Convidat · Sense còpia al núvol',
+    logoutConfirm:'Tancar la sessió?', toastLogout:'Sessió tancada correctament.',
+    credits:'🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
+    appInventariName:'Inventari Forestal', appInventariDesc:'Parcel·les, dasometria i vegetació',
+    errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
+    errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
+    accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
+    authErrInvalid:'Correu o contrasenya incorrectes.', authErrUnconfirmed:'Cal confirmar el correu electrònic.',
+    authErrExists:'Aquest correu ja té un compte.',
+    fabHelp:'Dubtes freqüents', fabSuggest:'Proposar millora',
   },
   es: {
-    loginTitle:       'PTGMF · Hub Forestal',
-    loginSubtitle:    'Accede o continúa sin cuenta',
-    tabLogin:         'Iniciar sesión',
-    tabRegister:      'Registrarse',
-    loginEmailPh:     'Correo electrónico',
-    loginPassPh:      'Contraseña',
-    loginBtn:         'Entrar',
-    loginBtnLoading:  'Entrando...',
-    regEmailPh:       'Correo electrónico',
-    regPassPh:        'Contraseña (mínimo 6 caracteres)',
-    regPass2Ph:       'Repetir contraseña',
-    regBtn:           'Crear cuenta',
-    regBtnLoading:    'Creando cuenta...',
-    guestBtn:         'Continuar sin registrarse →',
-    loginFooterHtml:  'Tus datos se almacenan de forma segura en la nube.<br>Cada usuario solo puede ver sus propios datos.',
-    hubSectionApps:   'Aplicaciones disponibles',
-    hubLogout:        'Salir',
-    hubSubLogged:     'Cuenta registrada · PTGMF Hub',
-    hubSubGuest:      'Datos guardados localmente',
-    hubUserGuest:     'Modo Invitado',
-    syncChecking:     'Comprobando conexión...',
-    syncActive:       'Sesión activa · ',
-    syncGuest:        'Modo Invitado · Sin copia en la nube',
-    logoutConfirm:    '¿Cerrar la sesión?',
-    toastLogout:      'Sesión cerrada correctamente.',
-    credits:          '🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
-    appInventariName: 'Inventario Forestal',
-    appInventariDesc: 'Parcelas, dasometría y vegetación',
-    errEmailPass:     'Introduce correo y contraseña.',
-    errPassMatch:     'Las contraseñas no coinciden.',
-    errPassLen:       'La contraseña debe tener mínimo 6 caracteres.',
-    accountCreated:   '✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
-    authErrInvalid:   'Correo o contraseña incorrectos.',
-    authErrUnconfirmed:'Debes confirmar el correo electrónico.',
-    authErrExists:    'Este correo ya tiene una cuenta.',
+    loginTitle:'PTGMF · Hub Forestal', loginSubtitle:'Accede o continúa sin cuenta',
+    tabLogin:'Iniciar sesión', tabRegister:'Registrarse',
+    loginEmailPh:'Correo electrónico', loginPassPh:'Contraseña',
+    loginBtn:'Entrar', loginBtnLoading:'Entrando...',
+    regEmailPh:'Correo electrónico', regPassPh:'Contraseña (mínimo 6 caracteres)',
+    regPass2Ph:'Repetir contraseña', regBtn:'Crear cuenta', regBtnLoading:'Creando cuenta...',
+    guestBtn:'Continuar sin registrarse →',
+    loginFooterHtml:'Tus datos se almacenan de forma segura en la nube.<br>Cada usuario solo puede ver sus propios datos.',
+    hubSectionApps:'Aplicaciones disponibles', hubLogout:'Salir',
+    hubSubLogged:'Cuenta registrada · PTGMF Hub', hubSubGuest:'Datos guardados localmente',
+    hubUserGuest:'Modo Invitado', syncChecking:'Comprobando conexión...',
+    syncActive:'Sesión activa · ', syncGuest:'Modo Invitado · Sin copia en la nube',
+    logoutConfirm:'¿Cerrar la sesión?', toastLogout:'Sesión cerrada correctamente.',
+    credits:'🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
+    appInventariName:'Inventario Forestal', appInventariDesc:'Parcelas, dasometría y vegetación',
+    errEmailPass:'Introduce correo y contraseña.', errPassMatch:'Las contraseñas no coinciden.',
+    errPassLen:'La contraseña debe tener mínimo 6 caracteres.',
+    accountCreated:'✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
+    authErrInvalid:'Correo o contraseña incorrectos.', authErrUnconfirmed:'Debes confirmar el correo electrónico.',
+    authErrExists:'Este correo ya tiene una cuenta.',
+    fabHelp:'Preguntas frecuentes', fabSuggest:'Proponer mejora',
   },
   en: {
-    loginTitle:       'PTGMF · Forest Hub',
-    loginSubtitle:    'Sign in or continue without an account',
-    tabLogin:         'Sign in',
-    tabRegister:      'Register',
-    loginEmailPh:     'Email address',
-    loginPassPh:      'Password',
-    loginBtn:         'Sign in',
-    loginBtnLoading:  'Signing in...',
-    regEmailPh:       'Email address',
-    regPassPh:        'Password (minimum 6 characters)',
-    regPass2Ph:       'Repeat password',
-    regBtn:           'Create account',
-    regBtnLoading:    'Creating account...',
-    guestBtn:         'Continue without signing in →',
-    loginFooterHtml:  'Your data is stored securely in the cloud.<br>Each user can only see their own data.',
-    hubSectionApps:   'Available applications',
-    hubLogout:        'Sign out',
-    hubSubLogged:     'Registered account · PTGMF Hub',
-    hubSubGuest:      'Data saved locally',
-    hubUserGuest:     'Guest mode',
-    syncChecking:     'Checking connection...',
-    syncActive:       'Active session · ',
-    syncGuest:        'Guest mode · No cloud backup',
-    logoutConfirm:    'Sign out?',
-    toastLogout:      'Successfully signed out.',
-    credits:          '🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
-    appInventariName: 'Forest Inventory',
-    appInventariDesc: 'Plots, stand metrics and vegetation',
-    errEmailPass:     'Enter your email and password.',
-    errPassMatch:     'Passwords do not match.',
-    errPassLen:       'Password must be at least 6 characters.',
-    accountCreated:   '✅ Account created! You can now sign in.',
-    authErrInvalid:   'Incorrect email or password.',
-    authErrUnconfirmed:'Please confirm your email address.',
-    authErrExists:    'This email already has an account.',
+    loginTitle:'PTGMF · Forest Hub', loginSubtitle:'Sign in or continue without an account',
+    tabLogin:'Sign in', tabRegister:'Register',
+    loginEmailPh:'Email address', loginPassPh:'Password',
+    loginBtn:'Sign in', loginBtnLoading:'Signing in...',
+    regEmailPh:'Email address', regPassPh:'Password (minimum 6 characters)',
+    regPass2Ph:'Repeat password', regBtn:'Create account', regBtnLoading:'Creating account...',
+    guestBtn:'Continue without signing in →',
+    loginFooterHtml:'Your data is stored securely in the cloud.<br>Each user can only see their own data.',
+    hubSectionApps:'Available applications', hubLogout:'Sign out',
+    hubSubLogged:'Registered account · PTGMF Hub', hubSubGuest:'Data saved locally',
+    hubUserGuest:'Guest mode', syncChecking:'Checking connection...',
+    syncActive:'Active session · ', syncGuest:'Guest mode · No cloud backup',
+    logoutConfirm:'Sign out?', toastLogout:'Successfully signed out.',
+    credits:'🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
+    appInventariName:'Forest Inventory', appInventariDesc:'Plots, stand metrics and vegetation',
+    errEmailPass:'Enter your email and password.', errPassMatch:'Passwords do not match.',
+    errPassLen:'Password must be at least 6 characters.',
+    accountCreated:'✅ Account created! You can now sign in.',
+    authErrInvalid:'Incorrect email or password.', authErrUnconfirmed:'Please confirm your email address.',
+    authErrExists:'This email already has an account.',
+    fabHelp:'Frequently asked questions', fabSuggest:'Suggest improvement',
   }
 };
 
-function getLang() {
-  return localStorage.getItem('ptgmf_lang') || 'ca';
-}
-function setLang(lang) {
-  localStorage.setItem('ptgmf_lang', lang);
-  applyLang(lang);
-}
+const APPS = [
+  { nameKey:'appInventariName', descKey:'appInventariDesc', icon:'🌲', url:'Inventari.html', badge:'v10', active:true },
+];
+
+function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
+function setLang(lang) { localStorage.setItem('ptgmf_lang', lang); applyLang(lang); }
 function cycleLang() {
-  const cur  = getLang();
-  const next = LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length];
-  setLang(next);
+  const cur = getLang();
+  setLang(LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length]);
 }
 function updateLangBtns(lang) {
-  ['login-lang-btn', 'hub-lang-btn'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+  ['login-lang-btn','hub-lang-btn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.textContent = LANG_LABELS[lang] || lang.toUpperCase();
   });
 }
 function applyLang(lang) {
   const t = T[lang] || T.ca;
   document.documentElement.lang = lang;
-
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (t[key] !== undefined) el.textContent = t[key];
@@ -645,15 +446,10 @@ function applyLang(lang) {
     const key = el.getAttribute('data-i18n-ph');
     if (t[key] !== undefined) el.placeholder = t[key];
   });
-
-  // Footer usa innerHTML (conté <br>)
   const footer = document.getElementById('login-footer-el');
   if (footer) footer.innerHTML = t.loginFooterHtml;
-
   updateLangBtns(lang);
   buildAppGrid();
-
-  // Actualitza contingut dinàmic del hub si és visible
   const hubScreen = document.getElementById('hub-screen');
   if (hubScreen && hubScreen.style.display !== 'none') {
     const sub = document.getElementById('hub-user-sub');
@@ -663,31 +459,6 @@ function applyLang(lang) {
   }
 }
 
-/* ============================================================
-   CATÀLEG D'APLICACIONS
-   Per afegir una nova app: afegeix un objecte a APPS i crea el fitxer HTML.
-   ============================================================ */
-const APPS = [
-  {
-    nameKey: 'appInventariName',
-    descKey: 'appInventariDesc',
-    icon:    '🌲',
-    url:     'Inventari.html',
-    badge:   'v10',
-    active:  true,
-  },
-  // Exemple app futura:
-  // { nameKey:'appMapaName', descKey:'appMapaDesc', icon:'🗺️', url:'mapa.html', badge:'Aviat', active:false },
-];
-
-/* ============================================================
-   INIT
-   ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-  applyLang(getLang());
-  initSupabase();
-});
-
 function buildAppGrid() {
   const t    = T[getLang()] || T.ca;
   const grid = document.getElementById('app-grid');
@@ -695,49 +466,34 @@ function buildAppGrid() {
     const name = t[app.nameKey] || app.nameKey;
     const desc = t[app.descKey] || app.descKey;
     if (app.active) {
-      return `
-        <a class="app-card" href="${app.url}" onclick="navigateToApp(event,'${app.url}')">
-          <div class="app-card-icon">${app.icon}</div>
-          <div>
-            <div class="app-card-name">${name}</div>
-            <div class="app-card-desc">${desc}</div>
-          </div>
-          ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
-        </a>`;
+      return `<a class="app-card" href="${app.url}" onclick="navigateToApp(event,'${app.url}')">
+        <div class="app-card-icon">${app.icon}</div>
+        <div><div class="app-card-name">${name}</div><div class="app-card-desc">${desc}</div></div>
+        ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
+      </a>`;
     } else {
-      return `
-        <div class="app-card coming-soon">
-          <div class="app-card-icon">${app.icon}</div>
-          <div>
-            <div class="app-card-name">${name}</div>
-            <div class="app-card-desc">${desc}</div>
-          </div>
-          ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
-        </div>`;
+      return `<div class="app-card coming-soon">
+        <div class="app-card-icon">${app.icon}</div>
+        <div><div class="app-card-name">${name}</div><div class="app-card-desc">${desc}</div></div>
+        ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
+      </div>`;
     }
   }).join('');
 }
 
-function navigateToApp(e, url) {
-  setAppMode(sbUser ? 'logged_in' : 'guest');
-}
+function navigateToApp(e, url) { setAppMode(sbUser ? 'logged_in' : 'guest'); }
 
-/* ============================================================
-   APP MODE (estat global compartit entre pàgines)
-   ============================================================ */
 function setAppMode(mode) {
-  const payload = {
-    mode,
-    userId: sbUser ? sbUser.id    : null,
-    email:  sbUser ? sbUser.email : null,
-    ts:     Date.now(),
-  };
-  localStorage.setItem('ptgmf_app_mode', JSON.stringify(payload));
+  localStorage.setItem('ptgmf_app_mode', JSON.stringify({
+    mode, userId: sbUser ? sbUser.id : null, email: sbUser ? sbUser.email : null, ts: Date.now()
+  }));
 }
 
-/* ============================================================
-   SUPABASE INIT
-   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  applyLang(getLang());
+  initSupabase();
+});
+
 function initSupabase() {
   try {
     if (typeof window.supabase !== 'undefined') {
@@ -745,9 +501,7 @@ function initSupabase() {
     }
   } catch(e) { console.error('Supabase init error:', e); }
 
-  if (!sbClient) {
-    sbClient = makeFallbackClient();
-  }
+  if (!sbClient) sbClient = makeFallbackClient();
 
   try {
     sbClient.auth.onAuthStateChange(async (event, session) => {
@@ -755,20 +509,12 @@ function initSupabase() {
       setAppMode(sbUser ? 'logged_in' : 'guest');
       handleAuthState();
     });
-
     sbClient.auth.getSession().then(({ data: { session } }) => {
       sbUser = session ? session.user : null;
       setAppMode(sbUser ? 'logged_in' : 'guest');
       handleAuthState();
     });
   } catch(e) {
-    const saved = localStorage.getItem('ptgmf_app_mode');
-    if (saved) {
-      try {
-        const m = JSON.parse(saved);
-        if (m.mode === 'guest') { showHub(false); return; }
-      } catch(_) {}
-    }
     showLogin();
   }
 }
@@ -779,21 +525,11 @@ function handleAuthState() {
     showHub(true);
     setSyncStatus('ok', t.syncActive + sbUser.email);
   } else {
-    const saved = localStorage.getItem('ptgmf_app_mode');
-    let mode = null;
-    try { mode = JSON.parse(saved).mode; } catch(_) {}
-    if (mode === 'guest') {
-      showHub(false);
-      setSyncStatus('pending', t.syncGuest);
-    } else {
-      showLogin();
-    }
+    // CANVI 2: sempre mostrem login si no hi ha sessió activa (ja no mode convidat persistent)
+    showLogin();
   }
 }
 
-/* ============================================================
-   AUTH ACTIONS
-   ============================================================ */
 function switchLoginTab(tab) {
   document.getElementById('ltab-login').classList.toggle('active', tab === 'login');
   document.getElementById('ltab-register').classList.toggle('active', tab === 'register');
@@ -802,9 +538,7 @@ function switchLoginTab(tab) {
   document.getElementById('login-error').textContent = '';
 }
 
-function setLoginError(msg) {
-  document.getElementById('login-error').textContent = msg;
-}
+function setLoginError(msg) { document.getElementById('login-error').textContent = msg; }
 
 async function doLogin() {
   const t = T[getLang()] || T.ca;
@@ -838,7 +572,7 @@ async function doRegister() {
 
 function continuarConvidat() {
   const t = T[getLang()] || T.ca;
-  localStorage.setItem('ptgmf_app_mode', JSON.stringify({ mode: 'guest', userId: null, email: null, ts: Date.now() }));
+  localStorage.setItem('ptgmf_app_mode', JSON.stringify({ mode:'guest', userId:null, email:null, ts:Date.now() }));
   showHub(false);
   setSyncStatus('pending', t.syncGuest);
 }
@@ -855,16 +589,13 @@ async function doLogout() {
 
 function translateAuthError(msg) {
   const t = T[getLang()] || T.ca;
-  if (msg.includes('Invalid login'))                return t.authErrInvalid;
-  if (msg.includes('Email not confirmed'))          return t.authErrUnconfirmed;
-  if (msg.includes('User already registered'))      return t.authErrExists;
-  if (msg.includes('Password should be at least'))  return t.errPassLen;
+  if (msg.includes('Invalid login'))               return t.authErrInvalid;
+  if (msg.includes('Email not confirmed'))         return t.authErrUnconfirmed;
+  if (msg.includes('User already registered'))     return t.authErrExists;
+  if (msg.includes('Password should be at least')) return t.errPassLen;
   return msg;
 }
 
-/* ============================================================
-   UI HELPERS
-   ============================================================ */
 function showLogin() {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('hub-screen').style.display   = 'none';
@@ -873,15 +604,12 @@ function showLogin() {
 function showHub(loggedIn) {
   const t = T[getLang()] || T.ca;
   document.getElementById('login-screen').style.display = 'none';
-  const hubScreen = document.getElementById('hub-screen');
-  hubScreen.style.display = 'flex';
-
+  document.getElementById('hub-screen').style.display   = 'flex';
   const avatar = document.getElementById('hub-avatar');
   const name   = document.getElementById('hub-user-name');
   const sub    = document.getElementById('hub-user-sub');
-
   if (loggedIn && sbUser) {
-    const email  = sbUser.email || '';
+    const email = sbUser.email || '';
     avatar.textContent = email.charAt(0).toUpperCase();
     name.textContent   = email;
     sub.textContent    = t.hubSubLogged;
@@ -899,21 +627,15 @@ function setSyncStatus(state, text) {
   if (txt) txt.textContent = text;
 }
 
-/* ============================================================
-   TOAST
-   ============================================================ */
 let toastTimer = null;
 function showToast(msg, ms = 2500) {
-  const t2 = document.getElementById('toast');
-  t2.textContent = msg;
-  t2.classList.add('show');
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t2.classList.remove('show'), ms);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms);
 }
 
-/* ============================================================
-   FALLBACK CLIENT (sense xarxa)
-   ============================================================ */
 function makeFallbackClient() {
   return {
     auth: {
@@ -926,13 +648,9 @@ function makeFallbackClient() {
   };
 }
 
-/* ============================================================
-   SERVICE WORKER
-   ============================================================ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .catch(e => console.log('SW no disponible:', e));
+    navigator.serviceWorker.register('sw.js').catch(e => console.log('SW no disponible:', e));
   });
 }
 </script>
