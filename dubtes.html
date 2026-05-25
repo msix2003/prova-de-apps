@@ -36,7 +36,7 @@ body {
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Evita doble scroll, el xat gestionarà el seu propi espai */
+  overflow: hidden;
 }
 
 /* ── HEADER ── */
@@ -65,14 +65,10 @@ body {
   max-width: 600px; width: 100%; margin: 0 auto; position: relative;
   height: calc(100vh - 60px);
 }
-
-/* Àrea on apareixen els missatges */
 .chat-messages {
   flex: 1; padding: 20px 16px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 14px;
 }
-
-/* Estils de les bafarades de text */
 .msg { max-width: 85%; animation: fadeIn .3s ease-out forwards; display: flex; flex-direction: column; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -88,7 +84,7 @@ body {
 .msg-meta { font-size: 10px; color: var(--suau); margin-top: 4px; padding: 0 4px; }
 .msg.user .msg-meta { align-self: flex-end; }
 
-/* ── BOTONS D'OPCIONS INTERACTIVES ── */
+/* ── INTERACTIVE OPTIONS PANELS ── */
 .chat-options-panel {
   padding: 14px 16px calc(var(--safe-b) + 16px); background: linear-gradient(180deg, rgba(240,244,241,0) 0%, rgba(240,244,241,1) 20%);
   display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(45,106,79,.06);
@@ -101,9 +97,9 @@ body {
 }
 .opt-btn:hover { background: var(--v-pale); border-color: var(--v-mig); }
 .opt-btn:active { transform: scale(.99); }
-.opt-btn::after { content: '→'; font-weight: 700; color: var(--v-mig); font-size: 14px; }
+.opt-btn::after { content: '→'; font-weight: 700; color: var(--v-mig); font-size: 14px; margin-left: 8px; }
 
-/* Animació de punts suspensius ("escribiendo...") */
+/* Typing animation */
 .typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
 .typing-dots span { width: 6px; height: 6px; background: var(--suau); border-radius: 50%; animation: blink 1.4s infinite both; }
 .typing-dots span:nth-child(2) { animation-delay: .2s; }
@@ -120,18 +116,39 @@ body {
 </header>
 
 <div class="chat-container">
-  <div class="chat-messages" id="chat-box">
-    </div>
-
-  <div class="chat-options-panel" id="options-box">
-    </div>
+  <div class="chat-messages" id="chat-box"></div>
+  <div class="chat-options-panel" id="options-box"></div>
 </div>
 
 <script>
 const LANGS       = ['ca', 'es', 'en'];
 const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
 
-// Base de dades de respostes del ForestBot en els 3 idiomes
+/* ========================================================================
+  📖 GUIA TUTORIAL: COM AFEGIR MÉS PREGUNTES I RESPOSTES AL FORESTBOT
+  ========================================================================
+  Per afegir una nova pregunta, has de fer canvis als 2 llocs següents:
+
+  PAS 1: Afegir el text de la pregunta i la resposta a "BOT_DATA"
+  A sota veuràs tres blocs: 'ca' (Català), 'es' (Castellà) i 'en' (Anglès).
+  Dins de CADA idioma, has de crear dos camps nous seguint la numeració.
+  Per exemple, per crear la pregunta 6:
+    opt6: 'La teva pregunta aquí',
+    res6: 'La teva resposta aquí'
+  ⚠️ ATENCIÓ: Posa una coma (,) al final de cada línia excepte en l'última de l'objecte.
+  ⚠️ TEXT MULTILÍNIA: Si vols fer un salt de línia a la resposta, posa '\n'.
+  ⚠️ NEGRETA: Si vols posar text en negreta, posa-lo entre dos asteriscs: **text**.
+
+  PAS 2: Afegir el botó a la llista d'opcions del menú (Funció "showMainMenu")
+  Busca més avall la funció anomenada "showMainMenu()". Allà veuràs els botons.
+  Només has d'afegir una línia més copiant l'estructura canviant el número.
+  Exemple per a la pregunta 6:
+    <button class="opt-btn" onclick="handleSelectOption(6)">\${t.opt6}</button>
+
+  Això és tot! El codi s'encarrega automàticament de tota la resta.
+  ========================================================================
+*/
+
 const BOT_DATA = {
   ca: {
     btnBack: '← Hub',
@@ -140,18 +157,20 @@ const BOT_DATA = {
     welcome: '👋 Hola! Sóc en **ForestBot**, el teu assistent virtual de la llançadora d\'aplicacions forestals. Estic aquí per ajudar-te a digitalitzar i agilitzar el teu treball de camp. Quin dubte tens?',
     menuTitle: 'Tria una opció per respondre:',
     
-    // Opcions del menú
+    // Botons del menú principal
     opt1: '🌲 Com funciona l\'app d\'inventari?',
     opt2: '📡 Funciona sense connexió a internet?',
     opt3: '💾 Diferència Convidat vs. Registrat',
     opt4: '✉️ Com puc reportar incidències o idees?',
+    opt5: '⚖️ Propietat intel·lectual i Drets d\'autor',
     optMenu: '🔄 Veure altres dubtes (Menú)',
 
-    // Respostes del Bot
-    res1: 'La primera aplicació integrada a la llançadora és l\'**Inventari Forestal Mòbil**. Et permet recollir gran quantitat de dades directament en el bosc estructurades per **finca, parcel·la i rodal**, a més de registrar detalls de la vegetació i mesures d\'arbres. Un cop acabat, pots exportar les dades en un **fitxer CSV** i utilitzar un programa analitzador especialitzat per processar tota la informació.',
+    // Respostes corresponents
+    res1: 'La primera aplicació integrada a la llançadora és l\'**Inventari Forestal Mòbil**. Et permet recollir gran quantitat de dades directament en el bosc estructurades per **finca, parcel·la i rodal**, ameres de registrar detalls de la vegetació i mesures d\'arbres. Un cop acabat, pots exportar les dades en un **fitxer CSV** i utilitzar un programa analitzador especialitzat per processar tota la informació.',
     res2: '¡Sí, està totalment pensada per al camp! L\'aplicació **funciona 100% offline (sense connexió)**. Pots recollir totes les dades de l\'inventari en zones recòndites del bosc o muntanya. Quan el teu mòbil torni a detectar connexió a internet, totes les dades es **sincronitzaran automàticament** amb el servidor.',
     res3: 'La diferència principal és la seguretat de les teves dades:\n\n• **Mode Convidat:** És un accés lliure i tot es guarda completament **en local** al navegador del mòbil. Si perds o espatlles el telèfon, o si esborres la memòria memòria cau, les dades es perdran.\n\n• **Usuari Registrat:** El registre és **lliure per a tothom**. En iniciar sessió, les dades es guarden a la base de dades online (núvol). Això serveix de còpia de seguretat si es trenca el mòbil i et permet obrir i gestionar les dades des de qualsevol altre dispositiu.',
-    res4: 'Al menú inferior o lateral del teu Hub, disposes d\'un botó flotant amb la icona de la bombeta (**Proposar millora / Incidències**). Des d\'allà pots omplir un formulari classificant el cas com un error (bug), una nova idea o un problema de disseny. Ens arribarà directament un avís per resoldre-ho!'
+    res4: 'Al menú inferior o lateral del teu Hub, disposes d\'un botó flotant amb la icona de la bombeta (**Proposar millora / Incidències**). Des d\'allà pots omplir un formulari classificant el cas com un error (bug), una nova idea o un problema de disseny. Ens arribarà directament un avís per resoldre-ho!',
+    res5: 'Aquest programari ha estat completament desenvolupat i creat per mi (**Martí Solé i Xanxo**).\n\nEl projecte es distribueix sota una **llicència MIT modificada**. Aquesta variant manté la permissivitat de la MIT original (permet l\'ús, còpia, modificació i distribució del codi), però introdueix una **clàusula addicional reguladora de l\'ús comercial**:\n\nQualsevol explotació o ús comercial del programari requereix el **consentiment explícit de l\'autor** i pot comportar una **compensació econòmica**. Aquesta mesura busca protegir la propietat intel·lectual i assegurar que l\'ús amb finalitats comercials es realitzi sota un acord formal i amb el mutu reconeixement dels autors.'
   },
   es: {
     btnBack: '← Hub',
@@ -164,12 +183,14 @@ const BOT_DATA = {
     opt2: '📡 ¿Funciona sin conexión a internet?',
     opt3: '💾 Diferencia Invitado vs. Registrado',
     opt4: '✉️ ¿Cómo reportar incidencias o ideas?',
+    opt5: '⚖️ Propiedad intelectual y Derechos de autor',
     optMenu: '🔄 Ver otras dudas (Menú)',
 
     res1: 'La primera aplicación integrada en la lanzadera es el **Inventario Forestal Móvil**. Te permite recopilar gran cantidad de datos directamente en el bosque estructurados por **finca, parcela y rodal**, además de registrar detalles de la vegetación y medidas de árboles. Al terminar, puedes exportar los datos en un **archivo CSV** y usar un programa analizador especializado para procesar toda la información.',
-    res2: '¡Sí, está totalmente pensada para el campo! La aplicación **funciona 100% offline (sin internet)**. Puedes recopilar todos los datos del inventario en zonas recónditas del bosque. En cuanto tu móvil vuelva a detectar conexión a internet, los datos se **sincronizarán automáticamente** con el servidor.',
+    res2: '¡Sí, está totalmente pensada para el campo! La aplicación **funciona 100% offline (sin internet)**. Puedes recopilar todos los datos del inventario en zonas recóndites del bosque. En cuanto tu móvil vuelva a detectar conexión a internet, los datos se **sincronizarán automáticamente** con el servidor.',
     res3: 'La diferencia principal es la seguridad de tus datos:\n\n• **Mode Invitado:** Es un acceso libre y todo se guarda **en local** en el navegador del móvil. Si pierdes o rompes el teléfono, o si borras la caché, los datos se perderán.\n\n• **Usuario Registrado:** El registro es **libre para todos**. Al iniciar sesión, los datos se guardan en la base de datos online (nube). Esto sirve de copia de seguridad y te permite abrir tus datos desde cualquier otro dispositivo.',
-    res4: 'En el menú de tu Hub dispones de un botón flotante con el icono de la bombilla (**Proponer mejora / Incidencias**). Desde allí puedes rellenar un formulario clasificando el caso como error (bug), nueva idea o problema de diseño. ¡Nos llegará directamente un aviso para solucionarlo!'
+    res4: 'En el menú de tu Hub dispones de un botón flotante con el icono de la bombilla (**Proponer mejora / Incidencias**). Desde allí puedes rellenar un formulario clasificando el caso como error (bug), nueva idea o problema de diseño. ¡Nos llegará directamente un aviso para solucionarlo!',
+    res5: 'Este software ha sido completamente desarrollado y creado por mí (**Martí Solé i Xanxo**).\n\nEl proyecto se distribuye bajo una **licencia MIT modificada**. Esta variante mantiene la permisividad de la MIT original (permite el uso, copia, modificación y distribución), pero introduce una **cláusula adicional que regula el uso comercial**:\n\nCualquier explotación comercial del software requiere el **consentimiento explícito del autor** y puede conllevar una **compensación económica**. Esta medida busca proteger la propiedad intelectual y asegurar que el uso comercial se realice bajo un acuerdo formal y con el reconocimiento de los autores.'
   },
   en: {
     btnBack: '← Hub',
@@ -182,12 +203,14 @@ const BOT_DATA = {
     opt2: '📡 Does it work without internet?',
     opt3: '💾 Difference Guest vs. Registered',
     opt4: '✉️ How to report issues or ideas?',
+    opt5: '⚖️ Intellectual Property & Copyrights',
     optMenu: '🔄 View other questions (Menu)',
 
     res1: 'The first application integrated into the launcher is the **Mobile Forestry Inventory**. It allows you to collect large amounts of data directly in the forest structured by **estate, plot, and stand**, as well as record vegetation details and tree measurements. Once finished, data can be exported into a **CSV file** and analyzed with a specialized analysis software.',
     res2: 'Yes, it is fully designed for field work! The app **works 100% offline (without internet)**. You can collect all inventory data deep in the forest. As soon as your mobile detects an internet connection, all data will **automatically sync** with the server.',
     res3: 'The main difference is your data safety:\n\n• **Guest Mode:** Free access where everything is saved **locally** on your mobile browser. If you lose/damage your phone or clear cache, data will be lost.\n\n• **Registered User:** Registration is **free for everyone**. When logged in, your data is saved to the online database (cloud). This acts as a backup and allows you to open your data from other devices.',
-    res4: 'In your Hub menu, you have a floating button with a lightbulb icon (**Suggest Improvement / Issues**). There you can fill out a form classifying the case as a bug, new idea, or design flaw. We will get an immediate alert to look into it!'
+    res4: 'In your Hub menu, you have a floating button with a lightbulb icon (**Suggest Improvement / Issues**). There you can fill out a form classifying the case as a bug, new idea, or design flaw. We will get an immediate alert to look into it!',
+    res5: 'This software has been fully developed and created by me (**Martí Solé i Xanxo**).\n\nThe project is distributed under a **modified MIT license**. This variant maintains the permissiveness of the original MIT (allowing use, copying, modification, and distribution), but introduces an **additional clause regulating commercial use**:\n\nAny commercial exploitation of the software requires the **explicit consent of the author** and may entail **financial compensation**. This measure seeks to protect intellectual property and ensure that commercial use is carried out with a proper agreement and recognition of the authors.'
   }
 };
 
@@ -196,7 +219,6 @@ function setLang(lang) { localStorage.setItem('ptgmf_lang', lang); applyLang(lan
 function cycleLang() {
   const cur = getLang();
   setLang(LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length]);
-  // Reiniciem el xat per evitar barreja d'idiomes si es canvia a mig camí
   initChat();
 }
 
@@ -216,28 +238,21 @@ document.addEventListener('DOMContentLoaded', () => {
   initChat();
 });
 
-// Inicialització o reinici de la conversa
 function initChat() {
   const chatBox = document.getElementById('chat-box');
-  chatBox.innerHTML = ''; // Neteja
-  
+  chatBox.innerHTML = '';
   const t = BOT_DATA[getLang()] || BOT_DATA.ca;
   
-  // Missatge de benvinguda de ForestBot
   sendBotMessage(t.welcome);
   
-  // Carrega el menú de botons principal
   setTimeout(() => {
     showMainMenu();
   }, 600);
 }
 
-// Funció per pintar un missatge del bot amb efecte de càrrega
 function sendBotMessage(textHTML) {
   const chatBox = document.getElementById('chat-box');
   const t = BOT_DATA[getLang()] || BOT_DATA.ca;
-  
-  // ID temporal per a la bafarada que s'està component
   const tempId = 'typing-' + Date.now();
   
   const msgDiv = document.createElement('div');
@@ -252,17 +267,16 @@ function sendBotMessage(textHTML) {
   chatBox.appendChild(msgDiv);
   scrollToBottom();
 
-  // Simulem que triga un segon a "escriure" per fer-ho realista
   setTimeout(() => {
-    const bubble = document.getElementById(tempId).querySelector('.msg-bubble');
-    // Reemplacem els salts de línia \n per <br> i negretes primitives de text per HTML
+    const el = document.getElementById(tempId);
+    if (!el) return;
+    const bubble = el.querySelector('.msg-bubble');
     let formattedText = textHTML.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     bubble.innerHTML = formattedText;
     scrollToBottom();
   }, 1000);
 }
 
-// Funció per pintar el missatge que simula enviar l'usuari
 function sendUserMessage(text) {
   const chatBox = document.getElementById('chat-box');
   const msgDiv = document.createElement('div');
@@ -275,7 +289,10 @@ function sendUserMessage(text) {
   scrollToBottom();
 }
 
-// Mostra els quatre botons principals d'opcions
+/* ========================================================================
+  📥 PAS 2: SI AFEGEIXES UNA PREGUNTA 6, S'HA D'AFEGIR EL BOTÓ AQUÍ SOTA
+  ========================================================================
+*/
 function showMainMenu() {
   const optionsBox = document.getElementById('options-box');
   const t = BOT_DATA[getLang()] || BOT_DATA.ca;
@@ -285,27 +302,22 @@ function showMainMenu() {
     <button class="opt-btn" onclick="handleSelectOption(2)">${t.opt2}</button>
     <button class="opt-btn" onclick="handleSelectOption(3)">${t.opt3}</button>
     <button class="opt-btn" onclick="handleSelectOption(4)">${t.opt4}</button>
+    <button class="opt-btn" onclick="handleSelectOption(5)">${t.opt5}</button>
   `;
 }
 
-// Gestiona el clic a qualsevol opció
 function handleSelectOption(num) {
   const t = BOT_DATA[getLang()] || BOT_DATA.ca;
   const optionsBox = document.getElementById('options-box');
   
-  // Buida panell de control temporalment per evitar doble clics ràpids
   optionsBox.innerHTML = '';
-
-  // 1. Envia el missatge de l'usuari a la pantalla
   const selectedText = t['opt' + num];
   sendUserMessage(selectedText);
 
-  // 2. Resposta automatitzada del Bot després d'una petita pausa
   setTimeout(() => {
     const replyText = t['res' + num];
     sendBotMessage(replyText);
     
-    // 3. Ofereix el botó de retorn al menú
     setTimeout(() => {
       optionsBox.innerHTML = `
         <button class="opt-btn" onclick="initChat()">${t.optMenu}</button>
@@ -314,7 +326,6 @@ function handleSelectOption(num) {
   }, 500);
 }
 
-// Utilitats auxiliars
 function scrollToBottom() {
   const chatBox = document.getElementById('chat-box');
   chatBox.scrollTop = chatBox.scrollHeight;
