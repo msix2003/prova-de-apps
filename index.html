@@ -364,6 +364,7 @@ const T = {
     logoutConfirm:'Tancar la sessió?', toastLogout:'Sessió tancada correctament.',
     credits:'🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Inventari Forestal', appInventariDesc:'Parcel·les, dasometria i vegetació',
+    appRelascopiName:'Relascopi de Bitterlich', appRelascopiDesc:'Càlcul de la àrea basal amb relascopi',
     errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
     errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
     accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
@@ -387,6 +388,7 @@ const T = {
     logoutConfirm:'¿Cerrar la sesión?', toastLogout:'Sesión cerrada correctamente.',
     credits:'🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Inventario Forestal', appInventariDesc:'Parcelas, dasometría y vegetación',
+    appRelascopiName:'Relascopio de Bitterlich', appRelascopiDesc:'Cálculo del área basal con relascopio',
     errEmailPass:'Introduce correo y contraseña.', errPassMatch:'Las contraseñas no coinciden.',
     errPassLen:'La contraseña debe tener mínimo 6 caracteres.',
     accountCreated:'✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
@@ -410,6 +412,7 @@ const T = {
     logoutConfirm:'Sign out?', toastLogout:'Successfully signed out.',
     credits:'🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Forest Inventory', appInventariDesc:'Plots, stand metrics and vegetation',
+    appRelascopiName:'Bitterlich Relascope', appRelascopiDesc:'Basal area calculation with relascope',
     errEmailPass:'Enter your email and password.', errPassMatch:'Passwords do not match.',
     errPassLen:'Password must be at least 6 characters.',
     accountCreated:'✅ Account created! You can now sign in.',
@@ -421,6 +424,7 @@ const T = {
 
 const APPS = [
   { nameKey:'appInventariName', descKey:'appInventariDesc', icon:'🌲', url:'Inventari.html', badge:'v10', active:true },
+  { nameKey:'appRelascopiName', descKey:'appRelascopiDesc', icon:'🎯', url:'Relascopi.html', badge:'v1',  active:true },
 ];
 
 function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
