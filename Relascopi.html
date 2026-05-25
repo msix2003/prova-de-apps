@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a1f13">
+<title>Relascopi · PTGMF</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep:    #0a1f13;
+  --bg-dark:    #11291d;
+  --bg-mid:     #1a3d2b;
+  --bg-lift:    #244d38;
+  --green:      #4ade80;
+  --green-dim:  #22c55e;
+  --green-glow: rgba(74,222,128,0.22);
+  --amber:      #fbbf24;
+  --red:        #f87171;
+  --txt:        #e8f5e9;
+  --txt2:       #a7c4b0;
+  --txt3:       #5a7a66;
+  --font:       'DM Sans', sans-serif;
+  --mono:       'DM Mono', monospace;
+  --safe-top:   env(safe-area-inset-top, 0px);
+  --safe-bot:   env(safe-area-inset-bottom, 12px);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  font-family: var(--font);
+  color: var(--txt);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* ─── LOADING ─────────────────────────────────── */
+#loading {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg-deep);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  transition: opacity .5s ease;
+}
+#loading.out { opacity: 0; pointer-events: none; }
+
+.ld-tree { font-size: 54px; animation: treePulse 1.8s ease-in-out infinite; }
+.ld-name { font-size: 22px; font-weight: 600; letter-spacing: .025em; }
+.ld-sub  { font-size: 11px; font-family: var(--mono); color: var(--txt3); letter-spacing: .06em; }
+.ld-bar-wrap { width: 130px; height: 2px; background: var(--bg-lift); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.ld-bar      { height: 100%; background: var(--green); animation: fillBar 1.5s ease-out forwards; }
+
+@keyframes treePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+@keyframes fillBar   { from{width:0} 65%{width:55%} to{width:100%} }
+
+/* ─── CANVAS ─────────────────────────────────── */
+#cv {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  display: block; touch-action: none;
+}
+
+/* Hidden video source */
+#vid {
+  position: fixed; top: -1px; left: -1px;
+  width: 1px; height: 1px;
+  opacity: 0; pointer-events: none;
+}
+
+/* ─── NO CAMERA ──────────────────────────────── */
+#no-cam {
+  position: fixed; inset: 0; z-index: 5;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  background: var(--bg-deep);
+}
+#no-cam.show { display: flex; }
+.nc-icon { font-size: 46px; opacity: .3; }
+.nc-msg  { font-size: 14px; color: var(--txt3); text-align: center; max-width: 220px; line-height: 1.65; }
+
+/* ─── TOP BAR ────────────────────────────────── */
+#top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  padding: 10px 14px 8px;
+  padding-top: calc(var(--safe-top) + 10px);
+  background: linear-gradient(to bottom, rgba(10,31,19,.9) 0%, transparent 100%);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.ico-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid rgba(74,222,128,.28);
+  background: rgba(10,31,19,.72); backdrop-filter: blur(10px);
+  color: var(--green); font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .12s; flex-shrink: 0;
+}
+.ico-btn:active { transform: scale(.88); background: var(--green-glow); }
+
+#baf-tabs { flex: 1; display: flex; gap: 5px; justify-content: center; }
+
+.baf-pill {
+  padding: 6px 10px; border-radius: 20px;
+  border: 1px solid rgba(74,222,128,.22);
+  background: rgba(10,31,19,.68); backdrop-filter: blur(10px);
+  color: var(--txt2); font-family: var(--mono);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .12s;
+}
+.baf-pill.on {
+  background: var(--green); color: var(--bg-deep);
+  border-color: var(--green); font-weight: 700;
+}
+.baf-pill:active { transform: scale(.88); }
+
+#hd-right { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+
+/* Sync dot */
+#sync-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--txt3);
+  transition: background .3s, box-shadow .3s;
+}
+#sync-dot.online  { background: var(--green); box-shadow: 0 0 7px var(--green); }
+#sync-dot.offline { background: var(--amber); box-shadow: 0 0 7px var(--amber); }
+#sync-dot.syncing { background: var(--amber); animation: dotBlink .7s ease-in-out infinite; }
+@keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ─── ACTION CHIPS ───────────────────────────── */
+#chips {
+  position: fixed; top: 74px; left: 14px; z-index: 15;
+  display: flex; flex-direction: column; gap: 5px;
+  pointer-events: none;
+}
+.chip {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(10,31,19,.8); backdrop-filter: blur(6px);
+  border: 1px solid rgba(74,222,128,.3);
+  font-family: var(--mono); font-size: 12px; color: var(--green);
+  animation: chipIn .2s ease; transition: opacity .4s;
+}
+.chip.fade { opacity: 0; }
+@keyframes chipIn { from{transform:translateY(5px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* Pending badge */
+#pending-badge {
+  position: fixed; top: 74px; right: 14px; z-index: 15;
+  padding: 4px 10px; border-radius: 10px;
+  background: rgba(251,191,36,.14);
+  border: 1px solid rgba(251,191,36,.36);
+  font-family: var(--mono); font-size: 11px; color: var(--amber);
+  backdrop-filter: blur(6px); display: none; pointer-events: none;
+}
+#pending-badge.show { display: block; }
+
+/* ─── CENTER COUNTER ─────────────────────────── */
+#counter {
+  position: fixed; bottom: 110px; left: 0; right: 0; z-index: 15;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  pointer-events: none;
+}
+#n-count {
+  font-family: var(--mono); font-size: 58px; font-weight: 500; line-height: 1;
+  text-shadow: 0 2px 28px rgba(0,0,0,.9);
+  transition: transform .1s;
+}
+#n-count.bump { transform: scale(1.2); }
+#n-ab {
+  font-family: var(--mono); font-size: 20px; color: var(--green);
+  text-shadow: 0 0 18px rgba(74,222,128,.55);
+}
+
+/* ─── BOTTOM BAR ─────────────────────────────── */
+#bot-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  padding: 10px 14px;
+  padding-bottom: calc(10px + var(--safe-bot));
+  background: linear-gradient(to top, rgba(10,31,19,.94) 0%, transparent 100%);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; gap: 9px;
+}
+.act-btn {
+  border: none; border-radius: 16px;
+  font-family: var(--font); cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  transition: all .1s; -webkit-tap-highlight-color: transparent;
+}
+.act-btn:active { transform: scale(.88); }
+#b1 {
+  flex: 2.2; height: 66px;
+  background: var(--green); color: var(--bg-deep);
+  font-size: 26px; font-weight: 700;
+  box-shadow: 0 4px 24px rgba(74,222,128,.38);
+}
+#b1:active { background: var(--green-dim); box-shadow: none; }
+#bh {
+  flex: 2; height: 66px;
+  background: rgba(74,222,128,.12); color: var(--green);
+  font-size: 21px; font-weight: 600;
+  border: 1.5px solid rgba(74,222,128,.38);
+}
+#bh:active { background: rgba(74,222,128,.24); }
+#bu {
+  flex: 1; height: 54px; border-radius: 14px;
+  background: rgba(248,113,113,.1); color: var(--red);
+  font-size: 20px; border: 1px solid rgba(248,113,113,.28);
+}
+#bu:active { background: rgba(248,113,113,.22); }
+#bs {
+  flex: 1; height: 54px; border-radius: 14px;
+  background: rgba(251,191,36,.1); color: var(--amber);
+  font-size: 18px; border: 1px solid rgba(251,191,36,.28);
+}
+#bs:active { background: rgba(251,191,36,.22); }
+.btn-sub { font-size: 9px; opacity: .6; font-weight: 400; }
+
+/* ─── MODALS (bottom sheet) ──────────────────── */
+.bd {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(10,31,19,.84); backdrop-filter: blur(8px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .28s;
+  display: flex; align-items: flex-end;
+}
+.bd.open { opacity: 1; pointer-events: all; }
+
+.sheet {
+  width: 100%;
+  background: var(--bg-dark);
+  border-top: 1px solid rgba(74,222,128,.17);
+  border-radius: 22px 22px 0 0;
+  padding: 0 20px 20px;
+  padding-bottom: calc(20px + var(--safe-bot));
+  transform: translateY(102%);
+  transition: transform .34s cubic-bezier(.32,.72,0,1);
+  max-height: 93vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.bd.open .sheet { transform: translateY(0); }
+
+.sh-handle {
+  width: 38px; height: 4px; border-radius: 4px;
+  background: var(--txt3); margin: 14px auto 18px;
+}
+.sh-title { font-size: 17px; font-weight: 600; margin-bottom: 18px; }
+
+/* Form elements */
+.fg { margin-bottom: 13px; }
+.fl {
+  display: block; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: var(--txt3); margin-bottom: 5px;
+}
+.fi {
+  width: 100%; padding: 12px 13px;
+  background: var(--bg-mid);
+  border: 1px solid rgba(74,222,128,.18);
+  border-radius: 10px; color: var(--txt);
+  font-family: var(--font); font-size: 16px;
+  outline: none; transition: border-color .18s;
+}
+.fi:focus { border-color: var(--green); }
+.fi::placeholder { color: var(--txt3); }
+.fi.ro { color: var(--txt2); background: rgba(10,31,19,.5); border-color: rgba(74,222,128,.08); }
+
+.f-row { display: flex; gap: 10px; }
+.f-row .fg { flex: 1; }
+
+.gps-row { display: flex; gap: 8px; align-items: flex-end; }
+.gps-row .fg { flex: 1; margin-bottom: 0; }
+.gps-btn {
+  height: 46px; padding: 0 13px;
+  background: rgba(74,222,128,.1);
+  border: 1px solid rgba(74,222,128,.28);
+  border-radius: 10px; color: var(--green);
+  font-family: var(--font); font-size: 13px;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.gps-btn:active { background: rgba(74,222,128,.22); }
+
+.divider { height: 1px; background: rgba(74,222,128,.09); margin: 14px 0; }
+
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+.mc {
+  background: var(--bg-mid); border-radius: 10px; padding: 10px 12px;
+  border: 1px solid rgba(74,222,128,.1);
+}
+.mc .ml { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--txt3); margin-bottom: 4px; }
+.mc .mv { font-family: var(--mono); font-size: 14px; color: var(--green); font-weight: 500; }
+
+.btn-p {
+  width: 100%; padding: 16px;
+  background: var(--green); color: var(--bg-deep);
+  border: none; border-radius: 14px;
+  font-family: var(--font); font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: all .12s;
+}
+.btn-p:active { transform: scale(.97); background: var(--green-dim); }
+
+.btn-s {
+  width: 100%; padding: 14px; background: transparent;
+  color: var(--txt2); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px; font-family: var(--font); font-size: 15px;
+  cursor: pointer; margin-top: 8px;
+}
+.btn-s:active { background: rgba(255,255,255,.05); }
+
+.btn-danger {
+  width: 100%; padding: 14px;
+  background: rgba(248,113,113,.09);
+  border: 1px solid rgba(248,113,113,.28);
+  border-radius: 14px; font-family: var(--font); font-size: 15px;
+  color: var(--red); cursor: pointer; margin-top: 4px;
+}
+.btn-danger:active { background: rgba(248,113,113,.2); }
+
+/* Settings */
+.ss-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--txt3); margin-bottom: 10px;
+}
+.fov-num { font-family: var(--mono); font-size: 32px; color: var(--green); text-align: center; margin: 6px 0; }
+
+input[type=range] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 5px; border-radius: 5px;
+  background: var(--bg-lift); outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--green);
+  cursor: pointer; box-shadow: 0 0 8px rgba(74,222,128,.42);
+}
+
+.calib-hint {
+  font-size: 12px; color: var(--txt3); line-height: 1.65;
+  margin-top: 9px; padding: 10px 12px;
+  background: var(--bg-mid); border-radius: 8px;
+  border-left: 2px solid var(--green);
+}
+
+/* ─── TOASTS ─────────────────────────────────── */
+#toasts {
+  position: fixed; top: 84px; left: 50%; transform: translateX(-50%);
+  z-index: 200; display: flex; flex-direction: column; gap: 7px;
+  pointer-events: none; width: calc(100% - 28px); max-width: 340px;
+}
+.toast {
+  padding: 11px 15px; border-radius: 12px;
+  font-size: 13px; font-weight: 500;
+  backdrop-filter: blur(12px);
+  animation: tIn .28s ease, tOut .28s ease 2.7s forwards;
+}
+.toast.ok  { background:rgba(74,222,128,.18);  border:1px solid rgba(74,222,128,.38);  color:var(--green); }
+.toast.wn  { background:rgba(251,191,36,.18);  border:1px solid rgba(251,191,36,.38);  color:var(--amber); }
+.toast.er  { background:rgba(248,113,113,.18); border:1px solid rgba(248,113,113,.38); color:var(--red);   }
+@keyframes tIn  { from{transform:translateY(-8px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes tOut { from{opacity:1} to{opacity:0} }
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div class="ld-tree">🌲</div>
+  <div class="ld-name">Relascopi</div>
+  <div class="ld-sub">PTGMF · EINA FORESTAL</div>
+  <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+</div>
+
+<!-- Hidden camera source -->
+<video id="vid" autoplay playsinline muted></video>
+
+<!-- Render canvas -->
+<canvas id="cv"></canvas>
+
+<!-- No camera fallback -->
+<div id="no-cam">
+  <div class="nc-icon">📵</div>
+  <div class="nc-msg" id="nc-msg">Permís de càmera necessari per a l'app</div>
+</div>
+
+<!-- Top bar -->
+<div id="top-bar">
+  <button class="ico-btn" onclick="tornarHub()" title="Tornar al Hub">←</button>
+  <div id="baf-tabs"></div>
+  <div id="hd-right">
+    <div id="sync-dot"></div>
+    <button class="ico-btn" onclick="openSettings()" title="Configuració">⚙</button>
+  </div>
+</div>
+
+<!-- Action chips (recent counts) -->
+<div id="chips"></div>
+
+<!-- Pending sync badge -->
+<div id="pending-badge"></div>
+
+<!-- Live counter -->
+<div id="counter">
+  <div id="n-count">0</div>
+  <div id="n-ab">0.0 m²/ha</div>
+</div>
+
+<!-- Bottom action bar -->
+<div id="bot-bar">
+  <button class="act-btn" id="b1" onclick="addCount(1)">
+    <span>+1</span>
+    <span class="btn-sub" id="lbl-arbre">arbre</span>
+  </button>
+  <button class="act-btn" id="bh" onclick="addCount(0.5)">
+    <span>+½</span>
+    <span class="btn-sub" id="lbl-mig">mig</span>
+  </button>
+  <button class="act-btn" id="bu" onclick="undoLast()" title="Desfer">↩</button>
+  <button class="act-btn" id="bs" onclick="openSave()" title="Guardar">💾</button>
+</div>
+
+<!-- ═══ SAVE MODAL ═══════════════════════════════════════ -->
+<div class="bd" id="save-bd">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Guardar mesura</div>
+
+    <!-- Auto-filled metadata -->
+    <div class="meta-grid">
+      <div class="mc"><div class="ml">Data i hora</div><div class="mv" id="m-dt">—</div></div>
+      <div class="mc"><div class="ml">BAF (m²/ha)</div><div class="mv" id="m-baf">—</div></div>
+      <div class="mc"><div class="ml">Arbres comptats</div><div class="mv" id="m-trees">—</div></div>
+      <div class="mc"><div class="ml">Àrea basimètrica</div><div class="mv" id="m-ab">—</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- GPS -->
+    <div class="fg">
+      <label class="fl">Coordenades GPS</label>
+      <div class="gps-row">
+        <div class="fg" style="margin-bottom:0">
+          <input type="text" class="fi ro" id="i-gps" readonly placeholder="Latitude, Longitude">
+        </div>
+        <button class="gps-btn" id="btn-gps" onclick="doGPS()">📍 GPS</button>
+      </div>
+    </div>
+
+    <!-- Finca + Rodal -->
+    <div class="f-row">
+      <div class="fg">
+        <label class="fl">Finca</label>
+        <input type="text" class="fi" id="i-finca" placeholder="—" autocomplete="off">
+      </div>
+      <div class="fg">
+        <label class="fl">Rodal</label>
+        <input type="text" class="fi" id="i-rodal" placeholder="—" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Parcel·la -->
+    <div class="fg">
+      <label class="fl">Parcel·la</label>
+      <input type="text" class="fi" id="i-parcela" placeholder="—" autocomplete="off">
+    </div>
+
+    <!-- Observacions -->
+    <div class="fg">
+      <label class="fl">Observacions</label>
+      <input type="text" class="fi" id="i-notes" placeholder="—" autocomplete="off">
+    </div>
+
+    <button class="btn-p" onclick="confirmSave()">💾 Guardar mesura</button>
+    <button class="btn-s" onclick="closeSave()">Cancel·lar</button>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ══════════════════════════════════ -->
+<div class="bd" id="set-bd">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Configuració</div>
+
+    <!-- FOV calibration -->
+    <div style="margin-bottom:18px">
+      <div class="ss-title">Camp visual de la càmera (FOV)</div>
+      <div class="fov-num"><span id="fov-disp">65</span>°</div>
+      <input type="range" id="fov-sl" min="40" max="90" step="1" value="65" oninput="onFOV(this.value)">
+      <div class="calib-hint">
+        Per calibrar manualment: apunta a un arbre de
+        <strong style="color:var(--green)">25 cm</strong> de diàmetre
+        a <strong id="calib-dist" style="color:var(--green)">25.0 m</strong>
+        i ajusta el FOV fins que el tronc quedi just dintre la fissura.
+        La majoria de càmeres principals estan entre 60° i 70°.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Offline sync -->
+    <div style="margin-bottom:18px">
+      <div class="ss-title">Sincronització offline</div>
+      <div id="pending-info" style="font-size:13px;color:var(--txt2);margin-bottom:10px"></div>
+      <button class="btn-s" style="margin-top:0" onclick="trySyncPending()">🔄 Sincronitzar ara</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Reset counter -->
+    <div>
+      <div class="ss-title">Comptador actual</div>
+      <button class="btn-danger" onclick="doReset()">🗑 Reiniciar comptador</button>
+    </div>
+
+    <button class="btn-s" style="margin-top:18px" onclick="closeSettings()">Tancar</button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toasts"></div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════
+const CFG = {
+  SB_URL:  'https://hkkxgzdopvimgarmxdnj.supabase.co',
+  SB_KEY:  'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM',
+  TABLE:   'relascopi_measurements',
+  TIMEOUT: 8000,
+  BAFS:    [0.5, 1, 2, 3, 4],
+  DEF_BAF: 2,
+  DEF_FOV: 65,
+  LANG_K:  'ptgmf_lang',
+  FOV_K:   'relascopi_fov',
+  Q_K:     'relascopi_queue',
+  LOC_K:   'relascopi_last_loc',
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  I18N
+// ═══════════════════════════════════════════════════════════════
+const TX = {
+  ca: {
+    arbre:'arbre', mig:'mig',
+    saved_ok:  '✓ Mesura guardada correctament',
+    saved_off: '📴 Guardat en local (sense connexió)',
+    synced:    '☁ Dades sincronitzades',
+    offline:   'Mode sense connexió activat',
+    gps_wait:  'Obtenint coordenades…',
+    gps_ok:    '📍 GPS obtingut',
+    gps_err:   'No s\'ha pogut obtenir el GPS',
+    cam_err:   'Permís de càmera necessari per a l\'app',
+    reset_ok:  'Comptador reiniciat',
+    pend:      'mesures pendents de sincronització',
+    no_pend:   'Cap mesura pendent',
+  },
+  es: {
+    arbre:'árbol', mig:'medio',
+    saved_ok:  '✓ Medida guardada correctamente',
+    saved_off: '📴 Guardado local (sin conexión)',
+    synced:    '☁ Datos sincronizados',
+    offline:   'Trabajando sin conexión',
+    gps_wait:  'Obteniendo coordenadas…',
+    gps_ok:    '📍 GPS obtenido',
+    gps_err:   'No se pudo obtener el GPS',
+    cam_err:   'Permiso de cámara necesario',
+    reset_ok:  'Contador reiniciado',
+    pend:      'medidas pendientes de sincronización',
+    no_pend:   'Sin medidas pendientes',
+  },
+  en: {
+    arbre:'tree', mig:'half',
+    saved_ok:  '✓ Measurement saved',
+    saved_off: '📴 Saved locally (offline)',
+    synced:    '☁ Data synced',
+    offline:   'Working offline',
+    gps_wait:  'Getting coordinates…',
+    gps_ok:    '📍 GPS obtained',
+    gps_err:   'Could not get GPS',
+    cam_err:   'Camera permission required',
+    reset_ok:  'Counter reset',
+    pend:      'measurements pending sync',
+    no_pend:   'No pending measurements',
+  },
+};
+function t(k){ const l=S.lang; return (TX[l]&&TX[l][k]) || TX.ca[k] || k; }
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+const S = {
+  lang:    'ca',
+  user:    null,
+  baf:     CFG.DEF_BAF,
+  fov:     CFG.DEF_FOV,
+  actions: [],          // [{v: number, ts: number}]
+  lat: null, lng: null, acc: null,
+  stream:  null,
+  camOK:   false,
+  raf:     null,
+  get count(){ return this.actions.reduce((s,a) => s + a.v, 0); },
+  get ab()   { return this.count * this.baf; },
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  SUPABASE — init with 8s safety timeout
+// ═══════════════════════════════════════════════════════════════
+let sb = null;
+
+async function initSB(){
+  const timer = setTimeout(() => {
+    setSyncDot('offline');
+    toast(t('offline'), 'wn');
+  }, CFG.TIMEOUT);
+
+  try {
+    sb = window.supabase.createClient(CFG.SB_URL, CFG.SB_KEY);
+    const { data: { session } } = await sb.auth.getSession();
+    clearTimeout(timer);
+    S.user = session?.user ?? null;
+    setSyncDot(S.user ? 'online' : 'offline');
+
+    sb.auth.onAuthStateChange((_ev, sess) => {
+      S.user = sess?.user ?? null;
+      setSyncDot(S.user ? 'online' : 'offline');
+      if (S.user) trySyncPending();
+    });
+  } catch(e) {
+    clearTimeout(timer);
+    setSyncDot('offline');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS + CAMERA
+// ═══════════════════════════════════════════════════════════════
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const vid = document.getElementById('vid');
+
+let cvW = 0, cvH = 0; // cached canvas size
+
+function resizeCV(){
+  const dpr = devicePixelRatio || 1;
+  cvW = cv.width  = window.innerWidth  * dpr;
+  cvH = cv.height = window.innerHeight * dpr;
+}
+
+async function startCam(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false,
+    });
+    S.stream = stream;
+    vid.srcObject = stream;
+    await new Promise(r => { vid.onloadedmetadata = r; });
+    await vid.play();
+
+    // FOV — stored correction or auto-guess
+    const stored = localStorage.getItem(CFG.FOV_K);
+    S.fov = stored ? parseFloat(stored) : guessFOV(stream.getVideoTracks()[0]);
+    syncFOVUI();
+    S.camOK = true;
+
+  } catch(e) {
+    console.warn('Camera error:', e);
+    document.getElementById('no-cam').classList.add('show');
+    document.getElementById('nc-msg').textContent = t('cam_err');
+    toast(t('cam_err'), 'er');
+  }
+  startLoop();
+}
+
+function guessFOV(track){
+  try {
+    const caps = track.getCapabilities();
+    if (caps.zoom) {
+      if (caps.zoom.max >= 10) return 68;   // high-zoom system = usually wide main cam
+      if (caps.zoom.max >=  5) return 65;
+    }
+    return CFG.DEF_FOV;
+  } catch { return CFG.DEF_FOV; }
+}
+
+function startLoop(){
+  if (S.raf) cancelAnimationFrame(S.raf);
+  function frame(){
+    if (S.camOK && vid.readyState >= 2) {
+      ctx.drawImage(vid, 0, 0, cvW, cvH);
+    } else {
+      ctx.fillStyle = '#0a1f13';
+      ctx.fillRect(0, 0, cvW, cvH);
+    }
+    drawOverlay();
+    S.raf = requestAnimationFrame(frame);
+  }
+  S.raf = requestAnimationFrame(frame);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BITTERLICH GAUGE OVERLAY
+//  Critical half-angle: tan(α/2) = √BAF / 100
+//  Gate width px: W × tan(α/2) / tan(FOV/2)
+// ═══════════════════════════════════════════════════════════════
+function gateWidthPx(){
+  const tanHalfAlpha = Math.sqrt(S.baf) / 100;
+  const tanHalfFOV   = Math.tan((S.fov * Math.PI / 180) / 2);
+  return cvW * tanHalfAlpha / tanHalfFOV;
+}
+
+function drawOverlay(){
+  const dpr = devicePixelRatio || 1;
+  const W = cvW, H = cvH;
+  const cx = W / 2;
+  const cy = H * 0.40;       // gauge at chest/eye aim height
+
+  const gW = gateWidthPx();
+  const gH = H * 0.11;
+  const lx = cx - gW / 2;
+  const rx = cx + gW / 2;
+  const ty = cy - gH / 2;
+  const by = cy + gH / 2;
+  const ser = 13 * dpr;      // bracket serif length
+
+  // ── Radial vignette ─────────────────────────────────
+  const vig = ctx.createRadialGradient(cx, H * 0.5, H * 0.08, cx, H * 0.5, H * 0.72);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.5)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Horizontal scan guide ────────────────────────────
+  ctx.save();
+  ctx.strokeStyle = 'rgba(74,222,128,0.14)';
+  ctx.lineWidth   = dpr;
+  ctx.setLineDash([5 * dpr, 12 * dpr]);
+  ctx.beginPath();
+  ctx.moveTo(0, cy); ctx.lineTo(W, cy);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── Gate window fill ─────────────────────────────────
+  ctx.save();
+  const gFill = ctx.createLinearGradient(lx, 0, rx, 0);
+  gFill.addColorStop(0,   'rgba(74,222,128,0.03)');
+  gFill.addColorStop(0.5, 'rgba(74,222,128,0.12)');
+  gFill.addColorStop(1,   'rgba(74,222,128,0.03)');
+  ctx.fillStyle = gFill;
+  ctx.fillRect(lx, ty, gW, gH);
+  ctx.restore();
+
+  // ── Gate brackets ────────────────────────────────────
+  ctx.save();
+  ctx.strokeStyle = '#4ade80';
+  ctx.lineWidth   = 2.5 * dpr;
+  ctx.shadowColor = '#4ade80';
+  ctx.shadowBlur  = 14 * dpr;
+  drawBracket(cx - gW/2, ty, by, 'L', ser);
+  drawBracket(cx + gW/2, ty, by, 'R', ser);
+  ctx.restore();
+
+  // ── Center crosshair + dot ───────────────────────────
+  ctx.save();
+  ctx.strokeStyle = 'rgba(74,222,128,0.45)';
+  ctx.lineWidth   = dpr;
+  ctx.beginPath(); ctx.moveTo(cx - 16*dpr, cy); ctx.lineTo(cx + 16*dpr, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy - 16*dpr); ctx.lineTo(cx, cy + 16*dpr); ctx.stroke();
+  ctx.fillStyle  = '#4ade80';
+  ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 10*dpr;
+  ctx.beginPath(); ctx.arc(cx, cy, 3.5*dpr, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // ── Info label below gate ────────────────────────────
+  // Distance at which Ø25cm tree is exactly at critical angle
+  const critD = (25 / Math.sqrt(S.baf)).toFixed(1);
+  ctx.save();
+  ctx.font      = `${10*dpr}px 'DM Mono',monospace`;
+  ctx.fillStyle = 'rgba(74,222,128,0.52)';
+  ctx.textAlign = 'center';
+  ctx.fillText(`BAF ${S.baf}  ·  Ø25cm → ${critD}m`, cx, by + 20*dpr);
+  ctx.restore();
+
+  // ── Loupe (×5 zoom, bottom-right) ───────────────────
+  if (S.camOK && vid.readyState >= 2) {
+    drawLoupe(W, H, cx, cy, gW, gH, ty, by, dpr);
+  }
+}
+
+function drawBracket(x, topY, botY, side, ser){
+  const d = side === 'L' ? 1 : -1;
+  ctx.beginPath(); ctx.moveTo(x, topY); ctx.lineTo(x, botY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, topY); ctx.lineTo(x + d*ser, topY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, botY); ctx.lineTo(x + d*ser, botY); ctx.stroke();
+}
+
+function drawLoupe(W, H, cx, cy, gW, gH, ty, by, dpr){
+  const ZOOM  = 5;
+  const LW    = 110 * dpr;
+  const LH    = 82  * dpr;
+  const MX    = 14  * dpr;
+  const lx    = W - LW - MX;
+  const ly    = cy - LH / 2;
+
+  // Source region in canvas coords centred on gate
+  const pad  = 22 * dpr;
+  const srcW = gW * ZOOM + pad * 2;
+  const srcH = gH * ZOOM + pad * 2;
+  const srcX = cx - srcW / 2;
+  const srcY = ty - pad;
+
+  // Map canvas → video native pixels
+  const vsx = (srcX / W) * vid.videoWidth;
+  const vsy = (srcY / H) * vid.videoHeight;
+  const vsw = (srcW / W) * vid.videoWidth;
+  const vsh = (srcH / H) * vid.videoHeight;
+
+  ctx.save();
+
+  // Background panel
+  ctx.fillStyle = 'rgba(10,31,19,0.72)';
+  rrPath(lx - 3, ly - 3, LW + 6, LH + 6, 10*dpr);
+  ctx.fill();
+
+  // Clip to loupe rect
+  ctx.beginPath(); rrPath(lx, ly, LW, LH, 8*dpr); ctx.clip();
+
+  // Zoomed video frame
+  ctx.drawImage(vid, vsx, vsy, vsw, vsh, lx, ly, LW, LH);
+
+  // Gate markers inside loupe
+  const scX  = LW / srcW;
+  const llx  = lx + (cx - gW/2 - srcX) * scX;
+  const lrx  = lx + (cx + gW/2 - srcX) * scX;
+  const lty  = ly + (ty - srcY) * scX;
+  const lby  = ly + (by - srcY) * scX;
+  const lcy  = ly + (cy - srcY) * scX;
+
+  ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2*dpr;
+  ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 6*dpr;
+  ctx.beginPath(); ctx.moveTo(llx, lty); ctx.lineTo(llx, lby); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(lrx, lty); ctx.lineTo(lrx, lby); ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(74,222,128,0.3)'; ctx.lineWidth = dpr; ctx.shadowBlur = 0;
+  ctx.setLineDash([3*dpr, 6*dpr]);
+  ctx.beginPath(); ctx.moveTo(lx, lcy); ctx.lineTo(lx + LW, lcy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.restore();
+
+  // Loupe border + ×N label
+  ctx.save();
+  ctx.strokeStyle = 'rgba(74,222,128,0.42)'; ctx.lineWidth = 1.5*dpr;
+  ctx.beginPath(); rrPath(lx, ly, LW, LH, 8*dpr); ctx.stroke();
+  ctx.font = `${9*dpr}px 'DM Mono',monospace`;
+  ctx.fillStyle = 'rgba(74,222,128,0.44)'; ctx.textAlign = 'right';
+  ctx.fillText(`×${ZOOM}`, lx + LW - 4*dpr, ly + LH - 4*dpr);
+  ctx.restore();
+}
+
+function rrPath(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  COUNTER
+// ═══════════════════════════════════════════════════════════════
+function addCount(v){
+  S.actions.push({ v, ts: Date.now() });
+  refreshCounter();
+  addChip(v);
+  if ('vibrate' in navigator) navigator.vibrate(v === 1 ? 55 : 28);
+}
+
+function undoLast(){
+  if (!S.actions.length) return;
+  S.actions.pop();
+  refreshCounter();
+  if ('vibrate' in navigator) navigator.vibrate([25, 15, 25]);
+}
+
+function refreshCounter(){
+  const el = document.getElementById('n-count');
+  const ab = document.getElementById('n-ab');
+  el.textContent = S.count % 1 === 0 ? S.count : S.count.toFixed(1);
+  ab.textContent = S.ab.toFixed(1) + ' m²/ha';
+  el.classList.remove('bump');
+  void el.offsetWidth;   // force reflow
+  el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 180);
+}
+
+// ─── Chips ────────────────────────────────────────────────────
+const chipQ = [];
+function addChip(v){
+  const wrap = document.getElementById('chips');
+  const el = document.createElement('div');
+  el.className = 'chip';
+  el.textContent = v === 1 ? '🌲 +1' : '🌿 +½';
+  wrap.insertBefore(el, wrap.firstChild);
+  chipQ.push(el);
+  if (chipQ.length > 4) chipQ.shift().remove();
+  Array.from(wrap.children).forEach((c, i) => c.classList.toggle('fade', i > 0));
+  setTimeout(() => {
+    el.classList.add('fade');
+    setTimeout(() => el.remove(), 500);
+  }, 2400);
+}
+
+// ─── BAF tabs ─────────────────────────────────────────────────
+function buildTabs(){
+  const ct = document.getElementById('baf-tabs');
+  ct.innerHTML = '';
+  CFG.BAFS.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'baf-pill' + (b === S.baf ? ' on' : '');
+    btn.textContent = b;
+    btn.onclick = () => { S.baf = b; buildTabs(); refreshCounter(); updateCalibHint(); };
+    ct.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FOV CALIBRATION
+// ═══════════════════════════════════════════════════════════════
+function onFOV(v){
+  S.fov = parseFloat(v);
+  document.getElementById('fov-disp').textContent = v;
+  localStorage.setItem(CFG.FOV_K, v);
+  updateCalibHint();
+}
+function syncFOVUI(){
+  document.getElementById('fov-sl').value = S.fov;
+  document.getElementById('fov-disp').textContent = S.fov;
+  updateCalibHint();
+}
+function updateCalibHint(){
+  const d = (25 / Math.sqrt(S.baf)).toFixed(1);
+  const el = document.getElementById('calib-dist');
+  if (el) el.textContent = d + ' m';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GPS
+// ═══════════════════════════════════════════════════════════════
+function doGPS(){
+  const btn = document.getElementById('btn-gps');
+  const inp = document.getElementById('i-gps');
+  btn.textContent = '…';
+  inp.placeholder = t('gps_wait');
+
+  if (!navigator.geolocation) { toast(t('gps_err'), 'wn'); return; }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      S.lat = pos.coords.latitude;
+      S.lng = pos.coords.longitude;
+      S.acc = pos.coords.accuracy;
+      inp.value = `${S.lat.toFixed(6)}, ${S.lng.toFixed(6)}`;
+      btn.textContent = '✓';
+      toast(t('gps_ok'), 'ok');
+      localStorage.setItem(CFG.LOC_K, JSON.stringify({ lat: S.lat, lng: S.lng }));
+    },
+    () => {
+      btn.textContent = '📍 GPS';
+      inp.placeholder = t('gps_err');
+      toast(t('gps_err'), 'wn');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SAVE MODAL
+// ═══════════════════════════════════════════════════════════════
+function openSave(){
+  const now = new Date();
+  document.getElementById('m-dt').textContent =
+    now.toLocaleDateString('ca-ES') + ' ' +
+    now.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('m-baf').textContent   = S.baf + ' m²/ha';
+  document.getElementById('m-trees').textContent = S.count % 1 === 0 ? S.count : S.count.toFixed(1);
+  document.getElementById('m-ab').textContent    = S.ab.toFixed(2) + ' m²/ha';
+
+  // Prefill GPS (current or last cached)
+  const inp = document.getElementById('i-gps');
+  if (S.lat) {
+    inp.value = `${S.lat.toFixed(6)}, ${S.lng.toFixed(6)}`;
+  } else {
+    try {
+      const cached = JSON.parse(localStorage.getItem(CFG.LOC_K));
+      if (cached) { S.lat = cached.lat; S.lng = cached.lng; inp.value = `${S.lat.toFixed(6)}, ${S.lng.toFixed(6)}`; }
+    } catch(e){}
+  }
+  if (!S.lat) setTimeout(doGPS, 350);
+
+  document.getElementById('save-bd').classList.add('open');
+}
+function closeSave(){ document.getElementById('save-bd').classList.remove('open'); }
+
+async function confirmSave(){
+  const now = new Date();
+  const rec = {
+    measured_at:  now.toISOString(),
+    baf:          S.baf,
+    tree_count:   S.count,
+    basal_area:   parseFloat(S.ab.toFixed(4)),
+    gps_lat:      S.lat,
+    gps_lng:      S.lng,
+    gps_accuracy: S.acc,
+    finca:        document.getElementById('i-finca').value.trim(),
+    rodal:        document.getElementById('i-rodal').value.trim(),
+    parcela:      document.getElementById('i-parcela').value.trim(),
+    notes:        document.getElementById('i-notes').value.trim(),
+  };
+  closeSave();
+  const res = await saveRecord(rec);
+  toast(res === 'remote' ? t('saved_ok') : t('saved_off'), res === 'remote' ? 'ok' : 'wn');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  OFFLINE QUEUE + SUPABASE SAVE
+// ═══════════════════════════════════════════════════════════════
+function genUID(){ return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function loadQ()  { try { const r = localStorage.getItem(CFG.Q_K); return r ? JSON.parse(r) : []; } catch { return []; } }
+function saveQ(q) { localStorage.setItem(CFG.Q_K, JSON.stringify(q)); refreshBadge(); }
+
+function refreshBadge(){
+  const q  = loadQ();
+  const b  = document.getElementById('pending-badge');
+  const pi = document.getElementById('pending-info');
+  if (q.length > 0) {
+    b.textContent = `${q.length} ⬆`; b.classList.add('show');
+    if (pi) pi.textContent = `${q.length} ${t('pend')}`;
+  } else {
+    b.classList.remove('show');
+    if (pi) pi.textContent = t('no_pend');
+  }
+}
+
+async function saveRecord(rec){
+  if (!sb || !S.user) { enqueue(rec); return 'local'; }
+  try {
+    const p1   = sb.from(CFG.TABLE).insert({ ...rec, user_id: S.user.id });
+    const tout = new Promise((_, rej) => setTimeout(() => rej('timeout'), CFG.TIMEOUT));
+    const { error } = await Promise.race([p1, tout]);
+    if (error) throw error;
+    return 'remote';
+  } catch(e) {
+    enqueue(rec); return 'local';
+  }
+}
+
+function enqueue(rec){
+  const q = loadQ();
+  q.push({ ...rec, _id: genUID(), _queued: Date.now() });
+  saveQ(q);
+}
+
+async function trySyncPending(){
+  const q = loadQ();
+  if (!q.length) { toast(t('no_pend'), 'ok'); return; }
+  if (!sb || !S.user) { toast(t('offline'), 'wn'); return; }
+
+  setSyncDot('syncing');
+  let ok = 0;
+  const fail = [];
+
+  for (const rec of q) {
+    try {
+      const { error } = await sb.from(CFG.TABLE).insert({ ...rec, user_id: S.user.id });
+      if (error) fail.push(rec); else ok++;
+    } catch { fail.push(rec); }
+  }
+
+  saveQ(fail);
+  setSyncDot(S.user ? 'online' : 'offline');
+  if (ok > 0) toast(`${t('synced')} (${ok})`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SETTINGS MODAL
+// ═══════════════════════════════════════════════════════════════
+function openSettings(){ refreshBadge(); document.getElementById('set-bd').classList.add('open'); }
+function closeSettings(){ document.getElementById('set-bd').classList.remove('open'); }
+
+function doReset(){
+  if (confirm('Vols reiniciar el comptador?')) {
+    S.actions = [];
+    S.lat = S.lng = S.acc = null;
+    refreshCounter();
+    document.getElementById('chips').innerHTML = '';
+    chipQ.length = 0;
+    toast(t('reset_ok'), 'ok');
+    closeSettings();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SYNC DOT + TOAST
+// ═══════════════════════════════════════════════════════════════
+function setSyncDot(st){ const d = document.getElementById('sync-dot'); d.className = ''; d.classList.add(st); }
+
+function toast(msg, type = 'ok'){
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function tornarHub(){
+  if (S.stream) S.stream.getTracks().forEach(tr => tr.stop());
+  if (S.raf) cancelAnimationFrame(S.raf);
+  if (document.referrer) window.history.back();
+  else window.location.href = '/';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+async function init(){
+  // 1 · Language from Hub
+  S.lang = localStorage.getItem(CFG.LANG_K) || 'ca';
+  document.getElementById('lbl-arbre').textContent = t('arbre');
+  document.getElementById('lbl-mig').textContent   = t('mig');
+
+  // 2 · Canvas sizing
+  resizeCV();
+  window.addEventListener('resize', resizeCV);
+
+  // 3 · BAF tabs + initial counter
+  buildTabs();
+  refreshCounter();
+  updateCalibHint();
+
+  // 4 · Supabase (non-blocking — won't block camera start)
+  initSB().then(() => { if (S.user) trySyncPending(); });
+
+  // 5 · Camera + render loop
+  await startCam();
+
+  // 6 · Offline badge
+  refreshBadge();
+
+  // 7 · Network events — auto sync on reconnect
+  window.addEventListener('online',  () => { setSyncDot(S.user ? 'online' : 'offline'); if (S.user) trySyncPending(); });
+  window.addEventListener('offline', () => setSyncDot('offline'));
+
+  // 8 · Close modals on backdrop tap
+  document.getElementById('save-bd').addEventListener('click', e => { if (e.target === e.currentTarget) closeSave(); });
+  document.getElementById('set-bd').addEventListener('click',  e => { if (e.target === e.currentTarget) closeSettings(); });
+
+  // 9 · Dismiss loading
+  setTimeout(() => {
+    const ld = document.getElementById('loading');
+    ld.classList.add('out');
+    setTimeout(() => ld.remove(), 550);
+  }, 1400);
+}
+
+// ─── Prevent pinch-zoom + double-tap zoom ─────────────────────
+document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+let _lastTap = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - _lastTap < 290) e.preventDefault();
+  _lastTap = now;
+}, { passive: false });
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
