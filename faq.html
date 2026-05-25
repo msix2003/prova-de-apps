@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a3d2b">
+<title>PTGMF · Dubtes Freqüents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --v-fosc:  #1a3d2b;
+  --v-fosc2: #163424;
+  --v:       #2d6a4f;
+  --v-mig:   #40916c;
+  --v-clar:  #74c69d;
+  --v-pale:  #d8f3dc;
+  --fons:    #f0f4f1;
+  --card:    #ffffff;
+  --text:    #1c2b22;
+  --suau:    #5a7060;
+  --borde:   #dce8df;
+  --sh:      0 4px 24px rgba(45,106,79,.13);
+  --ff-s:    'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+  --safe-t:  env(safe-area-inset-top, 0px);
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--ff-s);
+  background: var(--fons);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Evita doble scroll, el xat gestionarà el seu propi espai */
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--v-fosc); padding: calc(var(--safe-t) + 14px) 18px 14px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25); position: relative; z-index: 50;
+}
+.back-btn {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.13);
+  color: #fff; border-radius: 8px; font-size: 14px; font-weight: 600;
+  padding: 7px 12px; cursor: pointer; text-decoration: none; transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.16); }
+.header-title { color: #fff; font-weight: 700; font-size: 16px; flex: 1; }
+.lang-btn {
+  background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.9); border-radius: 8px; font-size: 11px; font-weight: 700;
+  padding: 6px 10px; cursor: pointer; letter-spacing: .6px; transition: background .2s;
+}
+.lang-btn:active { background: rgba(255,255,255,.26); }
+
+/* ── CHAT CONTAINER ── */
+.chat-container {
+  flex: 1; display: flex; flex-direction: column; background: var(--fons);
+  max-width: 600px; width: 100%; margin: 0 auto; position: relative;
+  height: calc(100vh - 60px);
+}
+
+/* Àrea on apareixen els missatges */
+.chat-messages {
+  flex: 1; padding: 20px 16px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* Estils de les bafarades de text */
+.msg { max-width: 85%; animation: fadeIn .3s ease-out forwards; display: flex; flex-direction: column; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.msg.bot { align-self: flex-start; }
+.msg.user { align-self: flex-end; }
+
+.msg-bubble {
+  padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.45; box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.msg.bot .msg-bubble { background: var(--card); color: var(--text); border-bottom-left-radius: 4px; border: 1px solid var(--borde); }
+.msg.user .msg-bubble { background: var(--v-mig); color: #fff; border-bottom-right-radius: 4px; font-weight: 500; }
+
+.msg-meta { font-size: 10px; color: var(--suau); margin-top: 4px; padding: 0 4px; }
+.msg.user .msg-meta { align-self: flex-end; }
+
+/* ── BOTONS D'OPCIONS INTERACTIVES ── */
+.chat-options-panel {
+  padding: 14px 16px calc(var(--safe-b) + 16px); background: linear-gradient(180deg, rgba(240,244,241,0) 0%, rgba(240,244,241,1) 20%);
+  display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(45,106,79,.06);
+}
+.opt-btn {
+  width: 100%; text-align: left; background: var(--card); border: 1px solid var(--v-clar);
+  color: var(--v-fosc); padding: 12px 16px; border-radius: 12px; font-size: 13.5px;
+  font-weight: 600; cursor: pointer; transition: background .2s, transform .1s, border-color .2s;
+  box-shadow: 0 2px 6px rgba(45,106,79,.05); display: flex; align-items: center; justify-content: space-between;
+}
+.opt-btn:hover { background: var(--v-pale); border-color: var(--v-mig); }
+.opt-btn:active { transform: scale(.99); }
+.opt-btn::after { content: '→'; font-weight: 700; color: var(--v-mig); font-size: 14px; }
+
+/* Animació de punts suspensius ("escribiendo...") */
+.typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+.typing-dots span { width: 6px; height: 6px; background: var(--suau); border-radius: 50%; animation: blink 1.4s infinite both; }
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="index.html" class="back-btn" data-i18n="btnBack">← Hub</a>
+  <h1 class="header-title" data-i18n="pageTitle">Dubtes Freqüents</h1>
+  <button class="lang-btn" id="lang-btn" onclick="cycleLang()">CA</button>
+</header>
+
+<div class="chat-container">
+  <div class="chat-messages" id="chat-box">
+    </div>
+
+  <div class="chat-options-panel" id="options-box">
+    </div>
+</div>
+
+<script>
+const LANGS       = ['ca', 'es', 'en'];
+const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
+
+// Base de dades de respostes del ForestBot en els 3 idiomes
+const BOT_DATA = {
+  ca: {
+    btnBack: '← Hub',
+    pageTitle: 'Dubtes Freqüents',
+    botName: 'ForestBot',
+    welcome: '👋 Hola! Sóc en **ForestBot**, el teu assistent virtual de la llançadora d\'aplicacions forestals. Estic aquí per ajudar-te a digitalitzar i agilitzar el teu treball de camp. Quin dubte tens?',
+    menuTitle: 'Tria una opció per respondre:',
+    
+    // Opcions del menú
+    opt1: '🌲 Com funciona l\'app d\'inventari?',
+    opt2: '📡 Funciona sense connexió a internet?',
+    opt3: '💾 Diferència Convidat vs. Registrat',
+    opt4: '✉️ Com puc reportar incidències o idees?',
+    optMenu: '🔄 Veure altres dubtes (Menú)',
+
+    // Respostes del Bot
+    res1: 'La primera aplicació integrada a la llançadora és l\'**Inventari Forestal Mòbil**. Et permet recollir gran quantitat de dades directament en el bosc estructurades per **finca, parcel·la i rodal**, a més de registrar detalls de la vegetació i mesures d\'arbres. Un cop acabat, pots exportar les dades en un **fitxer CSV** i utilitzar un programa analitzador especialitzat per processar tota la informació.',
+    res2: '¡Sí, està totalment pensada per al camp! L\'aplicació **funciona 100% offline (sense connexió)**. Pots recollir totes les dades de l\'inventari en zones recòndites del bosc o muntanya. Quan el teu mòbil torni a detectar connexió a internet, totes les dades es **sincronitzaran automàticament** amb el servidor.',
+    res3: 'La diferència principal és la seguretat de les teves dades:\n\n• **Mode Convidat:** És un accés lliure i tot es guarda completament **en local** al navegador del mòbil. Si perds o espatlles el telèfon, o si esborres la memòria memòria cau, les dades es perdran.\n\n• **Usuari Registrat:** El registre és **lliure per a tothom**. En iniciar sessió, les dades es guarden a la base de dades online (núvol). Això serveix de còpia de seguretat si es trenca el mòbil i et permet obrir i gestionar les dades des de qualsevol altre dispositiu.',
+    res4: 'Al menú inferior o lateral del teu Hub, disposes d\'un botó flotant amb la icona de la bombeta (**Proposar millora / Incidències**). Des d\'allà pots omplir un formulari classificant el cas com un error (bug), una nova idea o un problema de disseny. Ens arribarà directament un avís per resoldre-ho!'
+  },
+  es: {
+    btnBack: '← Hub',
+    pageTitle: 'Dudas Frecuentes',
+    botName: 'ForestBot',
+    welcome: '👋 ¡Hola! Soy **ForestBot**, tu asistente virtual de la lanzadera de aplicaciones forestales. Estoy aquí para ayudarte a digitalizar y agilizar tu trabajo de campo. ¿Qué duda tienes?',
+    menuTitle: 'Elige una opción para responder:',
+    
+    opt1: '🌲 ¿Cómo funciona la app de inventario?',
+    opt2: '📡 ¿Funciona sin conexión a internet?',
+    opt3: '💾 Diferencia Invitado vs. Registrado',
+    opt4: '✉️ ¿Cómo reportar incidencias o ideas?',
+    optMenu: '🔄 Ver otras dudas (Menú)',
+
+    res1: 'La primera aplicación integrada en la lanzadera es el **Inventario Forestal Móvil**. Te permite recopilar gran cantidad de datos directamente en el bosque estructurados por **finca, parcela y rodal**, además de registrar detalles de la vegetación y medidas de árboles. Al terminar, puedes exportar los datos en un **archivo CSV** y usar un programa analizador especializado para procesar toda la información.',
+    res2: '¡Sí, está totalmente pensada para el campo! La aplicación **funciona 100% offline (sin internet)**. Puedes recopilar todos los datos del inventario en zonas recónditas del bosque. En cuanto tu móvil vuelva a detectar conexión a internet, los datos se **sincronizarán automáticamente** con el servidor.',
+    res3: 'La diferencia principal es la seguridad de tus datos:\n\n• **Mode Invitado:** Es un acceso libre y todo se guarda **en local** en el navegador del móvil. Si pierdes o rompes el teléfono, o si borras la caché, los datos se perderán.\n\n• **Usuario Registrado:** El registro es **libre para todos**. Al iniciar sesión, los datos se guardan en la base de datos online (nube). Esto sirve de copia de seguridad y te permite abrir tus datos desde cualquier otro dispositivo.',
+    res4: 'En el menú de tu Hub dispones de un botón flotante con el icono de la bombilla (**Proponer mejora / Incidencias**). Desde allí puedes rellenar un formulario clasificando el caso como error (bug), nueva idea o problema de diseño. ¡Nos llegará directamente un aviso para solucionarlo!'
+  },
+  en: {
+    btnBack: '← Hub',
+    pageTitle: 'FAQ',
+    botName: 'ForestBot',
+    welcome: '👋 Hello! I am **ForestBot**, your virtual assistant for the forestry applications launcher. I am here to help you digitalize and streamline your field work. How can I help you?',
+    menuTitle: 'Choose an option below:',
+    
+    opt1: '🌲 How does the inventory app work?',
+    opt2: '📡 Does it work without internet?',
+    opt3: '💾 Difference Guest vs. Registered',
+    opt4: '✉️ How to report issues or ideas?',
+    optMenu: '🔄 View other questions (Menu)',
+
+    res1: 'The first application integrated into the launcher is the **Mobile Forestry Inventory**. It allows you to collect large amounts of data directly in the forest structured by **estate, plot, and stand**, as well as record vegetation details and tree measurements. Once finished, data can be exported into a **CSV file** and analyzed with a specialized analysis software.',
+    res2: 'Yes, it is fully designed for field work! The app **works 100% offline (without internet)**. You can collect all inventory data deep in the forest. As soon as your mobile detects an internet connection, all data will **automatically sync** with the server.',
+    res3: 'The main difference is your data safety:\n\n• **Guest Mode:** Free access where everything is saved **locally** on your mobile browser. If you lose/damage your phone or clear cache, data will be lost.\n\n• **Registered User:** Registration is **free for everyone**. When logged in, your data is saved to the online database (cloud). This acts as a backup and allows you to open your data from other devices.',
+    res4: 'In your Hub menu, you have a floating button with a lightbulb icon (**Suggest Improvement / Issues**). There you can fill out a form classifying the case as a bug, new idea, or design flaw. We will get an immediate alert to look into it!'
+  }
+};
+
+function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
+function setLang(lang) { localStorage.setItem('ptgmf_lang', lang); applyLang(lang); }
+function cycleLang() {
+  const cur = getLang();
+  setLang(LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length]);
+  // Reiniciem el xat per evitar barreja d'idiomes si es canvia a mig camí
+  initChat();
+}
+
+function applyLang(lang) {
+  const t = BOT_DATA[lang] || BOT_DATA.ca;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  const btn = document.getElementById('lang-btn');
+  if (btn) btn.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyLang(getLang());
+  initChat();
+});
+
+// Inicialització o reinici de la conversa
+function initChat() {
+  const chatBox = document.getElementById('chat-box');
+  chatBox.innerHTML = ''; // Neteja
+  
+  const t = BOT_DATA[getLang()] || BOT_DATA.ca;
+  
+  // Missatge de benvinguda de ForestBot
+  sendBotMessage(t.welcome);
+  
+  // Carrega el menú de botons principal
+  setTimeout(() => {
+    showMainMenu();
+  }, 600);
+}
+
+// Funció per pintar un missatge del bot amb efecte de càrrega
+function sendBotMessage(textHTML) {
+  const chatBox = document.getElementById('chat-box');
+  const t = BOT_DATA[getLang()] || BOT_DATA.ca;
+  
+  // ID temporal per a la bafarada que s'està component
+  const tempId = 'typing-' + Date.now();
+  
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'msg bot';
+  msgDiv.id = tempId;
+  msgDiv.innerHTML = `
+    <div class="msg-bubble">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+    <span class="msg-meta">${t.botName} · ${getCurrentTime()}</span>
+  `;
+  chatBox.appendChild(msgDiv);
+  scrollToBottom();
+
+  // Simulem que triga un segon a "escriure" per fer-ho realista
+  setTimeout(() => {
+    const bubble = document.getElementById(tempId).querySelector('.msg-bubble');
+    // Reemplacem els salts de línia \n per <br> i negretes primitives de text per HTML
+    let formattedText = textHTML.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    bubble.innerHTML = formattedText;
+    scrollToBottom();
+  }, 1000);
+}
+
+// Funció per pintar el missatge que simula enviar l'usuari
+function sendUserMessage(text) {
+  const chatBox = document.getElementById('chat-box');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'msg user';
+  msgDiv.innerHTML = `
+    <div class="msg-bubble">${text}</div>
+    <span class="msg-meta">${getCurrentTime()}</span>
+  `;
+  chatBox.appendChild(msgDiv);
+  scrollToBottom();
+}
+
+// Mostra els quatre botons principals d'opcions
+function showMainMenu() {
+  const optionsBox = document.getElementById('options-box');
+  const t = BOT_DATA[getLang()] || BOT_DATA.ca;
+  
+  optionsBox.innerHTML = `
+    <button class="opt-btn" onclick="handleSelectOption(1)">${t.opt1}</button>
+    <button class="opt-btn" onclick="handleSelectOption(2)">${t.opt2}</button>
+    <button class="opt-btn" onclick="handleSelectOption(3)">${t.opt3}</button>
+    <button class="opt-btn" onclick="handleSelectOption(4)">${t.opt4}</button>
+  `;
+}
+
+// Gestiona el clic a qualsevol opció
+function handleSelectOption(num) {
+  const t = BOT_DATA[getLang()] || BOT_DATA.ca;
+  const optionsBox = document.getElementById('options-box');
+  
+  // Buida panell de control temporalment per evitar doble clics ràpids
+  optionsBox.innerHTML = '';
+
+  // 1. Envia el missatge de l'usuari a la pantalla
+  const selectedText = t['opt' + num];
+  sendUserMessage(selectedText);
+
+  // 2. Resposta automatitzada del Bot després d'una petita pausa
+  setTimeout(() => {
+    const replyText = t['res' + num];
+    sendBotMessage(replyText);
+    
+    // 3. Ofereix el botó de retorn al menú
+    setTimeout(() => {
+      optionsBox.innerHTML = `
+        <button class="opt-btn" onclick="initChat()">${t.optMenu}</button>
+      `;
+    }, 1100);
+  }, 500);
+}
+
+// Utilitats auxiliars
+function scrollToBottom() {
+  const chatBox = document.getElementById('chat-box');
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function getCurrentTime() {
+  const now = new Date();
+  return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+}
+</script>
+</body>
+</html>
