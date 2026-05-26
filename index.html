@@ -447,8 +447,8 @@ const APPS = [
   { nameKey:'appAnalisiName',   descKey:'appAnalisiDesc',   icon:'📊', url:'analisi.html',  badge:'v4',  active:true, categoria:'despatx' }
 ];
 
-function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
-function setLang(lang) { localStorage.setItem('ptgmf_lang', lang); applyLang(lang); }
+function getLang() { return localStorage.getItem('M.S.i.X_lang') || 'ca'; }
+function setLang(lang) { localStorage.setItem('M.S.i.X_lang', lang); applyLang(lang); }
 function cycleLang() {
   const cur = getLang();
   setLang(LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length]);
@@ -529,7 +529,7 @@ function buildAppGrid() {
 function navigateToApp(e, url) { setAppMode(sbUser ? 'logged_in' : 'guest'); }
 
 function setAppMode(mode) {
-  localStorage.setItem('ptgmf_app_mode', JSON.stringify({
+  localStorage.setItem('M.S.i.X_app_mode', JSON.stringify({
     mode, userId: sbUser ? sbUser.id : null, email: sbUser ? sbUser.email : null, ts: Date.now()
   }));
 }
@@ -616,7 +616,7 @@ async function doRegister() {
 
 function continuarConvidat() {
   const t = T[getLang()] || T.ca;
-  localStorage.setItem('ptgmf_app_mode', JSON.stringify({ mode:'guest', userId:null, email:null, ts:Date.now() }));
+  localStorage.setItem('M.S.i.X_app_mode', JSON.stringify({ mode:'guest', userId:null, email:null, ts:Date.now() }));
   showHub(false);
   setSyncStatus('pending', t.syncGuest);
 }
@@ -624,7 +624,7 @@ function continuarConvidat() {
 async function doLogout() {
   const t = T[getLang()] || T.ca;
   if (!confirm(t.logoutConfirm)) return;
-  localStorage.removeItem('ptgmf_app_mode');
+  localStorage.removeItem('M.S.i.X_app_mode');
   await sbClient.auth.signOut();
   sbUser = null;
   showLogin();
