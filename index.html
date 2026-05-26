@@ -6,13 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a3d2b">
-<meta name="description" content="Hub d'aplicacions forestals PTGMF per Martí Solé i Xanxo">
-<title>PTGMF · Hub d'Aplicacions</title>
+<meta name="description" content="Hub d'aplicacions forestals M.S.i.X per Martí Solé i Xanxo">
+<title>M.S.i.X · Hub d'Aplicacions</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="PTGMF Hub">
+<meta name="apple-mobile-web-app-title" content="M.S.i.X Hub">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -278,8 +278,8 @@ button { cursor: pointer; border: none; }
     <button class="lang-btn" id="login-lang-btn" onclick="cycleLang()"
             style="position:absolute;top:calc(env(safe-area-inset-top,0px)+14px);right:16px;z-index:10;">CA</button>
 
-    <img src="icon-512.png" class="login-logo" alt="PTGMF" onerror="this.style.display='none'">
-    <div class="login-title"    data-i18n="loginTitle">PTGMF · Hub Forestal</div>
+    <img src="icon-512.png" class="login-logo" alt="M.S.i.X" onerror="this.style.display='none'">
+    <div class="login-title"    data-i18n="loginTitle">M.S.i.X · Hub Forestal</div>
     <div class="login-subtitle" data-i18n="loginSubtitle">Accedeix o continua sense compte</div>
 
     <div class="login-card">
@@ -317,7 +317,7 @@ button { cursor: pointer; border: none; }
       <div class="hub-avatar" id="hub-avatar">?</div>
       <div class="hub-header-info">
         <div class="hub-header-title" id="hub-user-name">Carregant...</div>
-        <div class="hub-header-sub"   id="hub-user-sub">PTGMF · Hub d'Aplicacions</div>
+        <div class="hub-header-sub"   id="hub-user-sub">M.S.i.X · Hub d'Aplicacions</div>
       </div>
       <button class="lang-btn" id="hub-lang-btn" onclick="cycleLang()">CA</button>
       <button class="hub-logout-btn" id="hub-logout-btn" data-i18n="hubLogout" onclick="doLogout()">Sortir</button>
@@ -362,7 +362,7 @@ const LANG_LABELS = { ca: 'CA', es: 'ES', en: 'EN' };
 
 const T = {
   ca: {
-    loginTitle:'PTGMF · Hub Forestal', loginSubtitle:'Accedeix o continua sense compte',
+    loginTitle:'M.S.i.X · Hub Forestal', loginSubtitle:'Accedeix o continua sense compte',
     tabLogin:'Iniciar sessió', tabRegister:'Registrar-se',
     loginEmailPh:'Correu electrònic', loginPassPh:'Contrasenya',
     loginBtn:'Entrar', loginBtnLoading:'Entrant...',
@@ -372,14 +372,14 @@ const T = {
     loginFooterHtml:"Les teves dades s'emmagatzemen de forma segura al núvol.<br>Cada usuari només pot veure les seves pròpies dades.",
     hubSectionApps:'Aplicacions de camp', hubSectionDespatx:'Aplicacions de despatx',
     hubLogout:'Sortir',
-    hubSubLogged:'Compte registrat · PTGMF Hub', hubSubGuest:'Dades guardades localment',
+    hubSubLogged:'Compte registrat · M.S.i.X Hub', hubSubGuest:'Dades guardades localment',
     hubUserGuest:'Mode Convidat', syncChecking:'Comprovant connexió...',
     syncActive:'Sessió activa · ', syncGuest:'Mode Convidat · Sense còpia al núvol',
     logoutConfirm:'Tancar la sessió?', toastLogout:'Sessió tancada correctament.',
     credits:'🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Inventari Forestal', appInventariDesc:'Parcel·les, dasometria i vegetació',
     appRelascopiName:'Relascopi de Bitterlich', appRelascopiDesc:'Càlcul de la àrea basal amb relascopi',
-    appAnalisiName:'Eina d\'Anàlisi', appAnalisiDesc:'Anàlisi de dades i resultats del PTGMF',
+    appAnalisiName:'Eina d\'Anàlisi', appAnalisiDesc:'Anàlisi de dades i resultats del M.S.i.X',
     errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
     errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
     accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
@@ -388,7 +388,7 @@ const T = {
     fabHelp:'Dubtes freqüents', fabSuggest:'Proposar millora',
   },
   es: {
-    loginTitle:'PTGMF · Hub Forestal', loginSubtitle:'Accede o continúa sin cuenta',
+    loginTitle:'M.S.i.X · Hub Forestal', loginSubtitle:'Accede o continúa sin cuenta',
     tabLogin:'Iniciar sesión', tabRegister:'Registrarse',
     loginEmailPh:'Correo electrónico', loginPassPh:'Contraseña',
     loginBtn:'Entrar', loginBtnLoading:'Entrando...',
@@ -398,14 +398,14 @@ const T = {
     loginFooterHtml:'Tus datos se almacenan de forma segura en la nube.<br>Cada usuario solo puede ver sus propios datos.',
     hubSectionApps:'Aplicaciones de campo', hubSectionDespatx:'Aplicaciones de despacho',
     hubLogout:'Salir',
-    hubSubLogged:'Cuenta registrada · PTGMF Hub', hubSubGuest:'Datos guardados localmente',
+    hubSubLogged:'Cuenta registrada · M.S.i.X Hub', hubSubGuest:'Datos guardados localmente',
     hubUserGuest:'Modo Invitado', syncChecking:'Comprobando conexión...',
     syncActive:'Sesión activa · ', syncGuest:'Modo Invitado · Sin copia en la nube',
     logoutConfirm:'¿Cerrar la sesión?', toastLogout:'Sesión cerrada correctamente.',
     credits:'🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Inventario Forestal', appInventariDesc:'Parcelas, dasometría y vegetación',
     appRelascopiName:'Relascopio de Bitterlich', appRelascopiDesc:'Cálculo del área basal con relascopio',
-    appAnalisiName:'Herramienta de Análisis', appAnalisiDesc:'Análisis de datos y resultados del PTGMF',
+    appAnalisiName:'Herramienta de Análisis', appAnalisiDesc:'Análisis de datos y resultados del M.S.i.X',
     errEmailPass:'Introduce correo y contraseña.', errPassMatch:'Las contraseñas no coinciden.',
     errPassLen:'La contraseña debe tener mínimo 6 caracteres.',
     accountCreated:'✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
@@ -414,7 +414,7 @@ const T = {
     fabHelp:'Preguntas frecuentes', fabSuggest:'Proponer mejora',
   },
   en: {
-    loginTitle:'PTGMF · Forest Hub', loginSubtitle:'Sign in or continue without an account',
+    loginTitle:'M.S.i.X · Forest Hub', loginSubtitle:'Sign in or continue without an account',
     tabLogin:'Sign in', tabRegister:'Register',
     loginEmailPh:'Email address', loginPassPh:'Password',
     loginBtn:'Sign in', loginBtnLoading:'Signing in...',
@@ -424,14 +424,14 @@ const T = {
     loginFooterHtml:'Your data is stored securely in the cloud.<br>Each user can only see their own data.',
     hubSectionApps:'Field applications', hubSectionDespatx:'Office applications',
     hubLogout:'Sign out',
-    hubSubLogged:'Registered account · PTGMF Hub', hubSubGuest:'Data saved locally',
+    hubSubLogged:'Registered account · M.S.i.X Hub', hubSubGuest:'Data saved locally',
     hubUserGuest:'Guest mode', syncChecking:'Checking connection...',
     syncActive:'Active session · ', syncGuest:'Guest mode · No cloud backup',
     logoutConfirm:'Sign out?', toastLogout:'Successfully signed out.',
     credits:'🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Forest Inventory', appInventariDesc:'Plots, stand metrics and vegetation',
     appRelascopiName:'Bitterlich Relascope', appRelascopiDesc:'Basal area calculation with relascope',
-    appAnalisiName:'Analysis Tool', appAnalisiDesc:'Data analysis and PTGMF results',
+    appAnalisiName:'Analysis Tool', appAnalisiDesc:'Data analysis and M.S.i.X results',
     errEmailPass:'Enter your email and password.', errPassMatch:'Passwords do not match.',
     errPassLen:'Password must be at least 6 characters.',
     accountCreated:'✅ Account created! You can now sign in.',
