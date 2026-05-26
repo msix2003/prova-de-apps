@@ -1,6 +1,6 @@
-// Service Worker - Inventari Forestal PTGMF v10.0
+// Service Worker - Inventari Forestal M.S.i.X v10.0
 // App 100% offline - tots els recursos estan incrustats o en caché
-const CACHE_NAME = 'ptgmf-v4';
+const CACHE_NAME = 'M.S.i.X-v4';
 const CACHE_FILES = [
   './',
   './index.html',
