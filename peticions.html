@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a3d2b">
-<title>PTGMF · Proposar Millora</title>
+<title>M.S.i.X · Proposar Millora</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -208,8 +208,8 @@ const T = {
   }
 };
 
-function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
-function setLang(lang) { localStorage.setItem('ptgmf_lang', lang); applyLang(lang); }
+function getLang() { return localStorage.getItem('M.S.i.X_lang') || 'ca'; }
+function setLang(lang) { localStorage.setItem('M.S.i.X_lang', lang); applyLang(lang); }
 function cycleLang() {
   const cur = getLang();
   setLang(LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length]);
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkUserSession() {
-  const localMode = localStorage.getItem('ptgmf_app_mode');
+  const localMode = localStorage.getItem('M.S.i.X_app_mode');
   console.log("Dades de sessió trobades al LocalStorage:", localMode);
 
   if (!localMode) {
@@ -318,7 +318,7 @@ async function doSubmit(e) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        _subject: `🌳 Nova Proposta PTGMF Hub: [${tipus}]`,
+        _subject: `🌳 Nova Proposta M.S.i.X Hub: [${tipus}]`,
         Usuari: localUserData ? localUserData.email : 'Desconegut',
         Tipus: tipus,
         Descripcio: descripcio
