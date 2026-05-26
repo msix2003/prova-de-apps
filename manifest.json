@@ -1,7 +1,7 @@
 {
-  "name": "Inventari Forestal PTGMF",
+  "name": "Inventari Forestal M.S.i.X",
   "short_name": "Inventari",
-  "description": "Aplicació d'inventari forestal PTGMF - Martí Solé i Xanxo",
+  "description": "Aplicació d'inventari forestal M.S.i.X - Martí Solé i Xanxo",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
