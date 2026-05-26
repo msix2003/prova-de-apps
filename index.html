@@ -151,6 +151,13 @@ button { cursor: pointer; border: none; }
   background: var(--v-mig); border-radius: 2px;
 }
 
+/* separador entre seccions */
+.hub-section-divider {
+  border: none;
+  border-top: 1px solid var(--borde);
+  margin: 8px 0 24px;
+}
+
 .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; margin-bottom: 28px; }
 .app-card {
   background: var(--card); border: 1px solid var(--borde); border-radius: 16px;
@@ -175,6 +182,13 @@ button { cursor: pointer; border: none; }
 .app-card.coming-soon { opacity: .55; cursor: default; }
 .app-card.coming-soon::before { background: #dce8df; }
 .app-card.coming-soon .app-card-badge { background: #f0f4f1; color: var(--suau); }
+
+/* app de despatx: accent diferent (blau fosc verdós) */
+.app-card.despatx::before {
+  background: linear-gradient(90deg, #1a5276, #2980b9);
+}
+.app-card.despatx .app-card-icon { background: #d6eaf8; }
+.app-card.despatx .app-card-badge { background: #d6eaf8; color: #1a5276; }
 
 .hub-sync-bar {
   background: var(--card); border: 1px solid var(--borde); border-radius: 12px;
@@ -315,8 +329,7 @@ button { cursor: pointer; border: none; }
         <div class="sync-bar-text" id="hub-sync-text" data-i18n="syncChecking">Comprovant connexió...</div>
       </div>
 
-      <div class="hub-section-title" data-i18n="hubSectionApps">Aplicacions disponibles</div>
-      <div class="app-grid" id="app-grid"></div>
+      <div id="app-grid-container"></div>
 
       <div class="hub-credits"><p data-i18n="credits">🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳</p></div>
     </div>
@@ -357,7 +370,8 @@ const T = {
     regPass2Ph:'Repetir contrasenya', regBtn:'Crear compte', regBtnLoading:'Creant compte...',
     guestBtn:'Continuar sense registrar-se →',
     loginFooterHtml:"Les teves dades s'emmagatzemen de forma segura al núvol.<br>Cada usuari només pot veure les seves pròpies dades.",
-    hubSectionApps:'Aplicacions disponibles', hubLogout:'Sortir',
+    hubSectionApps:'Aplicacions de camp', hubSectionDespatx:'Aplicacions de despatx',
+    hubLogout:'Sortir',
     hubSubLogged:'Compte registrat · PTGMF Hub', hubSubGuest:'Dades guardades localment',
     hubUserGuest:'Mode Convidat', syncChecking:'Comprovant connexió...',
     syncActive:'Sessió activa · ', syncGuest:'Mode Convidat · Sense còpia al núvol',
@@ -365,6 +379,7 @@ const T = {
     credits:'🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Inventari Forestal', appInventariDesc:'Parcel·les, dasometria i vegetació',
     appRelascopiName:'Relascopi de Bitterlich', appRelascopiDesc:'Càlcul de la àrea basal amb relascopi',
+    appAnalisiName:'Eina d\'Anàlisi', appAnalisiDesc:'Anàlisi de dades i resultats del PTGMF',
     errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
     errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
     accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
@@ -381,7 +396,8 @@ const T = {
     regPass2Ph:'Repetir contraseña', regBtn:'Crear cuenta', regBtnLoading:'Creando cuenta...',
     guestBtn:'Continuar sin registrarse →',
     loginFooterHtml:'Tus datos se almacenan de forma segura en la nube.<br>Cada usuario solo puede ver sus propios datos.',
-    hubSectionApps:'Aplicaciones disponibles', hubLogout:'Salir',
+    hubSectionApps:'Aplicaciones de campo', hubSectionDespatx:'Aplicaciones de despacho',
+    hubLogout:'Salir',
     hubSubLogged:'Cuenta registrada · PTGMF Hub', hubSubGuest:'Datos guardados localmente',
     hubUserGuest:'Modo Invitado', syncChecking:'Comprobando conexión...',
     syncActive:'Sesión activa · ', syncGuest:'Modo Invitado · Sin copia en la nube',
@@ -389,6 +405,7 @@ const T = {
     credits:'🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Inventario Forestal', appInventariDesc:'Parcelas, dasometría y vegetación',
     appRelascopiName:'Relascopio de Bitterlich', appRelascopiDesc:'Cálculo del área basal con relascopio',
+    appAnalisiName:'Herramienta de Análisis', appAnalisiDesc:'Análisis de datos y resultados del PTGMF',
     errEmailPass:'Introduce correo y contraseña.', errPassMatch:'Las contraseñas no coinciden.',
     errPassLen:'La contraseña debe tener mínimo 6 caracteres.',
     accountCreated:'✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
@@ -405,7 +422,8 @@ const T = {
     regPass2Ph:'Repeat password', regBtn:'Create account', regBtnLoading:'Creating account...',
     guestBtn:'Continue without signing in →',
     loginFooterHtml:'Your data is stored securely in the cloud.<br>Each user can only see their own data.',
-    hubSectionApps:'Available applications', hubLogout:'Sign out',
+    hubSectionApps:'Field applications', hubSectionDespatx:'Office applications',
+    hubLogout:'Sign out',
     hubSubLogged:'Registered account · PTGMF Hub', hubSubGuest:'Data saved locally',
     hubUserGuest:'Guest mode', syncChecking:'Checking connection...',
     syncActive:'Active session · ', syncGuest:'Guest mode · No cloud backup',
@@ -413,6 +431,7 @@ const T = {
     credits:'🌳 Designed by Martí Solé i Xanxo (M.S.X.) 🌳',
     appInventariName:'Forest Inventory', appInventariDesc:'Plots, stand metrics and vegetation',
     appRelascopiName:'Bitterlich Relascope', appRelascopiDesc:'Basal area calculation with relascope',
+    appAnalisiName:'Analysis Tool', appAnalisiDesc:'Data analysis and PTGMF results',
     errEmailPass:'Enter your email and password.', errPassMatch:'Passwords do not match.',
     errPassLen:'Password must be at least 6 characters.',
     accountCreated:'✅ Account created! You can now sign in.',
@@ -423,8 +442,9 @@ const T = {
 };
 
 const APPS = [
-  { nameKey:'appInventariName', descKey:'appInventariDesc', icon:'🌲', url:'Inventari.html', badge:'v10', active:true },
-  { nameKey:'appRelascopiName', descKey:'appRelascopiDesc', icon:'🎯', url:'Relascopi.html', badge:'v1',  active:true },
+  { nameKey:'appInventariName', descKey:'appInventariDesc', icon:'🌲', url:'Inventari.html', badge:'v10', active:true, categoria:'camp' },
+  { nameKey:'appRelascopiName', descKey:'appRelascopiDesc', icon:'🎯', url:'Relascopi.html', badge:'v1',  active:true, categoria:'camp' },
+  { nameKey:'appAnalisiName',   descKey:'appAnalisiDesc',   icon:'📊', url:'analisi.html',  badge:'v4',  active:true, categoria:'despatx' }
 ];
 
 function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
@@ -464,25 +484,46 @@ function applyLang(lang) {
 }
 
 function buildAppGrid() {
-  const t    = T[getLang()] || T.ca;
-  const grid = document.getElementById('app-grid');
-  grid.innerHTML = APPS.map(app => {
+  const t = T[getLang()] || T.ca;
+  const container = document.getElementById('app-grid-container');
+  if (!container) return;
+
+  const camp    = APPS.filter(a => a.categoria === 'camp');
+  const despatx = APPS.filter(a => a.categoria === 'despatx');
+
+  function renderCard(app) {
     const name = t[app.nameKey] || app.nameKey;
     const desc = t[app.descKey] || app.descKey;
+    const extraClass = app.categoria === 'despatx' ? ' despatx' : '';
     if (app.active) {
-      return `<a class="app-card" href="${app.url}" onclick="navigateToApp(event,'${app.url}')">
+      return `<a class="app-card${extraClass}" href="${app.url}" onclick="navigateToApp(event,'${app.url}')">
         <div class="app-card-icon">${app.icon}</div>
         <div><div class="app-card-name">${name}</div><div class="app-card-desc">${desc}</div></div>
         ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
       </a>`;
     } else {
-      return `<div class="app-card coming-soon">
+      return `<div class="app-card coming-soon${extraClass}">
         <div class="app-card-icon">${app.icon}</div>
         <div><div class="app-card-name">${name}</div><div class="app-card-desc">${desc}</div></div>
         ${app.badge ? `<span class="app-card-badge">${app.badge}</span>` : ''}
       </div>`;
     }
-  }).join('');
+  }
+
+  let html = '';
+
+  if (camp.length) {
+    html += `<div class="hub-section-title" data-i18n="hubSectionApps">${t.hubSectionApps}</div>`;
+    html += `<div class="app-grid">${camp.map(renderCard).join('')}</div>`;
+  }
+
+  if (despatx.length) {
+    html += `<hr class="hub-section-divider">`;
+    html += `<div class="hub-section-title" data-i18n="hubSectionDespatx">${t.hubSectionDespatx}</div>`;
+    html += `<div class="app-grid">${despatx.map(renderCard).join('')}</div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 function navigateToApp(e, url) { setAppMode(sbUser ? 'logged_in' : 'guest'); }
@@ -529,7 +570,6 @@ function handleAuthState() {
     showHub(true);
     setSyncStatus('ok', t.syncActive + sbUser.email);
   } else {
-    // CANVI 2: sempre mostrem login si no hi ha sessió activa (ja no mode convidat persistent)
     showLogin();
   }
 }
