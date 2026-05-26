@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a3d2b">
-<meta name="description" content="Aplicació d'inventari forestal PTGMF per Martí Solé i Xanxo">
-<title>Inventari Forestal PTGMF</title>
+<meta name="description" content="Aplicació d'inventari forestal M.S.i.X per Martí Solé i Xanxo">
+<title>Inventari Forestal M.S.i.X</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -378,7 +378,7 @@ input[type=range]::-moz-range-thumb {
 
   <nav class="navbar">
     <button class="navbar-back" onclick="window.location.href='index.html'" data-i18n="navBack">← Hub</button>
-    <span class="navbar-title" data-i18n="navTitle">🌲 Inventari Forestal PTGMF</span>
+    <span class="navbar-title" data-i18n="navTitle">🌲 Inventari Forestal M.S.i.X</span>
   </nav>
 
   <div class="tabs-content">
@@ -665,7 +665,7 @@ const ESPECIE_NOMS = {
    ============================================================ */
 const T = {
   ca: {
-    navBack: '← Hub', navTitle: '🌲 Inventari Forestal PTGMF',
+    navBack: '← Hub', navTitle: '🌲 Inventari Forestal M.S.i.X',
     tabGeneral: 'General', tabVeg: 'Vegetació', tabArbres: 'Arbres', tabDesar: 'Desar',
     // General
     sIdentificacio: 'Identificació', sTopografia: 'Topografia i sòl',
@@ -752,7 +752,7 @@ const T = {
     credits: '🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳',
   },
   es: {
-    navBack: '← Hub', navTitle: '🌲 Inventario Forestal PTGMF',
+    navBack: '← Hub', navTitle: '🌲 Inventario Forestal M.S.i.X',
     tabGeneral: 'General', tabVeg: 'Vegetación', tabArbres: 'Árboles', tabDesar: 'Guardar',
     sIdentificacio: 'Identificación', sTopografia: 'Topografía y suelo',
     lbRodal: 'Rodal / UA (*)', lbCodi: 'Código parcela (*)', lbFinca: 'Nombre de la finca',
@@ -832,7 +832,7 @@ const T = {
     credits: '🌳 Diseñado por Martí Solé i Xanxo (M.S.X.) 🌳',
   },
   en: {
-    navBack: '← Hub', navTitle: '🌲 Forest Inventory PTGMF',
+    navBack: '← Hub', navTitle: '🌲 Forest Inventory M.S.i.X',
     tabGeneral: 'General', tabVeg: 'Vegetation', tabArbres: 'Trees', tabDesar: 'Save',
     sIdentificacio: 'Identification', sTopografia: 'Topography & soil',
     lbRodal: 'Stand / UA (*)', lbCodi: 'Plot code (*)', lbFinca: 'Estate name',
@@ -914,7 +914,7 @@ const T = {
 };
 
 function getLang() {
-  return localStorage.getItem('ptgmf_lang') || 'ca';
+  return localStorage.getItem('M.S.i.X_lang') || 'ca';
 }
 
 function applyLang(lang) {
@@ -971,7 +971,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* 1. Dades locals */
   try {
-    const raw = localStorage.getItem('ptgmf_parcelles');
+    const raw = localStorage.getItem('M.S.i.X_parcelles');
     if (raw) state.parcelles = JSON.parse(raw);
   } catch (_) {}
 
@@ -1061,7 +1061,7 @@ async function loadFromSupabase() {
 
     if (data && data.length > 0 && data[0].parcelles) {
       state.parcelles = data[0].parcelles;
-      try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
+      try { localStorage.setItem('M.S.i.X_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
       lastSyncTime = data[0].updated_at;
       setSyncStatus('ok', t.syncOk, t.syncUltima + formatSyncTime(lastSyncTime));
     } else {
@@ -1085,7 +1085,7 @@ async function syncToSupabase(silent = false) {
   if (!silent) setSyncStatus('syncing', t.syncSincronitzant2, '');
 
   try {
-    try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
+    try { localStorage.setItem('M.S.i.X_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
 
     const ara = new Date().toISOString();
 
@@ -1127,7 +1127,7 @@ async function syncManual() {
 
 function guardarLocalStorage() {
   const t = T[getLang()] || T.ca;
-  try { localStorage.setItem('ptgmf_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
+  try { localStorage.setItem('M.S.i.X_parcelles', JSON.stringify(state.parcelles)); } catch (_) {}
   if (sbUser) {
     syncToSupabase(true);
   } else {
