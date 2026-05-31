@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a3d2b">
+    <title>SylvaMind AI · M.S.i.X Hub Forestal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --v-fosc:  #1a3d2b;
+            --v-fosc2: #163424;
+            --v:       #2d6a4f;
+            --v-mig:   #40916c;
+            --v-clar:  #74c69d;
+            --v-pale:  #d8f3dc;
+            --err:     #c0392b;
+            --fons:    #f0f4f1;
+            --card:    #ffffff;
+            --text:    #1c2b22;
+            --suau:    #5a7060;
+            --borde:   #dce8df;
+            --r:       16px;
+            --sh:      0 4px 24px rgba(45,106,79,.13);
+            --ff:      'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+            --creaf:   #e65100;
+            --ctfc:    #1565c0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
+        body {
+            font-family: var(--ff);
+            background: var(--fons);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        input, button, select { font-family: var(--ff); }
+
+        /* HEADER */
+        .ai-header {
+            background: var(--v-fosc);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.25);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .ai-back {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.2);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .ai-back:hover { background: rgba(255,255,255,.2); }
+        .ai-title { color: #fff; font-weight: 700; font-size: 16px; }
+        .ai-sub { color: rgba(255,255,255,.5); font-size: 11px; margin-top: 2px; }
+        .ai-badge {
+            margin-left: auto;
+            padding: 4px 10px;
+            background: rgba(116,198,157,.25);
+            color: var(--v-clar);
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            background: #fff8e1;
+            border-bottom: 1px solid #ffe082;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .status-refresh {
+            background: var(--v-mig);
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .status-refresh:hover { background: var(--v); }
+
+        /* LAYOUT */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr 360px;
+            gap: 16px;
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--borde);
+            border-radius: var(--r);
+            padding: 18px;
+            box-shadow: var(--sh);
+        }
+        .panel-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--v);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-title::before {
+            content: '';
+            width: 3px; height: 12px;
+            background: var(--v-mig);
+            border-radius: 2px;
+        }
+
+        /* UPLOAD */
+        .upload-zone {
+            border: 2px dashed var(--v-mig);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+            background: var(--fons);
+            margin-bottom: 12px;
+        }
+        .upload-zone:hover { background: var(--v-pale); border-color: var(--v); }
+        .upload-zone.dragover { background: var(--v-pale); transform: scale(1.01); }
+        .upload-icon { font-size: 2em; margin-bottom: 6px; }
+        .upload-text { font-size: 12px; font-weight: 600; }
+        .upload-hint { font-size: 10px; color: var(--suau); margin-top: 4px; }
+
+        .file-list { max-height: 160px; overflow-y: auto; }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: var(--fons);
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        .file-name { font-weight: 600; color: var(--v); }
+        .file-meta { font-size: 10px; color: var(--suau); }
+        .file-remove {
+            background: #ffebee;
+            color: var(--err);
+            border: none;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .file-remove:hover { background: var(--err); color: #fff; }
+
+        /* PREVIEW TABLE */
+        .preview-box {
+            max-height: 220px;
+            overflow: auto;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .data-table th {
+            background: var(--v-fosc);
+            color: #fff;
+            padding: 8px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+        .data-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--borde);
+        }
+        .data-table tr:hover { background: var(--fons); }
+
+        /* SOURCES */
+        .source-list { max-height: 260px; overflow-y: auto; }
+        .source-item {
+            padding: 10px;
+            margin-bottom: 6px;
+            background: var(--fons);
+            border-radius: 8px;
+            border-left: 3px solid var(--v-mig);
+            font-size: 11px;
+        }
+        .source-item.creaf { border-left-color: var(--creaf); }
+        .source-item.ctfc { border-left-color: var(--ctfc); }
+        .source-title { font-weight: 600; color: var(--v-fosc); }
+        .source-meta { font-size: 10px; color: var(--suau); margin-top: 3px; }
+        .source-doi { font-size: 9px; color: var(--v-mig); margin-top: 3px; }
+
+        /* KNOWLEDGE GRAPH */
+        .k-graph {
+            height: 140px;
+            background: var(--fons);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .node {
+            position: absolute;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,.15);
+        }
+        .node:hover { transform: scale(1.2); z-index: 10; }
+        .node.creaf { background: var(--creaf); }
+        .node.ctfc { background: var(--ctfc); }
+        .node.fao { background: var(--v); }
+        .node.ipcc { background: var(--v-mig); }
+        .node.efi { background: #6a1b9a; }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .stat-card {
+            background: var(--fons);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-num { font-size: 1.5em; font-weight: 700; color: var(--v); }
+        .stat-label { font-size: 9px; color: var(--suau); }
+
+        /* CHAT */
+        .chat-wrap {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            background: var(--fons);
+            border-radius: var(--r);
+            margin-bottom: 12px;
+            border: 1px solid var(--borde);
+        }
+        .msg { margin-bottom: 12px; max-width: 95%; animation: fadeIn .3s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .msg.user { margin-left: auto; text-align: right; }
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 16px;
+            display: inline-block;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .msg.user .msg-bubble { background: var(--v-mig); color: #fff; border-bottom-right-radius: 4px; }
+        .msg.ai .msg-bubble { background: var(--card); color: var(--text); border: 1px solid var(--borde); border-bottom-left-radius: 4px; text-align: left; }
+        .msg.ai .msg-bubble strong { color: var(--v-fosc); }
+        .msg-refs {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--borde);
+            font-size: 10px;
+            color: var(--suau);
+        }
+        .msg-refs a { color: var(--v-mig); text-decoration: none; }
+        .msg-refs a:hover { text-decoration: underline; }
+        .conf-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        .conf-high { background: #d4edda; color: #155724; }
+        .conf-med { background: #fff3cd; color: #856404; }
+        .conf-low { background: #f8d7da; color: #721c24; }
+
+        .quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .quick-tag {
+            padding: 5px 12px;
+            background: var(--v-pale);
+            color: var(--v);
+            border-radius: 14px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .quick-tag:hover { background: var(--v-mig); color: #fff; }
+
+        .input-area {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: var(--card);
+            border-radius: var(--r);
+            border: 1px solid var(--borde);
+        }
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid var(--borde);
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            background: var(--fons);
+        }
+        .chat-input:focus { border-color: var(--v-mig); }
+        .send-btn {
+            padding: 10px 18px;
+            background: var(--v-fosc);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .send-btn:hover { background: var(--v); }
+
+        /* SIMULATOR */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+        .form-group label { font-weight: 600; font-size: 11px; color: var(--v-fosc); }
+        .form-group select, .form-group input {
+            padding: 8px 10px;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            font-size: 12px;
+            background: var(--fons);
+        }
+        .sim-btn {
+            padding: 10px;
+            background: linear-gradient(135deg, var(--v-fosc), var(--v));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .sim-btn:hover { transform: translateY(-2px); box-shadow: var(--sh); }
+
+        .result-box {
+            margin-top: 12px;
+            padding: 14px;
+            background: var(--fons);
+            border-radius: 10px;
+            border-left: 3px solid var(--v-mig);
+            display: none;
+        }
+        .result-box.active { display: block; animation: slideIn .4s ease; }
+        @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--borde);
+            font-size: 12px;
+        }
+        .metric:last-child { border-bottom: none; }
+        .metric-val { font-weight: 700; color: var(--v); }
+
+        .protocol {
+            background: #fff8e1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 11px;
+            border-left: 3px solid #f39c12;
+            line-height: 1.5;
+        }
+
+        /* LOCATIONS */
+        .loc-card {
+            padding: 10px;
+            background: var(--v-pale);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .loc-card:hover { background: #c8e6c9; transform: translateX(4px); }
+        .loc-name { font-weight: 600; color: var(--v-fosc); font-size: 12px; }
+        .loc-meta { font-size: 10px; color: var(--suau); margin-top: 2px; }
+
+        /* EXPORT */
+        .export-box {
+            margin-top: 14px;
+            padding: 14px;
+            background: linear-gradient(135deg, #ffebee, #fce4ec);
+            border-radius: 12px;
+            border: 1px solid #ffcdd2;
+        }
+        .export-title {
+            font-weight: 700;
+            color: var(--err);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .export-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .export-btn:hover { transform: translateY(-2px); }
+
+        /* TYPING */
+        .typing { display: flex; gap: 4px; padding: 10px 14px; }
+        .typing span {
+            width: 7px; height: 7px;
+            background: var(--v-mig);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing span:nth-child(2) { animation-delay: .2s; }
+        .typing span:nth-child(3) { animation-delay: .4s; }
+        @keyframes typing { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-8px)} }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--v-fosc);
+            color: var(--v-pale);
+            padding: 11px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all .3s;
+            z-index: 9999;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,.28);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* PROGRESS */
+        .progress-box { margin: 8px 0; display: none; }
+        .progress-box.active { display: block; }
+        .p-bar { width: 100%; height: 6px; background: var(--borde); border-radius: 3px; overflow: hidden; }
+        .p-fill { height: 100%; background: linear-gradient(90deg, var(--v-mig), var(--v)); width: 0%; transition: width .3s; }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 1200px) {
+            .container { grid-template-columns: 1fr; }
+            .chat-wrap { height: 500px; }
+        }
+        @media (max-width: 768px) {
+            .status-bar { flex-direction: column; text-align: center; }
+            .ai-header { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="ai-header">
+        <a href="index.html" class="ai-back">←</a>
+        <div>
+            <div class="ai-title">🌲 SylvaMind AI</div>
+            <div class="ai-sub">Expert en Gestió Forestal · M.S.i.X</div>
+        </div>
+        <div class="ai-badge">IA PRO</div>
+    </header>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+        <div style="display:flex;align-items:center;gap:6px;">
+            <div class="status-dot"></div>
+            <span>Sistema actiu</span>
+        </div>
+        <div style="font-weight:600;color:var(--suau);">
+            📅 Última actualització: <span id="lastUpdate">2025-05-31 14:36</span>
+        </div>
+        <div>📊 <strong id="docCount">0</strong> docs</div>
+        <div>🗺️ <strong id="locCount">0</strong> locs</div>
+        <button class="status-refresh" onclick="refreshLibrary()">🔄 Refrescar</button>
+    </div>
+
+    <!-- MAIN -->
+    <div class="container">
+
+        <!-- LEFT -->
+        <div class="panel">
+            <div class="panel-title">📁 Documents</div>
+
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📥</div>
+                <div class="upload-text">Arrossega o clica per pujar</div>
+                <div class="upload-hint">Excel, CSV, JSON</div>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept=".csv,.xlsx,.json" multiple onchange="handleFiles(this.files)">
+
+            <div class="progress-box" id="progressContainer">
+                <div class="p-bar"><div class="p-fill" id="progressFill"></div></div>
+            </div>
+
+            <div class="file-list" id="fileList"></div>
+
+            <div class="panel-title" style="margin-top:16px;">👁️ Vista prèvia</div>
+            <div class="preview-box" id="dataPreview">
+                <div style="padding:20px;text-align:center;color:var(--suau);font-size:12px;">
+                    <div style="font-size:2em;margin-bottom:8px;">📂</div>
+                    No hi ha dades carregades
+                </div>
+            </div>
+
+            <div id="analysisResults"></div>
+
+            <div class="panel-title" style="margin-top:16px;">🧠 Xarxa</div>
+            <div class="k-graph" id="knowledgeGraph"></div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-num" id="interactionsCount">0</div><div class="stat-label">Interaccions</div></div>
+                <div class="stat-card"><div class="stat-num" id="knowledgeNodes">12</div><div class="stat-label">Nodes</div></div>
+                <div class="stat-card"><div class="stat-num" id="accuracyRate">85%</div><div class="stat-label">Precisió</div></div>
+                <div class="stat-card"><div class="stat-num" id="learningRate">0.15</div><div class="stat-label">Taxa Apren.</div></div>
+            </div>
+
+            <div class="panel-title" style="margin-top:16px;">📚 Fonts</div>
+            <div class="source-list">
+                <div class="source-item creaf">
+                    <div class="source-title">CREAF - medfate 5.0.0</div>
+                    <div class="source-meta">Model de simulació forestal mediterrània</div>
+                    <div class="source-doi">DOI: 10.5194/gmd-16-3165-2023</div>
+                </div>
+                <div class="source-item ctfc">
+                    <div class="source-title">CTFC - Solsona (CERCA)</div>
+                    <div class="source-meta">Gestió forestal multifuncional</div>
+                    <div class="source-doi">ctfc.cat</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-title">FAO FRA 2025</div>
+                    <div class="source-meta">Global Forest Resources Assessment</div>
+                    <div class="source-doi">fao.org/forest-resources-assessment</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-title">IPCC 2019 Refinement</div>
+                    <div class="source-meta">Capítol 4: Forest Land</div>
+                    <div class="source-doi">ipcc-nggip.iges.or.jp</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-title">EFI - EFISCEN</div>
+                    <div class="source-meta">European Forest Information Scenario</div>
+                    <div class="source-doi">efi.int/databases</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER -->
+        <div class="panel">
+            <div class="panel-title">💬 Consulta Expert</div>
+
+            <div class="chat-wrap">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="msg ai">
+                        <div class="msg-bubble">
+                            <strong>Benvingut a SylvaMind AI!</strong><br><br>
+                            Sóc un expert en gestió forestal mediterrània, entrenat amb:<br>
+                            <ul style="margin-left:18px;margin-top:8px;line-height:1.8;">
+                                <li>📊 <strong>CREAF</strong> - medfate, Laboratori Forestal</li>
+                                <li>🏔️ <strong>CTFC</strong> - Solsona, gestió multifuncional</li>
+                                <li>🌍 <strong>FAO</strong> - FRA 2025</li>
+                                <li>📈 <strong>IPCC</strong> - 2019 Refinement</li>
+                                <li>🏛️ <strong>EFI</strong> - EFISCEN, DFDE</li>
+                            </ul>
+                            <br><strong>💡 Puc fer:</strong>
+                            <ul style="margin-left:18px;margin-top:5px;line-height:1.8;">
+                                <li>Llegir inventaris forestals (Excel/CSV)</li>
+                                <li>Respondre sobre llocs concrets amb dades</li>
+                                <li>Simular escenaris de gestió</li>
+                                <li>Consultar protocols científics</li>
+                            </ul>
+                            <div class="quick-tags">
+                                <span class="quick-tag" onclick="sendQuick('Analitza les dades')">Analitzar</span>
+                                <span class="quick-tag" onclick="sendQuick('Com gestionar alzina?')">Alzina</span>
+                                <span class="quick-tag" onclick="sendQuick('Protocols CTFC')">CTFC</span>
+                                <span class="quick-tag" onclick="sendQuick('Model medfate')">medfate</span>
+                                <span class="quick-tag" onclick="sendQuick('Calcula biomassa')">Biomassa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <input type="text" class="chat-input" id="chatInput"
+                           placeholder="Pregunta sobre gestió forestal..."
+                           onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="send-btn" onclick="sendMessage()">➤ Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="panel">
+            <div class="panel-title">🔬 Simulador</div>
+
+            <div class="form-group">
+                <label>Tipus de Bosc</label>
+                <select id="forestType">
+                    <option value="mediterranean">Mediterrani (Alzina/Pi blanc)</option>
+                    <option value="atlantic">Atlàntic (Roure/Faig)</option>
+                    <option value="conifer">Coníferes (Pi roig/Avet)</option>
+                    <option value="mixed">Bosc Mixt</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Edat (anys)</label>
+                <input type="number" id="forestAge" value="50" min="5" max="300">
+            </div>
+            <div class="form-group">
+                <label>Escenari Climàtic</label>
+                <select id="climateScenario">
+                    <option value="current">Clima Actual</option>
+                    <option value="rcp45">RCP 4.5</option>
+                    <option value="rcp85">RCP 8.5</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Gestió</label>
+                <select id="management">
+                    <option value="none">Sense gestió</option>
+                    <option value="thinning">Clariana selectiva</option>
+                    <option value="regeneration">Talla regeneració</option>
+                    <option value="prescribed">Crema prescrita</option>
+                </select>
+            </div>
+            <button class="sim-btn" onclick="runSimulation()">🚀 Simular</button>
+
+            <div class="result-box" id="simulationResult">
+                <div style="font-weight:700;color:var(--v-fosc);margin-bottom:10px;font-size:13px;">📊 Resultats</div>
+                <div class="metric"><span>Biomassa:</span><span class="metric-val" id="resBiomass">--</span></div>
+                <div class="metric"><span>Carboni:</span><span class="metric-val" id="resCarbon">--</span></div>
+                <div class="metric"><span>Estrès Hídric:</span><span class="metric-val" id="resWater">--</span></div>
+                <div class="metric"><span>Risc Incendi:</span><span class="metric-val" id="resFire">--</span></div>
+                <div class="metric"><span>Biodiversitat:</span><span class="metric-val" id="resBio">--</span></div>
+                <div class="protocol" id="protocolRef">
+                    <strong>📋 Protocol:</strong><br>
+                    <span id="protocolText">--</span>
+                </div>
+            </div>
+
+            <div class="panel-title" style="margin-top:16px;">🗺️ Localitzacions</div>
+            <div id="locationData">
+                <div style="padding:12px;background:var(--fons);border-radius:8px;font-size:11px;color:var(--suau);text-align:center;">
+                    <div style="font-size:1.5em;margin-bottom:6px;">🗺️</div>
+                    Carrega un inventari per veure localitzacions
+                </div>
+            </div>
+
+            <div class="export-box">
+                <div class="export-title">📄 Exportar Informe</div>
+                <div style="font-size:11px;color:var(--suau);margin-bottom:8px;">PDF amb conversa i referències</div>
+                <button class="export-btn" onclick="exportToPDF()">📥 Descarregar PDF</button>
+            </div>
+
+            <div style="margin-top:12px;padding:12px;background:var(--v-pale);border-radius:10px;font-size:10px;color:var(--suau);line-height:1.6;">
+                <strong>💡 Nota:</strong> Simulador basat en medfate (CREAF), IPCC 2019, CTFC protocols
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== SYLVAMIND AI ====================
+        class SylvaMindAI {
+            constructor() {
+                this.qTable = new Map();
+                this.learningRate = 0.15;
+                this.interactions = 0;
+                this.accuracyHistory = [];
+                this.userDocuments = [];
+                this.locationData = new Map();
+                this.lastUpdate = new Date();
+
+                this.knowledgeBase = {
+                    creaf: {
+                        answers: {
+                            "medfate": "medfate (CREAF) és el model de referència per a boscos mediterranis. Versió 5.0.0 amb modes: Granier (balanç hídric simplificat), Sperry (hidràulica amb cavitació), Sureau (hidràulica avançada). Cita: De Cáceres et al. 2023, GMD 16:3165-3201. DOI:10.5194/gmd-16-3165-2023",
+                            "laboratori": "El Laboratori Forestal Català és una iniciativa conjunta CREAF-CTFC. Aplicacions: IFN App, ForestDrought, Meteoland, LiDAR, FES, Deboscat, Allometr. URL: laboratoriforestal.creaf.cat",
+                            "sequera": "Segons medfate (CREAF), l'estrès hídric en alzines es quantifica amb el 'soil water balance'. En escenaris RCP 8.5, l'estrès augmenta 35-60% a l'estiu mediterrani. Sperry prediu mortalitat per cavitació quan PLC > 88%.",
+                            "alzina": "Per a alzina (Quercus ilex), medfate requereix trets: psi88, kmax, gswmin. El model Sperry mostra que l'alzina tolera PLC fins ~88% abans de mortalitat.",
+                            "transpiracio": "medfate ofereix 3 modes: (1) Granier - balanç hídric simplificat, (2) Sperry - model hidràulic amb cavitació, (3) Sureau - model hidràulic avançat. Per a alzina, Sperry requereix trets: psi88, kmax, gswmin.",
+                            "creixement": "El model de dinàmica forestal medfate simula: creixement en diàmetre, alçada, àrea foliar, àrea de saba, cobertura arbustiva. Utilitza descripcions per cohorts de vegetació."
+                        }
+                    },
+                    ctfc: {
+                        answers: {
+                            "ctfc": "El CTFC (Solsona, CERCA) és un centre de referència en recerca forestal mediterrània. Programes: gestió forestal multifuncional, dinàmica del paisatge, bioeconomia. Investigadors clau: Míriam Piqué, Lluís Brotons, José Ramón González.",
+                            "solsona": "El CTFC està ubicat a Solsona (Ctra. St. Llorenç de Morunys, km 2). Consorci públic de la Generalitat, UdL, UAB, CERCA. Hub Forestal per a innovació tecnològica.",
+                            "gestio": "El CTFC desenvolupa gestió forestal multifuncional adaptada al Mediterrani. Projectes: FIRE-RES, SUPERB, ONEForest, LIFE GoProFor MED.",
+                            "incendi": "Segons recerca CTFC, la gestió de risc d'incendi inclou: crema prescrita (redueix combustible 40-60%), treballs silvícoles, pastures controlades.",
+                            "biodiversitat": "El CTFC treballa en biodiversitat forestal amb enfocament de paisatge. Inclou: connexió d'hàbitats, efecte de pertorbacions, serveis ecosistèmics."
+                        }
+                    },
+                    inventari: {
+                        answers: {
+                            "mostreig": "Segons FAO FRA 2025, es recomana mostreig estratificat aleatori basat en 80 estrats. Per a boscos mediterranis, mida mínima de 1 ha per a inventaris nacionals.",
+                            "inventari": "La FAO utilitza Collect Earth Online (CEO) amb Sentinel-2 i Landsat. Per a Europa, l'EFI manté EFISCEN amb dades d'inventaris nacionals.",
+                            "biomassa": "Per calcular biomassa forestal, FAO 2025 recomana: (1) Equacions alomètriques per espècie, (2) Mostreig destructiu per calibració, (3) Lidar/ALS per estimacions regionals."
+                        }
+                    },
+                    carbon: {
+                        answers: {
+                            "carboni": "Segons IPCC 2019, els boscos seqüestren carboni en 5 pools: biomassa viva, biomassa morta, sòl (30 cm), lleter i fusta morta. Factor de conversió: ~0.47-0.50 per a mediterranis.",
+                            "sequestre": "L'IPCC recomana: (1) Censar tiges fins al diàmetre mínim, (2) Incloure vegetació viva, (3) Mostreig de sòl a 30 cm, (4) Reportar intervals de confiança del 95%.",
+                            "paris": "Sota l'Acord de París, els països han de reportar canvis en existències de carboni forestal. Pràctica recomanada: calcular variables rellevants, mostrejar sòl, reportar confiança."
+                        }
+                    },
+                    model: {
+                        answers: {
+                            "sequera": "Segons medfate, l'estrès hídric en alzines es quantifica amb 'soil water balance'. En RCP 8.5, l'estrès augmenta 35-60% a l'estiu mediterrani.",
+                            "transpiracio": "medfate ofereix 3 modes: Granier (simplificat), Sperry (hidràulic amb cavitació), Sureau (hidràulic avançat).",
+                            "creixement": "medfate simula: creixement en diàmetre, alçada, àrea foliar, àrea de saba, cobertura arbustiva. Cal: dades meteorològiques diàries, dades de parcela, SpParamsMED."
+                        }
+                    },
+                    europe: {
+                        answers: {
+                            "europa": "L'EFI manté: EFISCEN (escenaris), LTFRA (llarg termini), DFDE (pertorbacions), FPTF (fluxos). EFIMED cobreix 18 països mediterranis.",
+                            "escenaris": "EFISCEN projecta recursos forestals europeus amb dades d'inventaris nacionals. Simula: àrea forestal, existències, extraccions, biomassa, carboni."
+                        }
+                    },
+                    disturbance: {
+                        answers: {
+                            "perturbacio": "Segons DFDE-EFI, els incendis són la principal pertorbació al Mediterrani. Altres: ventades, plagues (Thaumetopoea), malalties (Diplodia).",
+                            "plaga": "Principals plagues mediterrànies: Thaumetopoea pityocampa (procesionària), Tomicus destruens (corc del pi), Coraebus florentinus (corc de l'alzina)."
+                        }
+                    },
+                    gestio: {
+                        answers: {
+                            "clariana": "La clariana selectiva millora resistència a la sequera segons medfate: redueix competència per aigua. Recomanació IPCC: mantenir >70% cobertura per seqüestre òptim.",
+                            "regeneracio": "Per a regeneració natural, FAO recomana: identificar microhàbitats, assegurar dispersió de llavors, control d'herbívors, protecció contra incendis.",
+                            "incendi": "Gestió de risc: crema prescrita (redueix combustible 40-60%), treballs silvícoles (redueix continuïtat vertical), pastures controlades.",
+                            "canvi climatic": "IPCC AR6 projecta per a mediterranis: +2-4°C temperatura, -10-20% precipitació, +30-50% risc d'incendi. Estratègies: diversificació d'espècies, gestió de densitat, corredors."
+                        }
+                    }
+                };
+
+                this.initGraph();
+            }
+
+            initGraph() {
+                const topics = [
+                    {id:'creaf',x:25,y:35,label:'CREAF',c:'creaf'},{id:'ctfc',x:120,y:60,label:'CTFC',c:'ctfc'},
+                    {id:'inventari',x:75,y:120,label:'INV',c:'fao'},{id:'carbon',x:170,y:95,label:'C',c:'ipcc'},
+                    {id:'model',x:220,y:35,label:'MOD',c:'creaf'},{id:'gestio',x:270,y:120,label:'GEST',c:'ctfc'},
+                    {id:'europe',x:320,y:65,label:'EU',c:'efi'},{id:'disturbance',x:190,y:155,label:'DIST',c:'ctfc'},
+                    {id:'laboratori',x:95,y:25,label:'LFC',c:'creaf'},{id:'medfate',x:245,y:85,label:'MED',c:'creaf'},
+                    {id:'solsona',x:295,y:155,label:'SOL',c:'ctfc'}
+                ];
+                const g = document.getElementById('knowledgeGraph');
+                if(!g) return;
+                g.innerHTML = '';
+                topics.forEach(t => {
+                    const n = document.createElement('div');
+                    n.className = `node ${t.c}`;
+                    n.style.left = t.x + 'px';
+                    n.style.top = t.y + 'px';
+                    n.textContent = t.label;
+                    n.title = t.id;
+                    n.onclick = () => sendQuick(`Informació sobre ${t.id}`);
+                    g.appendChild(n);
+                });
+            }
+
+            async processDocument(file, content) {
+                const doc = { name: file.name, type: file.type, size: file.size, content, parsed: this.parseDoc(content, file.name), uploadDate: new Date() };
+                this.userDocuments.push(doc);
+                if (doc.parsed && doc.parsed.locations) {
+                    doc.parsed.locations.forEach(loc => this.locationData.set(loc.name, loc));
+                }
+                this.updateStats();
+                return doc;
+            }
+
+            parseDoc(content, filename) {
+                if (filename.endsWith('.csv')) return this.parseCSV(content);
+                if (filename.endsWith('.json')) { try { return JSON.parse(content); } catch(e) { return null; } }
+                return null;
+            }
+
+            parseCSV(content) {
+                const lines = content.split('\n').filter(l => l.trim());
+                if (lines.length < 2) return null;
+                const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+                const rows = [], locations = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                    const row = {};
+                    headers.forEach((h, idx) => row[h] = values[idx] || '');
+                    rows.push(row);
+                    const locName = row['Parcela'] || row['Localitzacio'] || row['Nom'] || row['Localizacion'] || row['Plot'] || row['ID'];
+                    if (locName) locations.push({ name: locName, data: row });
+                }
+                return { headers, rows, locations, rowCount: rows.length };
+            }
+
+            updateStats() {
+                document.getElementById('docCount').textContent = this.userDocuments.length;
+                document.getElementById('locCount').textContent = this.locationData.size;
+            }
+
+            answerLocationQuery(query) {
+                for (const [name, data] of this.locationData) {
+                    if (query.toLowerCase().includes(name.toLowerCase())) return this.generateLocationReport(name, data);
+                }
+                for (const [name, data] of this.locationData) {
+                    if (JSON.stringify(data).toLowerCase().includes(query.toLowerCase())) return this.generateLocationReport(name, data);
+                }
+                return null;
+            }
+
+            generateLocationReport(name, data) {
+                let report = `<strong>📍 ${name}</strong><br><br>`;
+                if (data.data) {
+                    const numeric = Object.entries(data.data).filter(([_, v]) => !isNaN(parseFloat(v)) && v !== '');
+                    report += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;">`;
+                    numeric.slice(0, 6).forEach(([key, value]) => {
+                        report += `<div style="background:#fff;padding:8px;border-radius:8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
+                            <div style="font-size:1.3em;font-weight:700;color:var(--v);">${parseFloat(value).toFixed(2)}</div>
+                            <div style="font-size:9px;color:var(--suau);">${key}</div>
+                        </div>`;
+                    });
+                    report += `</div><br><strong>Dades:</strong><br>`;
+                    Object.entries(data.data).forEach(([k, v]) => report += `• <strong>${k}:</strong> ${v}<br>`);
+                }
+                report += `<br><div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:10px;border-radius:8px;font-size:12px;">
+                    <strong>💡 Basat en el teu inventari</strong></div>`;
+                return report;
+            }
+
+            async processQuery(query) {
+                this.interactions++;
+                document.getElementById('interactionsCount').textContent = this.interactions;
+                const normalized = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, " ");
+
+                const locationAnswer = this.answerLocationQuery(query);
+                if (locationAnswer) {
+                    return {
+                        text: locationAnswer, confidence: 0.95, confidenceLevel: 'high',
+                        confidenceText: 'Alta confiança (>95%) - Dades carregades', topic: 'user_data',
+                        references: [{text: "Dades de l'usuari", url: "#"}, {text: "Laboratori Forestal", url: "https://laboratoriforestal.creaf.cat/"}]
+                    };
+                }
+
+                const topic = this.findTopic(normalized);
+                const confidence = this.calcConfidence(normalized, topic);
+                let response = this.generateResponse(normalized, topic, confidence);
+                response.references = this.getReferences(topic);
+                this.updateQValue(normalized, topic, confidence);
+                this.updateAccuracy(confidence);
+                return response;
+            }
+
+            findTopic(query) {
+                const keywords = {
+                    creaf: ['creaf','medfate','laboratori','forestal catala','bellaterra','de caceres','martinez-vilalta'],
+                    ctfc: ['ctfc','solsona','cerca','pique','brotons','gonzalez','casals','camprodon'],
+                    inventari: ['inventari','mostreig','parcela','cens','diametre','altura','volum','fia','ifn'],
+                    carbon: ['carboni','sequestre','biomassa','co2','paris','inventari carboni','pools'],
+                    model: ['model','simulacio','transpiracio','sequera','estres hidric','sperry','granier','sureau'],
+                    europe: ['europa','efi','efiscen','mediterrani','escenaris','dfde'],
+                    disturbance: ['incendi','perturbacio','plaga','malaltia','vent','disturbance','foc'],
+                    gestio: ['clariana','talla','regeneracio','gestio','silvicultura','crema','prescrit']
+                };
+                let best = 'gestio', max = 0;
+                for (const [t, words] of Object.entries(keywords)) {
+                    const score = words.reduce((a, w) => a + (query.includes(w) ? 1 : 0), 0);
+                    if (score > max) { max = score; best = t; }
+                }
+                return best;
+            }
+
+            calcConfidence(query, topic) {
+                const state = `state_${query.split(' ').slice(0,5).join('_')}`;
+                const qValues = this.getQValues(state);
+                const idx = Object.keys(this.knowledgeBase).indexOf(topic);
+                if (qValues[idx] !== undefined) return Math.min(0.95, 0.5 + (qValues[idx] / 2));
+                return 0.5;
+            }
+
+            generateResponse(query, topic, confidence) {
+                const data = this.knowledgeBase[topic];
+                let answer = "";
+                if (data && data.answers) {
+                    for (const [key, value] of Object.entries(data.answers)) {
+                        if (query.includes(key)) { answer = value; break; }
+                    }
+                }
+                if (!answer) answer = this.genericResponse(topic, query);
+                const level = confidence > 0.8 ? 'high' : confidence > 0.5 ? 'medium' : 'low';
+                const texts = { high: "Alta confiança (>80%) - Protocols establerts", medium: "Confiança mitjana (50-80%) - Validar addicionalment", low: "Confiança baixa (<50%) - Consultar expert humà" };
+                return { text: answer, confidence, confidenceLevel: level, confidenceText: texts[level], topic };
+            }
+
+            genericResponse(topic, query) {
+                const r = {
+                    creaf: "El CREAF (Bellaterra) desenvolupa medfate i el Laboratori Forestal Català. Especifica si busques medfate, dades del Laboratori, o recerca específica.",
+                    ctfc: "El CTFC (Solsona, CERCA) treballa en gestió multifuncional, dinàmica del paisatge i bioeconomia. Pregunta sobre projectes (FIRE-RES, SUPERB) o protocols.",
+                    inventari: "La FAO 2025 recomana mostreig estratificat. El CTFC i CREAF col·laboren en l'IFN App. Necessites protocols de camp, teledetecció o anàlisi?",
+                    carbon: "El seqüestre de carboni segueix IPCC 2019. Calcules per a inventari nacional, projecte específic o verificació d'emissions?",
+                    model: "medfate és el model del CREAF per a mediterranis. Quin procés vols simular: balanç hídric, creixement, dinàmica de cohorts?",
+                    gestio: "La gestió forestal sostenible requereix considerar producció, conservació, protecció. Quin és el teu objectiu principal?",
+                    europe: "L'EFI ofereix bases de dades per a Europa. Busques recursos forestals, pertorbacions, o escenaris futurs?"
+                };
+                return r[topic] || "Pots especificar més? Puc ajudar amb inventaris, carboni, models, gestió o dades de localitzacions.";
+            }
+
+            getReferences(topic) {
+                const refs = {
+                    creaf: [{text:"medfate 5.0.0 - CREAF",url:"https://emf-creaf.r-universe.dev/medfate"},{text:"Laboratori Forestal Català",url:"https://laboratoriforestal.creaf.cat/"},{text:"De Cáceres et al. 2023",url:"https://doi.org/10.5194/gmd-16-3165-2023"}],
+                    ctfc: [{text:"CTFC - CERCA",url:"https://www.ctfc.cat/"},{text:"CERCA Portal",url:"https://cerca.cat/centres-cerca/ctfc/"},{text:"Wikipedia CTFC",url:"https://ca.wikipedia.org/wiki/Centre_de_Ci%C3%A8ncia_i_Tecnologia_Forestal_de_Catalunya"}],
+                    inventari: [{text:"FAO FRA 2025",url:"https://www.fao.org/forest-resources-assessment/"},{text:"USDA FIA",url:"https://www.fs.usda.gov/emc/rig/protocols/"},{text:"EFI EFISCEN",url:"https://efi.int/taxonomy/term/49"}],
+                    carbon: [{text:"IPCC 2019 Ch.4",url:"https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/4_Volume4/"},{text:"Paris Agreement",url:"https://nph.onlinelibrary.wiley.com/doi/full/10.1002/ppp3.10587"}],
+                    model: [{text:"medfate 5.0.0",url:"https://emf-creaf.r-universe.dev/medfate"},{text:"De Cáceres 2023",url:"https://doi.org/10.5194/gmd-16-3165-2023"}],
+                    europe: [{text:"EFI Databases",url:"https://efi.int/taxonomy/term/49"},{text:"Climate-ADAPT",url:"https://climate-adapt.eea.europa.eu/"}],
+                    disturbance: [{text:"EFI DFDE",url:"https://efi.int/"},{text:"USDA FIA",url:"https://www.fs.usda.gov/emc/rig/protocols/"}],
+                    gestio: [{text:"FAO FRA 2025",url:"https://openknowledge.fao.org/"},{text:"IPCC Forest",url:"https://www.ipcc-nggip.iges.or.jp/"}],
+                    user_data: [{text:"Dades de l'usuari",url:"#"},{text:"Laboratori Forestal",url:"https://laboratoriforestal.creaf.cat/"}]
+                };
+                return refs[topic] || refs['gestio'];
+            }
+
+            getQValues(state) {
+                if (!this.qTable.has(state)) this.qTable.set(state, new Array(Object.keys(this.knowledgeBase).length).fill(0.5));
+                return this.qTable.get(state);
+            }
+
+            updateQValue(query, topic, reward) {
+                const state = `state_${query.split(' ').slice(0,5).join('_')}`;
+                const qValues = this.getQValues(state);
+                const idx = Object.keys(this.knowledgeBase).indexOf(topic);
+                if (idx >= 0) {
+                    const old = qValues[idx];
+                    qValues[idx] = Math.max(0, Math.min(1, old + this.learningRate * (reward - old)));
+                }
+            }
+
+            updateAccuracy(confidence) {
+                this.accuracyHistory.push(confidence);
+                if (this.accuracyHistory.length > 10) this.accuracyHistory.shift();
+                const avg = this.accuracyHistory.reduce((a, b) => a + b, 0) / this.accuracyHistory.length;
+                document.getElementById('accuracyRate').textContent = Math.round(avg * 100) + '%';
+            }
+
+            simulateScenario(forestType, age, climate, management) {
+                const params = {
+                    mediterranean: { biomassMax: 250, growthRate: 3.5, waterUse: 450, fireRisk: 0.6 },
+                    atlantic: { biomassMax: 350, growthRate: 4.2, waterUse: 350, fireRisk: 0.2 },
+                    conifer: { biomassMax: 300, growthRate: 3.8, waterUse: 400, fireRisk: 0.7 },
+                    mixed: { biomassMax: 280, growthRate: 3.9, waterUse: 380, fireRisk: 0.4 }
+                };
+                const base = params[forestType];
+                const ageFactor = 1 / (1 + Math.exp(-0.05 * (age - 80)));
+                const cf = { current: { temp: 0, precip: 0, co2: 410 }, rcp45: { temp: 1.5, precip: -10, co2: 500 }, rcp85: { temp: 3.5, precip: -20, co2: 650 } }[climate];
+                const mf = { none: { bm: 1.0, c: 1.0, w: 1.0, f: 1.0, b: 1.0 }, thinning: { bm: 0.85, c: 0.9, w: 1.3, f: 0.6, b: 1.2 }, regeneration: { bm: 0.4, c: 0.6, w: 1.1, f: 0.8, b: 1.4 }, prescribed: { bm: 0.7, c: 0.8, w: 1.2, f: 0.3, b: 1.3 } }[management];
+
+                const biomass = Math.round(base.biomassMax * ageFactor * mf.bm * (1 + cf.temp * 0.05));
+                const carbon = Math.round(biomass * 0.47 * mf.c);
+                const waterStress = Math.round((base.waterUse / (1 + cf.precip / 100)) / mf.w);
+                const fireRisk = Math.round((base.fireRisk + cf.temp * 0.1) * mf.f * 100);
+                const biodiversity = Math.round(ageFactor * 100 * mf.b);
+
+                return {
+                    biomass: `${biomass} t/ha`, carbon: `${carbon} t C/ha`,
+                    waterStress: waterStress < 300 ? 'Baix' : waterStress < 500 ? 'Moderat' : 'Alt',
+                    fireRisk: `${fireRisk}%`, biodiversity: `${biodiversity}/100`,
+                    protocolRef: forestType === 'mediterranean'
+                        ? "medfate 5.0.0 (CREAF) - De Cáceres et al. 2023. Mode Sperry per a estrès hídric. CTFC per a gestió multifuncional."
+                        : "IPCC 2019 Refinement - Tier 2/3. FAO FRA 2025 per a paràmetres d'inventari. CTFC per a gestió adaptativa."
+                };
+            }
+
+            refreshLibrary() {
+                this.lastUpdate = new Date();
+                document.getElementById('lastUpdate').textContent = this.lastUpdate.toISOString().slice(0, 16).replace('T', ' ');
+                showToast('Biblioteca actualitzada correctament!');
+            }
+        }
+
+        // ==================== UI ====================
+        const ai = new SylvaMindAI();
+
+        // Drag & Drop
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+
+        async function handleFiles(files) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            for (const file of files) {
+                progressContainer.classList.add('active');
+                try {
+                    const content = await readFile(file);
+                    progressFill.style.width = '50%';
+                    await new Promise(r => setTimeout(r, 200));
+                    const doc = await ai.processDocument(file, content);
+                    progressFill.style.width = '100%';
+                    await new Promise(r => setTimeout(r, 200));
+                    addFileToList(doc);
+                    updateDataPreview(doc);
+                    showLocationData();
+                    showToast(`✅ "${file.name}" processat (${doc.parsed?.rowCount || 0} registres)`);
+                } catch (error) {
+                    showToast(`❌ Error: ${error.message}`);
+                }
+                progressContainer.classList.remove('active');
+                progressFill.style.width = '0%';
+            }
+        }
+
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = e => reject(e);
+                reader.readAsText(file);
+            });
+        }
+
+        function addFileToList(doc) {
+            const list = document.getElementById('fileList');
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            item.innerHTML = `
+                <div><div class="file-name">${doc.name}</div><div class="file-meta">${doc.parsed ? doc.parsed.rowCount + ' registres' : 'JSON'} • ${(doc.size / 1024).toFixed(1)} KB</div></div>
+                <button class="file-remove" onclick="removeFile('${doc.name}')">✕</button>
+            `;
+            list.appendChild(item);
+        }
+
+        function removeFile(name) {
+            ai.userDocuments = ai.userDocuments.filter(d => d.name !== name);
+            ai.locationData.clear();
+            ai.userDocuments.forEach(d => { if (d.parsed && d.parsed.locations) d.parsed.locations.forEach(l => ai.locationData.set(l.name, l)); });
+            ai.updateStats();
+            document.getElementById('fileList').innerHTML = '';
+            ai.userDocuments.forEach(d => addFileToList(d));
+            showLocationData();
+            showToast('Document eliminat');
+        }
+
+        function updateDataPreview(doc) {
+            const preview = document.getElementById('dataPreview');
+            if (!doc.parsed || !doc.parsed.headers) {
+                preview.innerHTML = '<div style="padding:20px;text-align:center;color:var(--suau);">No es poden mostrar dades</div>';
+                return;
+            }
+            let html = '<table class="data-table"><thead><tr>';
+            doc.parsed.headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr></thead><tbody>';
+            doc.parsed.rows.slice(0, 8).forEach(row => {
+                html += '<tr>';
+                doc.parsed.headers.forEach(h => html += `<td>${row[h] || ''}</td>`);
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            if (doc.parsed.rows.length > 8) html += `<div style="padding:8px;text-align:center;color:var(--suau);font-size:11px;">... i ${doc.parsed.rows.length - 8} files més</div>`;
+            preview.innerHTML = html;
+            showAnalysis(doc);
+        }
+
+        function showAnalysis(doc) {
+            const results = document.getElementById('analysisResults');
+            if (!doc.parsed || !doc.parsed.rows.length) return;
+            const numericCols = {};
+            doc.parsed.headers.forEach(h => {
+                const values = doc.parsed.rows.map(r => parseFloat(r[h])).filter(v => !isNaN(v));
+                if (values.length > 0) numericCols[h] = { avg: values.reduce((a, b) => a + b, 0) / values.length };
+            });
+            let html = '<div style="background:#e3f2fd;border-left:4px solid #0288d1;padding:12px;border-radius:8px;margin-top:10px;font-size:12px;">';
+            html += '<h4 style="color:#0288d1;margin-bottom:8px;">📊 Anàlisi</h4>';
+            html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">';
+            Object.entries(numericCols).slice(0, 6).forEach(([col, stats]) => {
+                html += `<div style="background:#fff;padding:8px;border-radius:8px;text-align:center;"><div style="font-size:1.4em;font-weight:700;color:var(--v);">${stats.avg.toFixed(1)}</div><div style="font-size:9px;color:var(--suau);">${col}</div></div>`;
+            });
+            html += '</div></div>';
+            results.innerHTML = html;
+        }
+
+        function showLocationData() {
+            const container = document.getElementById('locationData');
+            if (ai.locationData.size === 0) {
+                container.innerHTML = '<div style="padding:12px;background:var(--fons);border-radius:8px;font-size:11px;color:var(--suau);text-align:center;"><div style="font-size:1.5em;margin-bottom:6px;">🗺️</div>Carrega un inventari per veure localitzacions</div>';
+                return;
+            }
+            let html = '<div>';
+            for (const [name, data] of ai.locationData) {
+                html += `<div class="loc-card" onclick="sendQuick('Quin estat té ${name}?')">
+                    <div class="loc-name">📍 ${name}</div>
+                    <div class="loc-meta">${Object.keys(data.data || {}).length} variables</div>
+                </div>`;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            addMsg(text, 'user');
+            showTyping();
+            await new Promise(r => setTimeout(r, 600));
+            const response = await ai.processQuery(text);
+            hideTyping();
+            addMsgAI(response);
+        }
+
+        function sendQuick(text) {
+            document.getElementById('chatInput').value = text;
+            sendMessage();
+        }
+
+        function addMsg(text, role) {
+            const chat = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            div.innerHTML = `<div class="msg-bubble">${escapeHtml(text)}</div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function addMsgAI(response) {
+            const chat = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'msg ai';
+            let refsHtml = response.references.map(r => `<a href="${r.url}" target="_blank">📄 ${r.text}</a>`).join('<br>');
+            div.innerHTML = `
+                <div class="msg-bubble">
+                    ${response.text}
+                    <div class="conf-badge conf-${response.confidenceLevel}">${response.confidenceText}</div>
+                    <div class="msg-refs"><strong>Referències:</strong><br>${refsHtml}</div>
+                </div>
+            `;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function showTyping() {
+            const chat = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'msg ai typing';
+            div.id = 'typingIndicator';
+            div.innerHTML = `<div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function hideTyping() {
+            const t = document.getElementById('typingIndicator');
+            if (t) t.remove();
+        }
+
+        function runSimulation() {
+            const type = document.getElementById('forestType').value;
+            const age = parseInt(document.getElementById('forestAge').value);
+            const climate = document.getElementById('climateScenario').value;
+            const mgmt = document.getElementById('management').value;
+            const res = ai.simulateScenario(type, age, climate, mgmt);
+            document.getElementById('resBiomass').textContent = res.biomass;
+            document.getElementById('resCarbon').textContent = res.carbon;
+            document.getElementById('resWater').textContent = res.waterStress;
+            document.getElementById('resFire').textContent = res.fireRisk;
+            document.getElementById('resBio').textContent = res.biodiversity;
+            document.getElementById('protocolText').textContent = res.protocolRef;
+            document.getElementById('simulationResult').classList.add('active');
+        }
+
+        function refreshLibrary() {
+            ai.refreshLibrary();
+        }
+
+        function exportToPDF() {
+            const chat = document.getElementById('chatMessages');
+            const msgs = chat.querySelectorAll('.msg');
+            let html = `<html><head><style>
+                body{font-family:Arial,sans-serif;padding:20px;color:#1c2b22;}
+                h1{color:#1a3d2b;border-bottom:2px solid #2d6a4f;padding-bottom:10px;}
+                .msg{margin-bottom:15px;padding:12px;border-radius:12px;}
+                .user{background:#e8f5e9;margin-left:20%;text-align:right;}
+                .ai{background:#f5f5f5;margin-right:20%;border:1px solid #dce8df;}
+                .refs{font-size:10px;color:#5a7060;margin-top:8px;border-top:1px dashed #dce8df;padding-top:6px;}
+                .header{text-align:center;margin-bottom:20px;}
+            </style></head><body>
+                <div class="header"><h1>🌲 SylvaMind AI - Informe</h1>
+                <p>Generat: ${new Date().toLocaleString('ca-ES')}</p></div>`;
+
+            msgs.forEach(m => {
+                const role = m.classList.contains('user') ? 'user' : 'ai';
+                const text = m.querySelector('.msg-bubble')?.innerHTML || '';
+                html += `<div class="msg ${role}">${text}</div>`;
+            });
+            html += `</body></html>`;
+
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            setTimeout(() => w.print(), 500);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function escapeHtml(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        // Inicialitzar data
+        document.getElementById('lastUpdate').textContent = ai.lastUpdate.toISOString().slice(0, 16).replace('T', ' ');
+    </script>
+</body>
+</html>
