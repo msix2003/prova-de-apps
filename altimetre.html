@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a1f13">
+<title>Altímetre · PTGMF</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep:    #0a1f13;
+  --bg-dark:    #11291d;
+  --bg-mid:     #1a3d2b;
+  --bg-lift:    #244d38;
+  --green:      #4ade80;
+  --green-dim:  #22c55e;
+  --green-glow: rgba(74,222,128,0.22);
+  --amber:      #fbbf24;
+  --red:        #f87171;
+  --txt:        #e8f5e9;
+  --txt2:       #a7c4b0;
+  --txt3:       #5a7a66;
+  --font:       'DM Sans', sans-serif;
+  --mono:       'DM Mono', monospace;
+  --safe-top:   env(safe-area-inset-top, 0px);
+  --safe-bot:   env(safe-area-inset-bottom, 12px);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  font-family: var(--font);
+  color: var(--txt);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* ─── LOADING ─────────────────────────────────── */
+#loading {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg-deep);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  transition: opacity .5s ease;
+}
+#loading.out { opacity: 0; pointer-events: none; }
+.ld-tree { font-size: 54px; animation: treePulse 1.8s ease-in-out infinite; }
+.ld-name { font-size: 22px; font-weight: 600; letter-spacing: .025em; }
+.ld-sub  { font-size: 11px; font-family: var(--mono); color: var(--txt3); letter-spacing: .06em; }
+.ld-bar-wrap { width: 130px; height: 2px; background: var(--bg-lift); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.ld-bar      { height: 100%; background: var(--green); animation: fillBar 1.5s ease-out forwards; }
+@keyframes treePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+@keyframes fillBar   { from{width:0} 65%{width:55%} to{width:100%} }
+
+/* ─── CANVAS ─────────────────────────────────── */
+#cv {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  display: block; touch-action: none;
+}
+#vid {
+  position: fixed; top: -1px; left: -1px;
+  width: 1px; height: 1px;
+  opacity: 0; pointer-events: none;
+}
+
+/* ─── NO CAMERA ──────────────────────────────── */
+#no-cam {
+  position: fixed; inset: 0; z-index: 5;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  background: var(--bg-deep);
+}
+#no-cam.show { display: flex; }
+.nc-icon { font-size: 46px; opacity: .3; }
+.nc-msg  { font-size: 14px; color: var(--txt3); text-align: center; max-width: 220px; line-height: 1.65; }
+
+/* ─── TOP BAR ────────────────────────────────── */
+#top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  padding: 10px 14px 8px;
+  padding-top: calc(var(--safe-top) + 10px);
+  background: linear-gradient(to bottom, rgba(10,31,19,.9) 0%, transparent 100%);
+  display: flex; align-items: center; gap: 10px;
+}
+.ico-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid rgba(74,222,128,.28);
+  background: rgba(10,31,19,.72); backdrop-filter: blur(10px);
+  color: var(--green); font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .12s; flex-shrink: 0;
+}
+.ico-btn:active { transform: scale(.88); background: var(--green-glow); }
+#hd-right { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+
+/* Sync dot */
+#sync-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--txt3);
+  transition: background .3s, box-shadow .3s;
+}
+#sync-dot.online  { background: var(--green); box-shadow: 0 0 7px var(--green); }
+#sync-dot.offline { background: var(--amber); box-shadow: 0 0 7px var(--amber); }
+#sync-dot.syncing { background: var(--amber); animation: dotBlink .7s ease-in-out infinite; }
+@keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ─── DISTANCE PANEL (floating above bottom) ─── */
+#dist-panel {
+  position: fixed; bottom: 88px; left: 14px; right: 14px; z-index: 16;
+  display: flex; flex-direction: column; gap: 6px;
+  pointer-events: auto;
+}
+.dist-row {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10,31,19,.82); backdrop-filter: blur(10px);
+  border: 1px solid rgba(74,222,128,.22);
+  border-radius: 14px; padding: 8px 12px;
+}
+.dist-label { font-size: 11px; font-weight: 600; color: var(--txt3); text-transform: uppercase; letter-spacing: .06em; }
+#i-dist {
+  flex: 1; background: transparent; border: none;
+  color: var(--green); font-family: var(--mono); font-size: 22px; font-weight: 500;
+  text-align: center; outline: none;
+}
+#i-dist::placeholder { color: var(--txt3); }
+.dist-unit { font-family: var(--mono); font-size: 14px; color: var(--txt2); }
+.dist-chips {
+  display: flex; gap: 6px; justify-content: center;
+}
+.d-chip {
+  padding: 4px 10px; border-radius: 10px;
+  background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
+  color: var(--green); font-family: var(--mono); font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all .12s;
+}
+.d-chip.on { background: var(--green); color: var(--bg-deep); }
+.d-chip:active { transform: scale(.9); }
+
+/* ─── CENTER DISPLAY ─────────────────────────── */
+#counter {
+  position: fixed; bottom: 50%; left: 0; right: 0; z-index: 15;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  pointer-events: none; transform: translateY(50%);
+}
+#n-count {
+  font-family: var(--mono); font-size: 64px; font-weight: 500; line-height: 1;
+  text-shadow: 0 2px 28px rgba(0,0,0,.9);
+  transition: transform .1s;
+}
+#n-count.bump { transform: scale(1.2); }
+#n-ab {
+  font-family: var(--mono); font-size: 14px; color: var(--txt2);
+  text-shadow: 0 2px 12px rgba(0,0,0,.8);
+  min-height: 18px;
+}
+#n-sub {
+  font-family: var(--mono); font-size: 11px; color: var(--txt3);
+  margin-top: 2px;
+}
+
+/* ─── BOTTOM BAR ─────────────────────────────── */
+#bot-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  padding: 10px 14px;
+  padding-bottom: calc(10px + var(--safe-bot));
+  background: linear-gradient(to top, rgba(10,31,19,.94) 0%, transparent 100%);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; gap: 9px;
+}
+.act-btn {
+  border: none; border-radius: 16px;
+  font-family: var(--font); cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  transition: all .1s; -webkit-tap-highlight-color: transparent;
+}
+.act-btn:active { transform: scale(.88); }
+#b-base {
+  flex: 2.2; height: 66px;
+  background: var(--green); color: var(--bg-deep);
+  font-size: 20px; font-weight: 700;
+  box-shadow: 0 4px 24px rgba(74,222,128,.38);
+}
+#b-base:active { background: var(--green-dim); box-shadow: none; }
+#b-base:disabled { opacity: .4; background: var(--bg-lift); color: var(--txt3); box-shadow: none; }
+#b-top {
+  flex: 2; height: 66px;
+  background: rgba(74,222,128,.12); color: var(--green);
+  font-size: 20px; font-weight: 600;
+  border: 1.5px solid rgba(74,222,128,.38);
+}
+#b-top:active { background: rgba(74,222,128,.24); }
+#b-top:disabled { opacity: .4; border-color: rgba(74,222,128,.12); color: var(--txt3); }
+#bu {
+  flex: 1; height: 54px; border-radius: 14px;
+  background: rgba(248,113,113,.1); color: var(--red);
+  font-size: 20px; border: 1px solid rgba(248,113,113,.28);
+}
+#bu:active { background: rgba(248,113,113,.22); }
+#bs {
+  flex: 1; height: 54px; border-radius: 14px;
+  background: rgba(251,191,36,.1); color: var(--amber);
+  font-size: 18px; border: 1px solid rgba(251,191,36,.28);
+}
+#bs:active { background: rgba(251,191,36,.22); }
+.btn-sub { font-size: 9px; opacity: .6; font-weight: 400; }
+
+/* ─── MODALS (bottom sheet) ──────────────────── */
+.bd {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(10,31,19,.84); backdrop-filter: blur(8px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .28s;
+  display: flex; align-items: flex-end;
+}
+.bd.open { opacity: 1; pointer-events: all; }
+.sheet {
+  width: 100%;
+  background: var(--bg-dark);
+  border-top: 1px solid rgba(74,222,128,.17);
+  border-radius: 22px 22px 0 0;
+  padding: 0 20px 20px;
+  padding-bottom: calc(20px + var(--safe-bot));
+  transform: translateY(102%);
+  transition: transform .34s cubic-bezier(.32,.72,0,1);
+  max-height: 93vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.bd.open .sheet { transform: translateY(0); }
+.sh-handle {
+  width: 38px; height: 4px; border-radius: 4px;
+  background: var(--txt3); margin: 14px auto 18px;
+}
+.sh-title { font-size: 17px; font-weight: 600; margin-bottom: 18px; }
+
+/* Form elements */
+.fg { margin-bottom: 13px; }
+.fl {
+  display: block; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: var(--txt3); margin-bottom: 5px;
+}
+.fi {
+  width: 100%; padding: 12px 13px;
+  background: var(--bg-mid);
+  border: 1px solid rgba(74,222,128,.18);
+  border-radius: 10px; color: var(--txt);
+  font-family: var(--font); font-size: 16px;
+  outline: none; transition: border-color .18s;
+}
+.fi:focus { border-color: var(--green); }
+.fi::placeholder { color: var(--txt3); }
+.fi.ro { color: var(--txt2); background: rgba(10,31,19,.5); border-color: rgba(74,222,128,.08); }
+
+.f-row { display: flex; gap: 10px; }
+.f-row .fg { flex: 1; }
+
+.gps-row { display: flex; gap: 8px; align-items: flex-end; }
+.gps-row .fg { flex: 1; margin-bottom: 0; }
+.gps-btn {
+  height: 46px; padding: 0 13px;
+  background: rgba(74,222,128,.1);
+  border: 1px solid rgba(74,222,128,.28);
+  border-radius: 10px; color: var(--green);
+  font-family: var(--font); font-size: 13px;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.gps-btn:active { background: rgba(74,222,128,.22); }
+
+.divider { height: 1px; background: rgba(74,222,128,.09); margin: 14px 0; }
+
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+.mc {
+  background: var(--bg-mid); border-radius: 10px; padding: 10px 12px;
+  border: 1px solid rgba(74,222,128,.1);
+}
+.mc .ml { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--txt3); margin-bottom: 4px; }
+.mc .mv { font-family: var(--mono); font-size: 14px; color: var(--green); font-weight: 500; }
+
+.btn-p {
+  width: 100%; padding: 16px;
+  background: var(--green); color: var(--bg-deep);
+  border: none; border-radius: 14px;
+  font-family: var(--font); font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: all .12s;
+}
+.btn-p:active { transform: scale(.97); background: var(--green-dim); }
+.btn-s {
+  width: 100%; padding: 14px; background: transparent;
+  color: var(--txt2); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px; font-family: var(--font); font-size: 15px;
+  cursor: pointer; margin-top: 8px;
+}
+.btn-s:active { background: rgba(255,255,255,.05); }
+.btn-danger {
+  width: 100%; padding: 14px;
+  background: rgba(248,113,113,.09);
+  border: 1px solid rgba(248,113,113,.28);
+  border-radius: 14px; font-family: var(--font); font-size: 15px;
+  color: var(--red); cursor: pointer; margin-top: 4px;
+}
+.btn-danger:active { background: rgba(248,113,113,.2); }
+
+/* Settings */
+.ss-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--txt3); margin-bottom: 10px;
+}
+
+/* Toggle */
+.tog-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; gap: 12px;
+}
+.tog-label { font-size: 13px; color: var(--txt2); flex: 1; line-height: 1.4; }
+.tog-label small { display: block; font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0; border-radius: 13px;
+  background: var(--bg-lift); cursor: pointer; transition: background .2s;
+}
+.toggle input:checked + .toggle-track { background: var(--green); }
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; top: 3px; left: 3px;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+.toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+/* Tilt status ring */
+#tilt-status {
+  position: fixed; top: 74px; right: 14px; z-index: 15;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--green);
+  display: none; align-items: center; justify-content: center;
+  font-size: 9px; font-family: var(--mono); color: var(--green);
+  background: rgba(10,31,19,0.72); backdrop-filter: blur(6px);
+  transition: border-color .3s, color .3s;
+  pointer-events: none;
+}
+#tilt-status.show   { display: flex; }
+#tilt-status.warn   { border-color: var(--amber); color: var(--amber); }
+#tilt-status.bad    { border-color: var(--red);   color: var(--red); animation: tiltPulse .4s ease-in-out infinite alternate; }
+@keyframes tiltPulse { from{opacity:.6} to{opacity:1} }
+
+/* ─── TOASTS ─────────────────────────────────── */
+#toasts {
+  position: fixed; top: 84px; left: 50%; transform: translateX(-50%);
+  z-index: 200; display: flex; flex-direction: column; gap: 7px;
+  pointer-events: none; width: calc(100% - 28px); max-width: 340px;
+}
+.toast {
+  padding: 11px 15px; border-radius: 12px;
+  font-size: 13px; font-weight: 500;
+  backdrop-filter: blur(12px);
+  animation: tIn .28s ease, tOut .28s ease 2.7s forwards;
+}
+.toast.ok  { background:rgba(74,222,128,.18);  border:1px solid rgba(74,222,128,.38);  color:var(--green); }
+.toast.wn  { background:rgba(251,191,36,.18);  border:1px solid rgba(251,191,36,.38);  color:var(--amber); }
+.toast.er  { background:rgba(248,113,113,.18); border:1px solid rgba(248,113,113,.38); color:var(--red);   }
+@keyframes tIn  { from{transform:translateY(-8px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes tOut { from{opacity:1} to{opacity:0} }
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div class="ld-tree">🌲</div>
+  <div class="ld-name">Altímetre</div>
+  <div class="ld-sub">PTGMF · EINA FORESTAL</div>
+  <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+</div>
+
+<!-- Hidden camera source -->
+<<video id="vid" autoplay playsinline muted></video>
+
+<!-- Render canvas -->
+<<canvas id="cv"></canvas>
+
+<!-- No camera fallback -->
+<div id="no-cam">
+  <div class="nc-icon">📵</div>
+  <div class="nc-msg" id="nc-msg">Permís de càmera necessari per a l'app</div>
+</div>
+
+<!-- Top bar -->
+<div id="top-bar">
+  <button class="ico-btn" onclick="tornarHub()" title="Tornar al Hub">←</button>
+  <div style="flex:1"></div>
+  <div id="hd-right">
+    <div id="sync-dot"></div>
+    <button class="ico-btn" onclick="openSettings()" title="Configuració">⚙</button>
+  </div>
+</div>
+
+<!-- Tilt status ring -->
+<div id="tilt-status">0°</div>
+
+<!-- Distance panel -->
+<div id="dist-panel">
+  <div class="dist-row">
+    <span class="dist-label">Distància</span>
+    <input type="number" inputmode="numeric" id="i-dist" value="10" step="1">
+    <span class="dist-unit">m</span>
+  </div>
+  <div class="dist-chips">
+    <button class="d-chip" onclick="setDist(5)">5 m</button>
+    <button class="d-chip on" onclick="setDist(10)">10 m</button>
+    <button class="d-chip" onclick="setDist(15)">15 m</button>
+    <button class="d-chip" onclick="setDist(20)">20 m</button>
+  </div>
+</div>
+
+<!-- Live display -->
+<div id="counter">
+  <div id="n-count">0.0°</div>
+  <div id="n-ab">Apunta i toca BASE</div>
+  <div id="n-sub"></div>
+</div>
+
+<!-- Bottom action bar -->
+<div id="bot-bar">
+  <button class="act-btn" id="b-base" onclick="captureBase()">
+    <span>BASE</span>
+    <span class="btn-sub">base de l'arbre</span>
+  </button>
+  <button class="act-btn" id="b-top" onclick="captureTop()" disabled>
+    <span>CIM</span>
+    <span class="btn-sub">punt més alt</span>
+  </button>
+  <button class="act-btn" id="bu" onclick="resetMeasure()" title="Reiniciar">🗑</button>
+  <button class="act-btn" id="bs" onclick="openSave()" title="Guardar">💾</button>
+</div>
+
+<!-- ═══ SAVE MODAL ═══════════════════════════════════════ -->
+<div class="bd" id="save-bd">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Guardar mesura</div>
+
+    <div class="meta-grid">
+      <div class="mc"><div class="ml">Data i hora</div><div class="mv" id="m-dt">—</div></div>
+      <div class="mc"><div class="ml">Alçada</div><div class="mv" id="m-h">—</div></div>
+      <div class="mc"><div class="ml">Distància</div><div class="mv" id="m-dist">—</div></div>
+      <div class="mc"><div class="ml">Angles</div><div class="mv" id="m-angles">—</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- GPS -->
+    <div class="fg">
+      <label class="fl">Coordenades GPS</label>
+      <div class="gps-row">
+        <div class="fg" style="margin-bottom:0">
+          <input type="text" class="fi ro" id="i-gps" readonly placeholder="Latitude, Longitude">
+        </div>
+        <button class="gps-btn" id="btn-gps" onclick="doGPS()">📍 GPS</button>
+      </div>
+    </div>
+
+    <!-- Finca + Rodal -->
+    <div class="f-row">
+      <div class="fg">
+        <label class="fl">Finca</label>
+        <input type="text" class="fi" id="i-finca" placeholder="—" autocomplete="off">
+      </div>
+      <div class="fg">
+        <label class="fl">Rodal</label>
+        <input type="text" class="fi" id="i-rodal" placeholder="—" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Parcel·la -->
+    <div class="fg">
+      <label class="fl">Parcel·la</label>
+      <input type="text" class="fi" id="i-parcela" placeholder="—" autocomplete="off">
+    </div>
+
+    <!-- Observacions -->
+    <div class="fg">
+      <label class="fl">Observacions</label>
+      <input type="text" class="fi" id="i-notes" placeholder="—" autocomplete="off">
+    </div>
+
+    <button class="btn-p" onclick="confirmSave()">💾 Guardar mesura</button>
+    <button class="btn-s" onclick="closeSave()">Cancel·lar</button>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ══════════════════════════════════ -->
+<div class="bd" id="set-bd">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Configuració</div>
+
+    <!-- Eye height -->
+    <div style="margin-bottom:18px">
+      <div class="ss-title">Alçada de l'observador (ulls)</div>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+        <input type="number" id="i-eye" class="fi" value="1.6" step="0.1" style="flex:1; text-align:center; font-family:var(--mono); font-size:18px;">
+        <span style="font-family:var(--mono); color:var(--txt2);">m</span>
+      </div>
+      <div class="calib-hint" style="margin-top:10px; font-size:12px; color:var(--txt3); line-height:1.65; padding:10px 12px; background:var(--bg-mid); border-radius:8px; border-left:2px solid var(--green);">
+        Per precisió òptima, mantén el mòbil en <strong style="color:var(--green)">vertical</strong> i apunta per la part superior del telèfon. L'alçada dels ulls només es fa servir per referència; el càlcul d'alçada de l'arbre és independent.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Tilt / Gyroscope -->
+    <div style="margin-bottom:18px">
+      <div class="ss-title">Nivell de bombolla (giroscopi)</div>
+
+      <div class="tog-row">
+        <div class="tog-label">
+          Activar sensor d'inclinació
+          <small>Mostra el nivell per mantenir el mòbil recte</small>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="tog-tilt" onchange="onToggleTilt(this.checked)" checked>
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+
+      <div id="tilt-readout" style="display:none;margin-top:10px">
+        <div style="display:flex;gap:8px">
+          <div class="mc" style="flex:1">
+            <div class="ml">Inclinació lateral (γ)</div>
+            <div class="mv" id="tr-gamma">—</div>
+          </div>
+          <div class="mc" style="flex:1">
+            <div class="ml">Inclinació frontal (β-90°)</div>
+            <div class="mv" id="tr-pitch">—</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-s" style="margin-top:8px" id="btn-tilt-perm" onclick="requestTiltPerm()" hidden>
+        📱 Activar sensors (iOS)
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Offline sync -->
+    <div style="margin-bottom:18px">
+      <div class="ss-title">Sincronització offline</div>
+      <div id="pending-info" style="font-size:13px;color:var(--txt2);margin-bottom:10px"></div>
+      <button class="btn-s" style="margin-top:0" onclick="trySyncPending()">🔄 Sincronitzar ara</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Reset -->
+    <div>
+      <div class="ss-title">Mesura actual</div>
+      <button class="btn-danger" onclick="doReset()">🗑 Reiniciar mesura</button>
+    </div>
+
+    <button class="btn-s" style="margin-top:18px" onclick="closeSettings()">Tancar</button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toasts"></div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════
+const CFG = {
+  SB_URL:  'https://hkkxgzdopvimgarmxdnj.supabase.co',
+  SB_KEY:  'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM',
+  TABLE:   'relascopi_measurements', // reuse or create altimetre_measurements
+  TIMEOUT: 8000,
+  LANG_K:  'ptgmf_lang',
+  Q_K:     'altimetre_queue',
+  LOC_K:   'altimetre_last_loc',
+  EYE_K:   'altimetre_eye_height',
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  I18N
+// ═══════════════════════════════════════════════════════════════
+const TX = {
+  ca: {
+    base:'BASE', top:'CIM',
+    saved_ok:  '✓ Mesura guardada correctament',
+    saved_off: '📴 Guardat en local (sense connexió)',
+    synced:    '☁ Dades sincronitzades',
+    offline:   'Mode sense connexió activat',
+    gps_wait:  'Obtenint coordenades…',
+    gps_ok:    '📍 GPS obtingut',
+    gps_err:   'No s\'ha pogut obtenir el GPS',
+    cam_err:   'Permís de càmera necessari per a l\'app',
+    reset_ok:  'Mesura reiniciada',
+    pend:      'mesures pendents de sincronització',
+    no_pend:   'Cap mesura pendent',
+    hint_base: 'Apunta a la base i toca BASE',
+    hint_top:  'Apunta al cim i toca CIM',
+    result:    'Alçada',
+  },
+  es: {
+    base:'BASE', top:'CIMA',
+    saved_ok:  '✓ Medida guardada correctamente',
+    saved_off: '📴 Guardado local (sin conexión)',
+    synced:    '☁ Datos sincronizados',
+    offline:   'Trabajando sin conexión',
+    gps_wait:  'Obteniendo coordenadas…',
+    gps_ok:    '📍 GPS obtenido',
+    gps_err:   'No se pudo obtener el GPS',
+    cam_err:   'Permiso de cámara necesario',
+    reset_ok:  'Medida reiniciada',
+    pend:      'medidas pendientes de sincronización',
+    no_pend:   'Sin medidas pendientes',
+    hint_base: 'Apunta a la base y toca BASE',
+    hint_top:  'Apunta a la cima y toca CIMA',
+    result:    'Altura',
+  },
+  en: {
+    base:'BASE', top:'TOP',
+    saved_ok:  '✓ Measurement saved',
+    saved_off: '📴 Saved locally (offline)',
+    synced:    '☁ Data synced',
+    offline:   'Working offline',
+    gps_wait:  'Getting coordinates…',
+    gps_ok:    '📍 GPS obtained',
+    gps_err:   'Could not get GPS',
+    cam_err:   'Camera permission required',
+    reset_ok:  'Measurement reset',
+    pend:      'measurements pending sync',
+    no_pend:   'No pending measurements',
+    hint_base: 'Point to base and tap BASE',
+    hint_top:  'Point to top and tap TOP',
+    result:    'Height',
+  },
+};
+function t(k){ const l=S.lang; return (TX[l]&&TX[l][k]) || TX.ca[k] || k; }
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+const S = {
+  lang:       'ca',
+  user:       null,
+  dist:       10,
+  eyeHeight:  1.6,
+  state:      'idle',   // idle → based → done
+  baseAngle:  null,     // degrees (elevation from horizontal, negative = down)
+  topAngle:   null,     // degrees (positive = up)
+  height:     null,
+  lat: null, lng: null, acc: null,
+  stream:     null,
+  camOK:      false,
+  raf:        null,
+  tiltActive: true,
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  TILT SENSOR STATE
+// ═══════════════════════════════════════════════════════════════
+const TILT = {
+  beta:    90,
+  gamma:   0,
+  hasData: false,
+  get roll()  { return this.gamma || 0; },
+  get pitch() { return (this.beta || 90) - 90; },
+  get maxDeg(){ return Math.max(Math.abs(this.roll), Math.abs(this.pitch)); },
+  get status(){
+    if (!S.tiltActive || !this.hasData) return 'ok';
+    const d = this.maxDeg;
+    if (d < 3) return 'ok';
+    if (d < 8) return 'warn';
+    return 'bad';
+  },
+  get color(){
+    switch(this.status){
+      case 'warn': return '#fbbf24';
+      case 'bad':  return '#f87171';
+      default:     return '#4ade80';
+    }
+  },
+};
+
+// Elevation angle from horizontal (positive = up, negative = down)
+function getElevation(){ return 90 - (TILT.beta || 90); }
+
+// ═══════════════════════════════════════════════════════════════
+//  SUPABASE
+// ═══════════════════════════════════════════════════════════════
+let sb = null;
+
+async function initSB(){
+  const timer = setTimeout(() => {
+    setSyncDot('offline');
+    toast(t('offline'), 'wn');
+  }, CFG.TIMEOUT);
+
+  try {
+    sb = window.supabase.createClient(CFG.SB_URL, CFG.SB_KEY);
+    const { data: { session } } = await sb.auth.getSession();
+    clearTimeout(timer);
+    S.user = session?.user ?? null;
+    setSyncDot(S.user ? 'online' : 'offline');
+
+    sb.auth.onAuthStateChange((_ev, sess) => {
+      S.user = sess?.user ?? null;
+      setSyncDot(S.user ? 'online' : 'offline');
+      if (S.user) trySyncPending();
+    });
+  } catch(e) {
+    clearTimeout(timer);
+    setSyncDot('offline');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS + CAMERA
+// ═══════════════════════════════════════════════════════════════
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const vid = document.getElementById('vid');
+
+let cvW = 0, cvH = 0;
+
+function resizeCV(){
+  const dpr = devicePixelRatio || 1;
+  cvW = cv.width  = window.innerWidth  * dpr;
+  cvH = cv.height = window.innerHeight * dpr;
+}
+
+async function startCam(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false,
+    });
+    S.stream = stream;
+    vid.srcObject = stream;
+    await new Promise(r => { vid.onloadedmetadata = r; });
+    await vid.play();
+    S.camOK = true;
+  } catch(e) {
+    console.warn('Camera error:', e);
+    document.getElementById('no-cam').classList.add('show');
+    document.getElementById('nc-msg').textContent = t('cam_err');
+    toast(t('cam_err'), 'er');
+  }
+  startLoop();
+}
+
+function startLoop(){
+  if (S.raf) cancelAnimationFrame(S.raf);
+  function frame(){
+    if (S.camOK && vid.readyState >= 2) {
+      ctx.drawImage(vid, 0, 0, cvW, cvH);
+    } else {
+      ctx.fillStyle = '#0a1f13';
+      ctx.fillRect(0, 0, cvW, cvH);
+    }
+    drawOverlay();
+    S.raf = requestAnimationFrame(frame);
+  }
+  S.raf = requestAnimationFrame(frame);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INCLINOMETER OVERLAY
+// ═══════════════════════════════════════════════════════════════
+function drawOverlay(){
+  const dpr = devicePixelRatio || 1;
+  const W = cvW, H = cvH;
+  const cx = W / 2;
+  const cy = H * 0.42;
+  const COLOR = TILT.color;
+
+  const elev = getElevation(); // current elevation angle
+
+  // ── Vignette ────────────────────────────────────────
+  const vig = ctx.createRadialGradient(cx, H*0.5, H*0.08, cx, H*0.5, H*0.72);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.5)');
+  ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+
+  // ── Horizontal reference line (always screen-horizontal) ─
+  ctx.save();
+  const guideAlpha = TILT.status === 'bad' ? 0.06 : 0.14;
+  ctx.strokeStyle = hexAlpha(COLOR, guideAlpha);
+  ctx.lineWidth   = dpr;
+  ctx.setLineDash([5*dpr, 12*dpr]);
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── Angle arc / tick indicator ──────────────────────
+  // Draw a small arc around center showing current elevation
+  const arcR = 55 * dpr;
+  ctx.save();
+  ctx.strokeStyle = hexAlpha(COLOR, 0.25);
+  ctx.lineWidth = 2 * dpr;
+  ctx.beginPath();
+  ctx.arc(cx, cy, arcR, -Math.PI/2 - Math.PI/3, -Math.PI/2 + Math.PI/3);
+  ctx.stroke();
+
+  // Tick at current elevation (mapped: -30°..+30° to arc)
+  const clampedElev = Math.max(-30, Math.min(30, elev));
+  const angleRad = -Math.PI/2 - (clampedElev * Math.PI / 180); // 0° = top, +up = left? adjust
+  // Actually: -30° should be left side, +30° right side
+  const tickRad = -Math.PI/2 - (clampedElev * Math.PI / 180);
+  const tx = cx + arcR * Math.cos(tickRad);
+  const ty = cy + arcR * Math.sin(tickRad);
+  ctx.fillStyle = COLOR;
+  ctx.shadowColor = COLOR; ctx.shadowBlur = 10*dpr;
+  ctx.beginPath(); ctx.arc(tx, ty, 4*dpr, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // ── Locked angle markers ────────────────────────────
+  if (S.baseAngle !== null) drawAngleMarker(cx, cy, S.baseAngle, COLOR, 'BASE', dpr);
+  if (S.topAngle  !== null) drawAngleMarker(cx, cy, S.topAngle,  COLOR, 'CIM',  dpr);
+
+  // ── Center crosshair ────────────────────────────────
+  ctx.save();
+  ctx.strokeStyle = hexAlpha(COLOR, 0.45);
+  ctx.lineWidth = dpr;
+  ctx.beginPath(); ctx.moveTo(cx-16*dpr, cy); ctx.lineTo(cx+16*dpr, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy-16*dpr); ctx.lineTo(cx, cy+16*dpr); ctx.stroke();
+  ctx.fillStyle = COLOR;
+  ctx.shadowColor = COLOR; ctx.shadowBlur = 10*dpr;
+  ctx.beginPath(); ctx.arc(cx, cy, 3.5*dpr, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // ── Bubble level (bottom-left) ──────────────────────
+  if (S.tiltActive) drawBubbleLevel(W, H, dpr, COLOR);
+
+  // ── Loupe (×5 zoom, bottom-right) ───────────────────
+  if (S.camOK && vid.readyState >= 2) drawLoupe(W, H, cx, cy, dpr, COLOR);
+}
+
+function drawAngleMarker(cx, cy, angleDeg, color, label, dpr){
+  // Draw a line from center at the angle (relative to horizontal)
+  // angleDeg: positive = up, negative = down
+  const len = 90 * dpr;
+  const rad = -angleDeg * Math.PI / 180; // 0 = right, negative = up in canvas, so invert
+  const x2 = cx + len * Math.cos(rad);
+  const y2 = cy - len * Math.sin(rad); // negative sin because canvas Y is down
+
+  ctx.save();
+  ctx.strokeStyle = hexAlpha(color, 0.6);
+  ctx.lineWidth = 2 * dpr;
+  ctx.setLineDash([4*dpr, 4*dpr]);
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Label at end
+  ctx.font = `${10*dpr}px 'DM Mono',monospace`;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${label} ${angleDeg.toFixed(1)}°`, x2, y2 - 8*dpr);
+  ctx.restore();
+}
+
+function hexAlpha(hex, a){
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+// ═══════════════════════════════════════════════════════════════
+//  BUBBLE LEVEL
+// ═══════════════════════════════════════════════════════════════
+function drawBubbleLevel(W, H, dpr, color){
+  const R    = 26 * dpr;
+  const MX   = 16 * dpr;
+  const BH   = 88 * dpr;
+  const cx   = MX + R;
+  const cy   = H - BH - R;
+
+  const maxTravel = R * 0.65;
+  const bx = cx + clamp(TILT.roll  / 15 * maxTravel, -maxTravel, maxTravel);
+  const by = cy - clamp(TILT.pitch / 15 * maxTravel, -maxTravel, maxTravel);
+  const alpha = TILT.hasData ? 0.88 : 0.35;
+
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.75;
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5 * dpr;
+  ctx.shadowColor = color; ctx.shadowBlur = 7 * dpr;
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.stroke();
+
+  const innerR = R * (3/15) * 0.65;
+  ctx.globalAlpha = alpha * 0.35; ctx.shadowBlur = 0;
+  ctx.beginPath(); ctx.arc(cx, cy, Math.max(innerR, 3*dpr), 0, Math.PI*2); ctx.stroke();
+
+  ctx.globalAlpha = alpha * 0.28;
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = dpr;
+  const arm = R * 0.7;
+  ctx.beginPath(); ctx.moveTo(cx-arm, cy); ctx.lineTo(cx+arm, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy-arm); ctx.lineTo(cx, cy+arm); ctx.stroke();
+
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 9 * dpr;
+  ctx.beginPath(); ctx.arc(bx, by, R * 0.28, 0, Math.PI*2); ctx.fill();
+
+  if (TILT.hasData) {
+    ctx.globalAlpha = alpha * 0.7; ctx.shadowBlur = 0;
+    ctx.font = `${8.5*dpr}px 'DM Mono',monospace`;
+    ctx.fillStyle = color; ctx.textAlign = 'center';
+    ctx.fillText(`${TILT.maxDeg.toFixed(1)}°`, cx, cy + R + 13*dpr);
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LOUPE
+// ═══════════════════════════════════════════════════════════════
+function drawLoupe(W, H, cx, cy, dpr, color){
+  const ZOOM  = 5;
+  const LW    = 110 * dpr;
+  const LH    = 82  * dpr;
+  const MX    = 14  * dpr;
+  const lx    = W - LW - MX;
+  const ly    = cy - LH / 2;
+
+  const pad  = 22 * dpr;
+  const srcW = 60 * dpr * ZOOM; // small region around center
+  const srcH = 60 * dpr * ZOOM;
+  const srcX = cx - srcW / 2;
+  const srcY = cy - srcH / 2;
+
+  const vsx = (srcX / W) * vid.videoWidth;
+  const vsy = (srcY / H) * vid.videoHeight;
+  const vsw = (srcW / W) * vid.videoWidth;
+  const vsh = (srcH / H) * vid.videoHeight;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(10,31,19,0.72)';
+  rrPath(lx - 3, ly - 3, LW + 6, LH + 6, 10*dpr); ctx.fill();
+  ctx.beginPath(); rrPath(lx, ly, LW, LH, 8*dpr); ctx.clip();
+  ctx.drawImage(vid, vsx, vsy, vsw, vsh, lx, ly, LW, LH);
+
+  // Crosshair in loupe
+  const lcx = lx + LW/2;
+  const lcy = ly + LH/2;
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5*dpr;
+  ctx.shadowColor = color; ctx.shadowBlur = 4*dpr;
+  ctx.beginPath(); ctx.moveTo(lcx-10*dpr, lcy); ctx.lineTo(lcx+10*dpr, lcy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(lcx, lcy-10*dpr); ctx.lineTo(lcx, lcy+10*dpr); ctx.stroke();
+
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = 'rgba(74,222,128,0.42)'; ctx.lineWidth = 1.5*dpr;
+  ctx.beginPath(); rrPath(lx, ly, LW, LH, 8*dpr); ctx.stroke();
+  ctx.font = `${9*dpr}px 'DM Mono',monospace`;
+  ctx.fillStyle = 'rgba(74,222,128,0.44)'; ctx.textAlign = 'right';
+  ctx.fillText(`×${ZOOM}`, lx + LW - 4*dpr, ly + LH - 4*dpr);
+  ctx.restore();
+}
+
+function rrPath(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UI LOGIC
+// ═══════════════════════════════════════════════════════════════
+function setDist(v){
+  S.dist = v;
+  document.getElementById('i-dist').value = v;
+  document.querySelectorAll('.d-chip').forEach(b => b.classList.toggle('on', parseInt(b.textContent) === v));
+}
+
+function updateDistFromInput(){
+  const v = parseFloat(document.getElementById('i-dist').value);
+  if (!isNaN(v) && v > 0) {
+    S.dist = v;
+    document.querySelectorAll('.d-chip').forEach(b => b.classList.remove('on'));
+  }
+}
+
+function captureBase(){
+  if (S.state !== 'idle') return;
+  S.baseAngle = getElevation();
+  S.state = 'based';
+  refreshUI();
+  if ('vibrate' in navigator) navigator.vibrate(55);
+  toast(`Base: ${S.baseAngle.toFixed(1)}°`, 'ok');
+}
+
+function captureTop(){
+  if (S.state !== 'based') return;
+  S.topAngle = getElevation();
+  S.state = 'done';
+  calculateHeight();
+  refreshUI();
+  if ('vibrate' in navigator) navigator.vibrate([55, 30, 55]);
+}
+
+function calculateHeight(){
+  // height = dist * (tan(top) - tan(base))
+  // base is usually negative (looking down), top positive (looking up)
+  const radBase = S.baseAngle * Math.PI / 180;
+  const radTop  = S.topAngle  * Math.PI / 180;
+  const h = S.dist * (Math.tan(radTop) - Math.tan(radBase));
+  S.height = Math.max(0, h);
+}
+
+function resetMeasure(){
+  S.state = 'idle';
+  S.baseAngle = null;
+  S.topAngle = null;
+  S.height = null;
+  refreshUI();
+  if ('vibrate' in navigator) navigator.vibrate([25, 15, 25]);
+}
+
+function refreshUI(){
+  const count = document.getElementById('n-count');
+  const ab    = document.getElementById('n-ab');
+  const sub   = document.getElementById('n-sub');
+  const bBase = document.getElementById('b-base');
+  const bTop  = document.getElementById('b-top');
+
+  if (S.state === 'idle') {
+    count.textContent = Math.abs(getElevation()).toFixed(1) + '°';
+    ab.textContent = t('hint_base');
+    sub.textContent = '';
+    bBase.disabled = false;
+    bTop.disabled = true;
+  } else if (S.state === 'based') {
+    count.textContent = Math.abs(getElevation()).toFixed(1) + '°';
+    ab.textContent = t('hint_top');
+    sub.textContent = `Base: ${S.baseAngle.toFixed(1)}°`;
+    bBase.disabled = true;
+    bTop.disabled = false;
+  } else if (S.state === 'done') {
+    count.textContent = S.height.toFixed(2) + ' m';
+    ab.textContent = t('result');
+    sub.textContent = `Base ${S.baseAngle.toFixed(1)}° → Cim ${S.topAngle.toFixed(1)}° @ ${S.dist}m`;
+    bBase.disabled = true;
+    bTop.disabled = true;
+  }
+
+  // Bump animation
+  count.classList.remove('bump');
+  void count.offsetWidth;
+  count.classList.add('bump');
+  setTimeout(() => count.classList.remove('bump'), 180);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GPS
+// ═══════════════════════════════════════════════════════════════
+function doGPS(){
+  const btn = document.getElementById('btn-gps');
+  const inp = document.getElementById('i-gps');
+  btn.textContent = '…';
+  inp.placeholder = t('gps_wait');
+
+  if (!navigator.geolocation) { toast(t('gps_err'), 'wn'); return; }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      S.lat = pos.coords.latitude;
+      S.lng = pos.coords.longitude;
+      S.acc = pos.coords.accuracy;
+      inp.value = `${S.lat.toFixed(6)}, ${S.lng.toFixed(6)}`;
+      btn.textContent = '✓';
+      toast(t('gps_ok'), 'ok');
+      localStorage.setItem(CFG.LOC_K, JSON.stringify({ lat: S.lat, lng: S.lng }));
+    },
+    () => {
+      btn.textContent = '📍 GPS';
+      inp.placeholder = t('gps_err');
+      toast(t('gps_err'), 'wn');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SAVE MODAL
+// ═══════════════════════════════════════════════════════════════
+function openSave(){
+  if (S.state !== 'done' || S.height === null) {
+    toast('Fes una mesura abans de guardar', 'wn');
+    return;
+  }
+  const now = new Date();
+  document.getElementById('m-dt').textContent =
+    now.toLocaleDateString('ca-ES') + ' ' +
+    now.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('m-h').textContent     = S.height.toFixed(2) + ' m';
+  document.getElementById('m-dist').textContent    = S.dist + ' m';
+  document.getElementById('m-angles').textContent  = `${S.baseAngle.toFixed(1)}° → ${S.topAngle.toFixed(1)}°`;
+
+  const inp = document.getElementById('i-gps');
+  if (S.lat) {
+    inp.value = `${S.lat.toFixed(6)}, ${S.lng.toFixed(6)}`;
+  } else {
+    try {
+      const cached = JSON.parse(localStorage.getItem(CFG.LOC_K));
+      if (cached) { S.lat = cached.lat; S.lng = cached.lng; inp.value = `${S.lat.toFixed(6)}, ${S.lng.toFixed(6)}`; }
+    } catch(e){}
+  }
+  if (!S.lat) setTimeout(doGPS, 350);
+
+  document.getElementById('save-bd').classList.add('open');
+}
+function closeSave(){ document.getElementById('save-bd').classList.remove('open'); }
+
+async function confirmSave(){
+  const now = new Date();
+  const rec = {
+    measured_at:  now.toISOString(),
+    type:         'altimetre',
+    height:       parseFloat(S.height.toFixed(4)),
+    distance:     S.dist,
+    base_angle:   S.baseAngle,
+    top_angle:    S.topAngle,
+    gps_lat:      S.lat,
+    gps_lng:      S.lng,
+    gps_accuracy: S.acc,
+    finca:        document.getElementById('i-finca').value.trim(),
+    rodal:        document.getElementById('i-rodal').value.trim(),
+    parcela:      document.getElementById('i-parcela').value.trim(),
+    notes:        document.getElementById('i-notes').value.trim(),
+  };
+  closeSave();
+  const res = await saveRecord(rec);
+  toast(res === 'remote' ? t('saved_ok') : t('saved_off'), res === 'remote' ? 'ok' : 'wn');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  OFFLINE QUEUE + SUPABASE SAVE
+// ═══════════════════════════════════════════════════════════════
+function genUID(){ return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function loadQ()  { try { const r = localStorage.getItem(CFG.Q_K); return r ? JSON.parse(r) : []; } catch { return []; } }
+function saveQ(q) { localStorage.setItem(CFG.Q_K, JSON.stringify(q)); refreshBadge(); }
+
+function refreshBadge(){
+  const q  = loadQ();
+  const pi = document.getElementById('pending-info');
+  if (q.length > 0) {
+    if (pi) pi.textContent = `${q.length} ${t('pend')}`;
+  } else {
+    if (pi) pi.textContent = t('no_pend');
+  }
+}
+
+async function saveRecord(rec){
+  if (!sb || !S.user) { enqueue(rec); return 'local'; }
+  try {
+    const p1   = sb.from(CFG.TABLE).insert({ ...rec, user_id: S.user.id });
+    const tout = new Promise((_, rej) => setTimeout(() => rej('timeout'), CFG.TIMEOUT));
+    const { error } = await Promise.race([p1, tout]);
+    if (error) throw error;
+    return 'remote';
+  } catch(e) {
+    enqueue(rec); return 'local';
+  }
+}
+
+function enqueue(rec){
+  const q = loadQ();
+  q.push({ ...rec, _id: genUID(), _queued: Date.now() });
+  saveQ(q);
+}
+
+async function trySyncPending(){
+  const q = loadQ();
+  if (!q.length) { toast(t('no_pend'), 'ok'); return; }
+  if (!sb || !S.user) { toast(t('offline'), 'wn'); return; }
+
+  setSyncDot('syncing');
+  let ok = 0;
+  const fail = [];
+
+  for (const rec of q) {
+    try {
+      const { error } = await sb.from(CFG.TABLE).insert({ ...rec, user_id: S.user.id });
+      if (error) fail.push(rec); else ok++;
+    } catch { fail.push(rec); }
+  }
+
+  saveQ(fail);
+  setSyncDot(S.user ? 'online' : 'offline');
+  if (ok > 0) toast(`${t('synced')} (${ok})`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SETTINGS MODAL
+// ═══════════════════════════════════════════════════════════════
+function openSettings(){
+  refreshBadge();
+  const togTilt = document.getElementById('tog-tilt');
+  if (togTilt) togTilt.checked = S.tiltActive;
+  const ro = document.getElementById('tilt-readout');
+  if (ro) ro.style.display = S.tiltActive ? 'block' : 'none';
+  document.getElementById('set-bd').classList.add('open');
+}
+function closeSettings(){ document.getElementById('set-bd').classList.remove('open'); }
+
+function doReset(){
+  if (confirm('Vols reiniciar la mesura?')) {
+    resetMeasure();
+    toast(t('reset_ok'), 'ok');
+    closeSettings();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SYNC DOT + TOAST
+// ═══════════════════════════════════════════════════════════════
+function setSyncDot(st){ const d = document.getElementById('sync-dot'); d.className = ''; d.classList.add(st); }
+
+function toast(msg, type = 'ok'){
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function tornarHub(){
+  if (S.stream) S.stream.getTracks().forEach(tr => tr.stop());
+  if (S.raf) cancelAnimationFrame(S.raf);
+  if (document.referrer) window.history.back();
+  else window.location.href = '/';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TILT SENSOR
+// ═══════════════════════════════════════════════════════════════
+function initTilt(){
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'){
+    document.getElementById('btn-tilt-perm').hidden = false;
+  } else {
+    attachTiltListener();
+  }
+}
+
+async function requestTiltPerm(){
+  try {
+    const res = await DeviceOrientationEvent.requestPermission();
+    if (res === 'granted'){
+      attachTiltListener();
+      document.getElementById('btn-tilt-perm').hidden = true;
+      toast('📐 Sensor d\'inclinació activat', 'ok');
+    } else {
+      toast('Permís de sensor denegat', 'wn');
+    }
+  } catch(e){ toast('Error en activar el sensor', 'er'); }
+}
+
+function attachTiltListener(){
+  window.addEventListener('deviceorientation', onOrientation, true);
+}
+
+function onOrientation(e){
+  if (!S.tiltActive) return;
+  TILT.beta    = e.beta  ?? 90;
+  TILT.gamma   = e.gamma ?? 0;
+  TILT.hasData = true;
+
+  const ring = document.getElementById('tilt-status');
+  ring.textContent = `${TILT.maxDeg.toFixed(0)}°`;
+  ring.className   = 'show';
+  if (TILT.status === 'warn') ring.classList.add('warn');
+  else if (TILT.status === 'bad') ring.classList.add('bad');
+
+  const ro = document.getElementById('tilt-readout');
+  if (ro && ro.style.display !== 'none'){
+    document.getElementById('tr-gamma').textContent = TILT.roll.toFixed(2)  + '°';
+    document.getElementById('tr-pitch').textContent = TILT.pitch.toFixed(2) + '°';
+  }
+
+  // Refresh live angle display if not done yet
+  if (S.state !== 'done') refreshUI();
+}
+
+function onToggleTilt(checked){
+  S.tiltActive = checked;
+  const ring = document.getElementById('tilt-status');
+  if (!checked){ TILT.hasData = false; ring.classList.remove('show'); }
+  const ro = document.getElementById('tilt-readout');
+  if (ro) ro.style.display = checked ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+async function init(){
+  // 1 · Language
+  S.lang = localStorage.getItem(CFG.LANG_K) || 'ca';
+
+  // 2 · Eye height
+  const storedEye = localStorage.getItem(CFG.EYE_K);
+  if (storedEye) S.eyeHeight = parseFloat(storedEye);
+  const eyeInput = document.getElementById('i-eye');
+  if (eyeInput) eyeInput.value = S.eyeHeight;
+
+  // 3 · Canvas
+  resizeCV();
+  window.addEventListener('resize', resizeCV);
+
+  // 4 · Supabase
+  initSB().then(() => { if (S.user) trySyncPending(); });
+
+  // 5 · Camera
+  await startCam();
+
+  // 6 · UI
+  refreshUI();
+  refreshBadge();
+
+  // 7 · Tilt
+  initTilt();
+
+  // 8 · Network
+  window.addEventListener('online',  () => { setSyncDot(S.user ? 'online' : 'offline'); if (S.user) trySyncPending(); });
+  window.addEventListener('offline', () => setSyncDot('offline'));
+
+  // 9 · Input listeners
+  document.getElementById('i-dist').addEventListener('change', updateDistFromInput);
+  document.getElementById('i-eye').addEventListener('change', (e) => {
+    S.eyeHeight = parseFloat(e.target.value) || 1.6;
+    localStorage.setItem(CFG.EYE_K, S.eyeHeight);
+  });
+
+  // 10 · Modals
+  document.getElementById('save-bd').addEventListener('click', e => { if (e.target === e.currentTarget) closeSave(); });
+  document.getElementById('set-bd').addEventListener('click',  e => { if (e.target === e.currentTarget) closeSettings(); });
+
+  // 11 · Dismiss loading
+  setTimeout(() => {
+    const ld = document.getElementById('loading');
+    ld.classList.add('out');
+    setTimeout(() => ld.remove(), 550);
+  }, 1400);
+}
+
+// ─── Prevent pinch-zoom + double-tap zoom ─────────────────────
+document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+let _lastTap = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - _lastTap < 290) e.preventDefault();
+  _lastTap = now;
+}, { passive: false });
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
