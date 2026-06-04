@@ -383,13 +383,9 @@ const T = {
     appRelascopiName:'Relascopi de Bitterlich', appRelascopiDesc:'Càlcul de la àrea basal amb relascopi',
     appAltimetreName:'Alçades d\'arbres', appAltimetreDesc:'Aplicació per calcular alçades d\'arbres',
     appAnalisiName:'Eina d\'Anàlisi', appAnalisiDesc:'Anàlisi de dades i resultats del M.S.i.X',
-    appSylvaName:'SylvaMind AI', appSylvaDesc:'Intel·ligència artificial per a gestió forestal'
+    appSylvaName:'SylvaMind AI', appSylvaDesc:'Intel·ligència artificial per a gestió forestal',
     appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de boscos mediterranis',
     appInputsName:'Inputs', appInputsDesc:'Entrada de dades forestals',
-    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de boscos mediterranis',
-    appInputsName:'Inputs', appInputsDesc:'Entrada de dades forestals',
-    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de boscos mediterranis',
-    appInputsName:'Inputs', appInputsDesc:'Entrada de dades forestals',,
     errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
     errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
     accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
@@ -418,6 +414,8 @@ const T = {
     appAltimetreName:'Alturas de árboles', appAltimetreDesc:'Aplicación para calcular alturas de árboles',
     appAnalisiName:'Herramienta de Análisis', appAnalisiDesc:'Análisis de datos y resultados del M.S.i.X',
     appSylvaName:'SylvaMind AI', appSylvaDesc:'Inteligencia artificial para gestión forestal',
+    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de bosques mediterráneos',
+    appInputsName:'Inputs', appInputsDesc:'Entrada de datos forestales',
     errEmailPass:'Introduce correo y contraseña.', errPassMatch:'Las contraseñas no coinciden.',
     errPassLen:'La contraseña debe tener mínimo 6 caracteres.',
     accountCreated:'✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
@@ -446,6 +444,8 @@ const T = {
     appAltimetreName:'Tree heights', appAltimetreDesc:'Application to calculate tree heights',
     appAnalisiName:'Analysis Tool', appAnalisiDesc:'Data analysis and M.S.i.X results',
     appSylvaName:'SylvaMind AI', appSylvaDesc:'Artificial intelligence for forest management',
+    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Mediterranean forest simulator',
+    appInputsName:'Inputs', appInputsDesc:'Forest data entry',
     errEmailPass:'Enter your email and password.', errPassMatch:'Passwords do not match.',
     errPassLen:'Password must be at least 6 characters.',
     accountCreated:'✅ Account created! You can now sign in.',
@@ -456,13 +456,13 @@ const T = {
 };
 
 const APPS = [
-  { nameKey:'appInventariName', descKey:'appInventariDesc', icon:'🌲', url:'Inventari.html', badge:'v10', active:true, categoria:'camp' },
-  { nameKey:'appRelascopiName', descKey:'appRelascopiDesc', icon:'🎯', url:'Relascopi.html', badge:'v1',  active:true, categoria:'camp' },
-  { nameKey:'appAltimetreName', descKey:'appAltimetreDesc', icon:'⚡', url:'altimetre.html', badge:'v1',  active:true, categoria:'camp' },
+  { nameKey:'appInventariName',  descKey:'appInventariDesc',  icon:'🌲', url:'Inventari.html',  badge:'v10',   active:true, categoria:'camp' },
+  { nameKey:'appRelascopiName',  descKey:'appRelascopiDesc',  icon:'🎯', url:'Relascopi.html',  badge:'v1',    active:true, categoria:'camp' },
+  { nameKey:'appAltimetreName',  descKey:'appAltimetreDesc',  icon:'⚡', url:'altimetre.html',  badge:'v1',    active:true, categoria:'camp' },
   { nameKey:'appSimboscmedName', descKey:'appSimboscmedDesc', icon:'🌳', url:'simboscmed.html', badge:'Shiny', active:true, categoria:'despatx' },
-  { nameKey:'appInputsName',    descKey:'appInputsDesc',    icon:'📥', url:'inputs.html',   badge:'Shiny', active:true, categoria:'despatx' },
-  { nameKey:'appAnalisiName',   descKey:'appAnalisiDesc',   icon:'📊', url:'analisi.html',  badge:'v4',  active:true, categoria:'despatx' },
-  { nameKey:'appSylvaName',     descKey:'appSylvaDesc',     icon:'🧠', url:'sylvamind.html', badge:'IA',  active:true, categoria:'despatx' }
+  { nameKey:'appInputsName',     descKey:'appInputsDesc',     icon:'📥', url:'inputs.html',     badge:'Shiny', active:true, categoria:'despatx' },
+  { nameKey:'appAnalisiName',    descKey:'appAnalisiDesc',    icon:'📊', url:'analisi.html',    badge:'v4',    active:true, categoria:'despatx' },
+  { nameKey:'appSylvaName',      descKey:'appSylvaDesc',      icon:'🧠', url:'sylvamind.html',  badge:'IA',    active:true, categoria:'despatx' }
 ];
 
 function getLang() { return localStorage.getItem('M.S.i.X_lang') || 'ca'; }
