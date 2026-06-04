@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a3d2b">
+<title>PTGMF · Inputs</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --v-fosc:  #1a3d2b;
+  --v-fosc2: #163424;
+  --v:       #2d6a4f;
+  --v-mig:   #40916c;
+  --v-clar:  #74c69d;
+  --v-pale:  #d8f3dc;
+  --fons:    #f0f4f1;
+  --card:    #ffffff;
+  --text:    #1c2b22;
+  --suau:    #5a7060;
+  --borde:   #dce8df;
+  --ff-s:    'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+  --safe-t:  env(safe-area-inset-top, 0px);
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; -webkit-tap-highlight-color: transparent; font-family: var(--ff-s); background: var(--fons); color: var(--text); -webkit-font-smoothing: antialiased; }
+button { font-family: var(--ff-s); cursor: pointer; border: none; }
+
+#page { display: flex; flex-direction: column; height: 100dvh; }
+
+.top-bar {
+  background: var(--v-fosc);
+  padding: calc(var(--safe-t) + 12px) 16px 12px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.back-btn {
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.85); border-radius: 9px; font-size: 13px; font-weight: 600;
+  font-family: var(--ff-s); padding: 7px 13px; cursor: pointer; flex-shrink: 0;
+  transition: background .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.back-btn:hover { background: rgba(255,255,255,.18); }
+.bar-title { color: #fff; font-weight: 700; font-size: 15px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-badge { background: var(--v-pale); color: var(--v); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: .4px; text-transform: uppercase; flex-shrink: 0; }
+
+.open-btn {
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.75); border-radius: 9px; font-size: 12px; font-weight: 600;
+  font-family: var(--ff-s); padding: 7px 11px; cursor: pointer; flex-shrink: 0;
+  transition: background .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+}
+.open-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+.iframe-wrap {
+  flex: 1;
+  position: relative;
+  background: var(--fons);
+}
+#shiny-frame {
+  width: 100%; height: 100%;
+  border: none;
+  display: block;
+}
+
+.loading-overlay {
+  position: absolute; inset: 0;
+  background: var(--fons);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; z-index: 5; transition: opacity .4s;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--borde);
+  border-top-color: var(--v-mig);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--suau); font-weight: 500; }
+.loading-sub { font-size: 12px; color: var(--suau); opacity: .7; }
+
+.error-overlay {
+  position: absolute; inset: 0;
+  background: var(--fons);
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; z-index: 6; padding: 32px; text-align: center;
+}
+.error-overlay.show { display: flex; }
+.error-icon { font-size: 40px; }
+.error-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.error-desc { font-size: 13px; color: var(--suau); line-height: 1.5; max-width: 320px; }
+.error-btn {
+  background: var(--v-mig); color: #fff; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 700; font-family: var(--ff-s); padding: 11px 24px;
+  cursor: pointer; margin-top: 8px; text-decoration: none; display: inline-block;
+  transition: background .2s;
+}
+.error-btn:hover { background: var(--v-clar); }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div id="page">
+  <div class="top-bar">
+    <a class="back-btn" href="index.html">← Hub</a>
+    <div class="bar-title">📥 Inputs</div>
+    <span class="bar-badge">Shiny</span>
+    <a class="open-btn" href="https://provar.shinyapps.io/Inputs/" target="_blank" rel="noopener">
+      ↗ Nova pestanya
+    </a>
+  </div>
+
+  <div class="iframe-wrap">
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="spinner"></div>
+      <div class="loading-text">Carregant Inputs...</div>
+      <div class="loading-sub">Pot trigar uns segons</div>
+    </div>
+
+    <div class="error-overlay" id="error-overlay">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">No s'ha pogut carregar</div>
+      <div class="error-desc">L'aplicació Shiny no ha respòs. Pot ser que el servidor estigui inactiu o que bloquegi iframes. Prova d'obrir-la directament.</div>
+      <a class="error-btn" href="https://provar.shinyapps.io/Inputs/" target="_blank" rel="noopener">Obrir en nova pestanya</a>
+    </div>
+
+    <iframe
+      id="shiny-frame"
+      src="https://provar.shinyapps.io/Inputs/"
+      title="Inputs PTGMF"
+      allow="fullscreen"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+    ></iframe>
+  </div>
+</div>
+
+<script>
+const frame   = document.getElementById('shiny-frame');
+const loading = document.getElementById('loading-overlay');
+const errorEl = document.getElementById('error-overlay');
+
+const TIMEOUT_MS = 25000;
+let timer = setTimeout(() => {
+  loading.classList.add('hidden');
+  errorEl.classList.add('show');
+}, TIMEOUT_MS);
+
+frame.addEventListener('load', () => {
+  clearTimeout(timer);
+  loading.classList.add('hidden');
+});
+
+frame.addEventListener('error', () => {
+  clearTimeout(timer);
+  loading.classList.add('hidden');
+  errorEl.classList.add('show');
+});
+</script>
+</body>
+</html>
