@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculador de Mostreig Forestal</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --forest-dark: #1b4332;
+            --forest-green: #2d6a4f;
+            --forest-light: #52b788;
+            --forest-pale: #d8f3dc;
+            --wood-brown: #8b5e3c;
+            --wood-light: #d4a373;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            background-image: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .navbar-forest {
+            background: linear-gradient(90deg, var(--forest-dark) 0%, var(--forest-green) 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card-forest {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+        
+        .card-forest:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card-header-forest {
+            background: linear-gradient(90deg, var(--forest-green) 0%, var(--forest-light) 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        
+        .btn-forest {
+            background-color: var(--forest-green);
+            border-color: var(--forest-green);
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-forest:hover {
+            background-color: var(--forest-dark);
+            border-color: var(--forest-dark);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(27, 67, 50, 0.3);
+        }
+        
+        .btn-export {
+            background-color: var(--wood-brown);
+            border-color: var(--wood-brown);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .btn-export:hover {
+            background-color: #6d4c32;
+            border-color: #6d4c32;
+            color: white;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.4rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1.5px solid #dee2e6;
+            padding: 0.6rem 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--forest-light);
+            box-shadow: 0 0 0 0.2rem rgba(82, 183, 136, 0.25);
+        }
+        
+        .result-box {
+            background: linear-gradient(135deg, var(--forest-pale) 0%, #ffffff 100%);
+            border-left: 5px solid var(--forest-green);
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--forest-dark);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .mode-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .mode-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .info-badge {
+            background-color: var(--forest-pale);
+            color: var(--forest-dark);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .table-results th {
+            background-color: var(--forest-green);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .table-results td {
+            vertical-align: middle;
+        }
+        
+        footer {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-forest navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-tree-fill" viewBox="0 0 16 16">
+                    <path d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777l-3-4.5z"/>
+                </svg>
+                <span class="fw-bold">Calculador de Mostreig Forestal</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row g-4">
+            
+            <!-- Columna d'entrada de dades -->
+            <div class="col-lg-5">
+                <div class="card card-forest h-100">
+                    <div class="card-header-forest">
+                        <i class="bi bi-sliders"></i> Paràmetres de l'Inventari
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="forestForm">
+                            
+                            <!-- Selector de Mode -->
+                            <div class="mb-4">
+                                <label for="modeSelect" class="form-label">Mode de càlcul</label>
+                                <select class="form-select" id="modeSelect" onchange="canviarMode()">
+                                    <option value="pilot" selected>Mode A - Inventari Pilot (dades pròpies)</option>
+                                    <option value="tipusMassa">Mode B - Estimació per Tipus de Massa (CV predefinit)</option>
+                                </select>
+                                <div class="form-text text-muted mt-1">
+                                    Tria si disposes d'un inventari pilot o vols estimar el CV segons el tipus de massa forestal.
+                                </div>
+                            </div>
+
+                            <!-- Mode A: Inventari Pilot -->
+                            <div id="modePilot" class="mode-section active">
+                                <div class="mb-3">
+                                    <label for="mitjanaAB" class="form-label">Mitjana de l'àrea basimètrica (m²/ha)</label>
+                                    <input type="number" class="form-control" id="mitjanaAB" step="0.01" min="0" placeholder="Ex: 25.5">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="desviacioStd" class="form-label">Desviació estàndard (s) (m²/ha)</label>
+                                    <input type="number" class="form-control" id="desviacioStd" step="0.01" min="0" placeholder="Ex: 8.2">
+                                </div>
+                            </div>
+
+                            <!-- Mode B: Tipus de Massa -->
+                            <div id="modeTipusMassa" class="mode-section">
+                                <div class="mb-3">
+                                    <label for="cvSelect" class="form-label">Coeficient de Variació (CV) estimat</label>
+                                    <select class="form-select" id="cvSelect">
+                                        <!-- 
+                                            NOTA PER AL DESENVOLUPADOR:
+                                            Si vols afegir o modificar els valors predefinits del CV,
+                                            edita els 'value' d'aquestes opcions. El valor ha d'estar en percentatge (ex: 20).
+                                        -->
+                                        <option value="20">Plantació Regular (CV = 20%)</option>
+                                        <option value="40" selected>Bosc Natural / Seminatural (CV = 40%)</option>
+                                        <option value="60">Massa Irregular / Complexa (CV = 60%)</option>
+                                    </select>
+                                    <div class="form-text text-muted mt-1">
+                                        Valors basats en bibliografia forestal habitual. Selecciona el que s'ajusti millor a la teva massa.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paràmetres Comuns -->
+                            <hr class="my-4">
+                            
+                            <div class="mb-3">
+                                <label for="superficieEstrat" class="form-label">Superfície de l'estrat (ha)</label>
+                                <input type="number" class="form-control" id="superficieEstrat" step="0.01" min="0.01" placeholder="Ex: 15.5">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="errorAdmissible" class="form-label">Error admissible (%)</label>
+                                <input type="number" class="form-control" id="errorAdmissible" step="0.1" min="0.1" max="50" value="10" placeholder="Ex: 10">
+                                <div class="form-text text-muted">Error relatiu admissible sobre la mitjana (ex: 10 per a ±10%).</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="nivellConfiança" class="form-label">Nivell de confiança</label>
+                                <select class="form-select" id="nivellConfiança">
+                                    <!-- 
+                                        NOTA PER AL DESENVOLUPADOR:
+                                        Per afegir nous nivells de confiança, afegeix una opció amb el seu valor Z associat
+                                        a la funcio obtenirValorZ() més avall.
+                                    -->
+                                    <option value="90">90%</option>
+                                    <option value="95" selected>95%</option>
+                                    <option value="99">99%</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-forest" onclick="calcularInventari()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-calculator me-2" viewBox="0 0 16 16">
+                                        <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/>
+                                        <path d="M4 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-2zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3-3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                    </svg>
+                                    Calcular Disseny d'Inventari
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna de resultats -->
+            <div class="col-lg-7">
+                <div class="card card-forest h-100">
+                    <div class="card-header-forest d-flex justify-content-between align-items-center">
+                        <span>Resultats del Càlcul</span>
+                        <span class="badge bg-white text-dark">ISO 31</span>
+                    </div>
+                    <div class="card-body p-4">
+                        
+                        <!-- Missatge inicial -->
+                        <div id="resultatsInicials" class="text-center py-5 text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#dee2e6" class="bi bi-clipboard-data mb-3" viewBox="0 0 16 16">
+                                <path d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm6-4a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0V7zM7 9a1 1 0 0 1 2 0v1H7V9z"/>
+                                <path d="M4 1.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm0 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm0 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1z"/>
+                                <path d="M9.5 0a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V.5a.5.5 0 0 1 .5-.5h3zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/>
+                            </svg>
+                            <p class="mb-0">Introdueix els paràmetres i prem <strong>Calcular</strong> per veure els resultats.</p>
+                        </div>
+
+                        <!-- Contenidor de resultats (amagat inicialment) -->
+                        <div id="contenidorResultats" style="display: none;">
+                            
+                            <!-- Targetes resum -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <div class="result-box p-3 h-100">
+                                        <div class="stat-label">Nombre de parcel·les</div>
+                                        <div class="stat-value" id="resParcelles">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="result-box p-3 h-100">
+                                        <div class="stat-label">Espaiament (malla)</div>
+                                        <div class="stat-value" id="resEspaiament">-</div>
+                                        <small class="text-muted">m</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="result-box p-3 h-100">
+                                        <div class="stat-label">Error estimat</div>
+                                        <div class="stat-value" id="resError">-</div>
+                                        <small class="text-muted">%</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Taula detallada -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-results table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Paràmetre</th>
+                                            <th>Valor</th>
+                                            <th>Unitat / Observació</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Mode de càlcul</td>
+                                            <td id="tabMode">-</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Superfície de l'estrat</td>
+                                            <td id="tabSuperficie">-</td>
+                                            <td>ha</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Coeficient de Variació (CV)</td>
+                                            <td id="tabCV">-</td>
+                                            <td>%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Error admissible introduït</td>
+                                            <td id="tabErrorAdm">-</td>
+                                            <td>%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nivell de confiança</td>
+                                            <td id="tabConf">-</td>
+                                            <td>%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Valor Z / t utilitzat</td>
+                                            <td id="tabZ">-</td>
+                                            <td>Coeficient de la distribució</td>
+                                        </tr>
+                                        <tr class="table-success">
+                                            <td><strong>Nombre de parcel·les (n)</strong></td>
+                                            <td><strong id="tabN">-</strong></td>
+                                            <td>unitats (arrodonit cap amunt)</td>
+                                        </tr>
+                                        <tr class="table-success">
+                                            <td><strong>Espaiament recomanat</strong></td>
+                                            <td><strong id="tabEspaiament">-</strong></td>
+                                            <td>metres (malla quadrada)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Superfície per parcel·la (aprox.)</td>
+                                            <td id="tabSupParcela">-</td>
+                                            <td>m²</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Fórmula i nota tècnica -->
+                            <div class="alert alert-light border mt-3">
+                                <h6 class="fw-bold text-secondary mb-2">Fórmula aplicada</h6>
+                                <p class="mb-1 font-monospace">n = (Z² × CV²) / E²</p>
+                                <p class="mb-1 font-monospace">Espaiament = √(Superfície_m² / n)</p>
+                                <hr class="my-2">
+                                <p class="mb-0 small text-muted">
+                                    <strong>Nota:</strong> El nombre de parcel·les s'arrodoneix sempre a l'enter superior per garantir el nivell de confiança sol·licitat. 
+                                    L'espaiament es calcula suposant una distribució sistemàtica en malla quadrada.
+                                </p>
+                            </div>
+
+                            <!-- Botó exportar -->
+                            <div class="d-flex justify-content-end mt-3">
+                                <button type="button" class="btn btn-export" onclick="exportarCSV()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-file-earmark-arrow-down me-2" viewBox="0 0 16 16">
+                                        <path d="M8.5 6.5a.5.5 0 0 0-1 0v3.793L6.354 9.146a.5.5 0 1 0-.707.707l2 2a.5.5 0 0 0 .707 0l2-2a.5.5 0 0 0-.707-.707L8.5 10.293V6.5z"/>
+                                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                                    </svg>
+                                    Exportar a CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-2">
+        <div class="container">
+            <p class="mb-0">Calculador de Mostreig Forestal &copy; 2026. Aplicació d'ús tècnic per a projectes forestals.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        /**
+         * ============================================================
+         * CALCULADOR DE MOSTREIG FORESTAL
+         * ============================================================
+         * Aquest script conté tota la lògica de càlcul per al disseny
+         * d'inventaris forestals per mostreig sistemàtic.
+         * 
+         * COMENTARIS PER A FUTURS AJUSTOS:
+         * --------------------------------
+         * 1. VALORS DE CV PREDEFINITS:
+         *    Per modificar els valors del CV al Mode B, edita els 'value'
+         *    de les opcions del <select id="cvSelect"> a l'HTML.
+         *    Format: valor numèric en percentatge (sense el símbol %).
+         * 
+         * 2. NIVELLS DE CONFIANÇA:
+         *    Per afegir nous nivells (ex: 80%), afegeix una <option> a
+         *    l'HTML i el seu valor Z corresponent a la funció
+         *    obtenirValorZ() d'aquí sota.
+         * 
+         * 3. FÓRMULA DEL CÀLCUL:
+         *    La fórmula base és: n = (Z² × CV²) / E²
+         *    On:
+         *      - Z = valor de la distribució normal (Z) o t de Student
+         *      - CV = coeficient de variació (%)
+         *      - E = error admissible (com a fracció, ex: 10% = 0.10)
+         * 
+         * 4. ESPAIAMENT:
+         *    Espaiament = √(Superfície_total_m² / n)
+         *    Suposa una malla quadrada sistemàtica.
+         *    Si es vol una malla rectangular, caldrà definir una raó 
+         *    d'aspecte i ajustar: fila = √(Sup/n*raó), columna = fila/raó.
+         * 
+         * 5. APROXIMACIÓ Z vs t DE STUDENT:
+         *    Actualment s'utilitza Z (normal) per a tota n.
+         *    Si es vol usar t de Student per a mostres petites (n<30),
+         *    cal implementar una iteració: calcular n amb Z, obtenir
+         *    graus de llibertat (gl = n-1), buscar t per gl, recalcular.
+         *    Es pot fer amb una taula de lookup o una aproximació.
+         * ============================================================
+         */
+
+        // Objecte global per emmagatzemar els resultats actuals (per exportar)
+        let dadesResultat = {};
+
+        /**
+         * Funció: canviarMode
+         * -------------------
+         * Gestiona la visibilitat dels formularis segons el mode seleccionat.
+         * S'executa cada cop que l'usuari canvia el desplegable de mode.
+         */
+        function canviarMode() {
+            const mode = document.getElementById('modeSelect').value;
+            const modePilot = document.getElementById('modePilot');
+            const modeTipusMassa = document.getElementById('modeTipusMassa');
+            
+            // Amaga tots dos abans de mostrar el correcte per evitar parpelleigs
+            modePilot.classList.remove('active');
+            modeTipusMassa.classList.remove('active');
+            
+            // Mostra la secció corresponent amb una petita animació CSS
+            if (mode === 'pilot') {
+                modePilot.classList.add('active');
+            } else {
+                modeTipusMassa.classList.add('active');
+            }
+        }
+
+        /**
+         * Funció: obtenirValorZ
+         * ---------------------
+         * Retorna el valor Z de la distribució normal estàndard segons
+         * el nivell de confiança seleccionat.
+         * 
+         * NOTA: Aquests són valors Z (normal) bidireccionals.
+         * Per usar t de Student, substitueix aquesta funció per una
+         * que retorni valors t segons graus de llibertat.
+         */
+        function obtenirValorZ(nivellConfiança) {
+            // Mapa de valors Z per als nivells de confiança suportats
+            const valorsZ = {
+                90: 1.645,   // α = 0.10 (bilateral)
+                95: 1.96,    // α = 0.05 (bilateral) - valor per defecte
+                99: 2.576    // α = 0.01 (bilateral)
+            };
+            
+            // Retorna el valor o 1.96 (95%) per defecte si no existeix
+            return valorsZ[nivellConfiança] || 1.96;
+        }
+
+        /**
+         * Funció: calcularInventari
+         * -------------------------
+         * Motor principal de càlcul. Recull les dades del formulari,
+         * valida-les, aplica les fórmules forestals i mostra els resultats.
+         */
+        function calcularInventari() {
+            // 1. RECOLLIDA DE DADES DEL FORMULARI
+            // -----------------------------------
+            const mode = document.getElementById('modeSelect').value;
+            const superficieHa = parseFloat(document.getElementById('superficieEstrat').value);
+            const errorAdmissiblePercent = parseFloat(document.getElementById('errorAdmissible').value);
+            const nivellConfiança = parseInt(document.getElementById('nivellConfiança').value);
+            
+            // 2. VALIDACIÓ BÀSICA
+            // -------------------
+            if (!superficieHa || superficieHa <= 0) {
+                alert("Si us plau, introdueix una superfície d'estrat vàlida (ha).");
+                return;
+            }
+            if (!errorAdmissiblePercent || errorAdmissiblePercent <= 0) {
+                alert("Si us plau, introdueix un error admissible vàlid (%).");
+                return;
+            }
+            
+            // 3. CÀLCUL DEL CV SEGONS EL MODE
+            // --------------------------------
+            let cvPercent = 0;
+            let textMode = "";
+            
+            if (mode === 'pilot') {
+                // Mode A: CV es calcula a partir de la mitjana i la desviació estàndard
+                // Fórmula: CV (%) = (s / mitjana) × 100
+                const mitjanaAB = parseFloat(document.getElementById('mitjanaAB').value);
+                const desviacioStd = parseFloat(document.getElementById('desviacioStd').value);
+                
+                if (!mitjanaAB || mitjanaAB <= 0) {
+                    alert("La mitjana de l'àrea basimètrica ha de ser superior a 0.");
+                    return;
+                }
+                if (desviacioStd === undefined || desviacioStd < 0) {
+                    alert("Si us plau, introdueix una desviació estàndard vàlida.");
+                    return;
+                }
+                
+                cvPercent = (desviacioStd / mitjanaAB) * 100;
+                textMode = "Mode A - Inventari Pilot";
+                
+                // Emmagatzemem dades extra per l'exportació
+                dadesResultat.mitjanaAB = mitjanaAB;
+                dadesResultat.desviacioStd = desviacioStd;
+                
+            } else {
+                // Mode B: CV predefinit pel tipus de massa
+                // El valor ve directament del <select> (veure HTML per modificar)
+                cvPercent = parseFloat(document.getElementById('cvSelect').value);
+                textMode = "Mode B - Estimació per Tipus de Massa";
+                
+                // Emmagatzemem quin tipus s'ha triat
+                const selectCV = document.getElementById('cvSelect');
+                dadesResultat.tipusMassa = selectCV.options[selectCV.selectedIndex].text;
+            }
+            
+            // 4. PREPARACIÓ DE VARIABLES PER A LA FÓRMULA
+            // -------------------------------------------
+            // Convertim l'error de percentatge a fracció (ex: 10% -> 0.10)
+            const E = errorAdmissiblePercent / 100;
+            
+            // Convertim el CV de percentatge a fracció per la fórmula
+            // (ex: 40% -> 0.40)
+            const CV = cvPercent / 100;
+            
+            // Obtenim el valor Z (o t) segons el nivell de confiança
+            const Z = obtenirValorZ(nivellConfiança);
+            
+            // 5. CÀLCUL DEL NOMBRE DE PARCEL·LES (n)
+            // ---------------------------------------
+            // Fórmula: n = (Z² × CV²) / E²
+            // On totes les variables estan en fraccions (no percentatge)
+            const nCalculat = (Math.pow(Z, 2) * Math.pow(CV, 2)) / Math.pow(E, 2);
+            
+            // Arrodonim SEMPRE cap amunt per garantir el nivell de confiança
+            // Math.ceil assegura que tenim com a mínim el nombre necessari
+            const nParcelles = Math.ceil(nCalculat);
+            
+            // 6. CÀLCUL DE L'ESPAIAMENT (MALLA QUADRADA)
+            // -------------------------------------------
+            // Convertim la superfície d'hectàrees a metres quadrats
+            // 1 ha = 10,000 m²
+            const superficieM2 = superficieHa * 10000;
+            
+            // Fórmula de l'espaiament en una malla quadrada sistemàtica:
+            // Espaiament = √(Superfície_total / n)
+            const espaiamentM = Math.sqrt(superficieM2 / nParcelles);
+            
+            // 7. CÀLCUL DE L'ERROR ESTIMAT REAL AMB 'n' ARRODONIT
+            // ----------------------------------------------------
+            // Si arrodonim n cap amunt, l'error real serà lleugerament inferior
+            // al sol·licitat. Ho calculem per informar a l'usuari.
+            // Reorganitzant la fórmula: E_real = Z × CV / √n
+            const errorEstimatPercent = (Z * CV / Math.sqrt(nParcelles)) * 100;
+            
+            // Superfície aproximada per parcel·la
+            const supPerParcela = superficieM2 / nParcelles;
+            
+            // 8. ACTUALITZACIÓ DE LA INTERFÍCIE
+            // ---------------------------------
+            document.getElementById('resultatsInicials').style.display = 'none';
+            document.getElementById('contenidorResultats').style.display = 'block';
+            
+            // Targetes resum
+            document.getElementById('resParcelles').textContent = nParcelles;
+            document.getElementById('resEspaiament').textContent = espaiamentM.toFixed(1);
+            document.getElementById('resError').textContent = errorEstimatPercent.toFixed(2);
+            
+            // Taula detallada
+            document.getElementById('tabMode').textContent = textMode;
+            document.getElementById('tabSuperficie').textContent = superficieHa.toFixed(2);
+            document.getElementById('tabCV').textContent = cvPercent.toFixed(2);
+            document.getElementById('tabErrorAdm').textContent = errorAdmissiblePercent.toFixed(1);
+            document.getElementById('tabConf').textContent = nivellConfiança + "%";
+            document.getElementById('tabZ').textContent = Z.toFixed(3);
+            document.getElementById('tabN').textContent = nParcelles;
+            document.getElementById('tabEspaiament').textContent = espaiamentM.toFixed(1) + " m";
+            document.getElementById('tabSupParcela').textContent = supPerParcela.toFixed(0);
+            
+            // 9. EMMAGATZEMAR DADES PER EXPORTACIÓ
+            // ------------------------------------
+            dadesResultat = {
+                ...dadesResultat,
+                mode: textMode,
+                superficieHa: superficieHa,
+                cvPercent: cvPercent.toFixed(2),
+                errorAdmissiblePercent: errorAdmissiblePercent.toFixed(1),
+                nivellConfiança: nivellConfiança,
+                valorZ: Z.toFixed(3),
+                nParcelles: nParcelles,
+                espaiamentM: espaiamentM.toFixed(1),
+                errorEstimatPercent: errorEstimatPercent.toFixed(2),
+                supPerParcelaM2: supPerParcela.toFixed(0),
+                dataCalcul: new Date().toLocaleString('ca-ES')
+            };
+        }
+
+        /**
+         * Funció: exportarCSV
+         * -------------------
+         * Genera un fitxer CSV amb tots els paràmetres i resultats
+         * del càlcul per a la seva documentació al projecte tècnic.
+         * 
+         * NOTA: S'utilitza el separador ';' per compatibilitat amb
+         * Excel en configuració regional catalana/espanyola.
+         */
+        function exportarCSV() {
+            // Comprovem que hi ha dades per exportar
+            if (!dadesResultat.nParcelles) {
+                alert("Primer has de realitzar un càlcul abans d'exportar.");
+                return;
+            }
+            
+            // Capçalera i contingut del CSV
+            // Utilitzem ';' com a separador perquè s'obri correctament a Excel
+            const linies = [
+                ["Data del càlcul", dadesResultat.dataCalcul],
+                ["", ""],
+                ["PARAMETRES D'ENTRADA", ""],
+                ["Mode de càlcul", dadesResultat.mode],
+                ["Superfície de l'estrat (ha)", dadesResultat.superficieHa],
+                ["Coeficient de Variació CV (%)", dadesResultat.cvPercent],
+                ["Error admissible introduït (%)", dadesResultat.errorAdmissiblePercent],
+                ["Nivell de confiança (%)", dadesResultat.nivellConfiança],
+                ["Valor Z utilitzat", dadesResultat.valorZ],
+                ["", ""],
+                ["RESULTATS", ""],
+                ["Nombre de parcel·les (n)", dadesResultat.nParcelles],
+                ["Espaiament recomanat (m)", dadesResultat.espaiamentM],
+                ["Error estimat real (%)", dadesResultat.errorEstimatPercent],
+                ["Superfície aprox. per parcel·la (m²)", dadesResultat.supPerParcelaM2]
+            ];
+            
+            // Si és Mode A, afegim les dades de l'inventari pilot
+            if (dadesResultat.mitjanaAB !== undefined) {
+                linies.splice(5, 0, ["Mitjana AB (m²/ha)", dadesResultat.mitjanaAB]);
+                linies.splice(6, 0, ["Desviació estàndard (m²/ha)", dadesResultat.desviacioStd]);
+            }
+            
+            // Si és Mode B, afegim el tipus de massa
+            if (dadesResultat.tipusMassa !== undefined) {
+                linies.splice(5, 0, ["Tipus de massa seleccionat", dadesResultat.tipusMassa]);
+            }
+            
+            // Construïm el text CSV
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM per Excel
+            linies.forEach(function(fila) {
+                csvContent += fila[0] + ";" + fila[1] + "\n";
+            });
+            
+            // Creem l'element d'enllaç temporal per forçar la descàrrega
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            
+            // Nom del fitxer amb data per identificar-lo fàcilment
+            const dataStr = new Date().toISOString().slice(0,10);
+            link.setAttribute("download", `Inventari_Forestal_${dataStr}.csv`);
+            
+            // Afegim a DOM, cliquem i eliminem
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Inicialització: assegurem que el mode correcte es mostra al carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            canviarMode();
+        });
+    </script>
+</body>
+</html>
