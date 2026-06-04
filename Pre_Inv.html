@@ -3,156 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculador de Mostreig Forestal</title>
-    <!-- Bootstrap 5.3 CSS -->
+    <title>ForestGIS - Gestor d'Inventaris per Rodals</title>
+    
+    <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --forest-dark: #1b4332;
             --forest-green: #2d6a4f;
-            --forest-light: #52b788;
+            --forest-light: #40916c;
             --forest-pale: #d8f3dc;
             --wood-brown: #8b5e3c;
-            --wood-light: #d4a373;
+            --accent: #e9c46a;
         }
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            background-image: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background-color: #f5f6f8;
+            overflow-x: hidden;
         }
         
+        /* Navbar */
         .navbar-forest {
             background: linear-gradient(90deg, var(--forest-dark) 0%, var(--forest-green) 100%);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+            z-index: 2000;
         }
         
-        .card-forest {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease;
+        /* Layout principal */
+        .app-container {
+            height: calc(100vh - 56px);
+            display: flex;
+            flex-direction: row;
         }
         
-        .card-forest:hover {
-            transform: translateY(-2px);
+        /* Sidebar */
+        .sidebar {
+            width: 420px;
+            min-width: 420px;
+            background: #ffffff;
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
         }
         
-        .card-header-forest {
-            background: linear-gradient(90deg, var(--forest-green) 0%, var(--forest-light) 100%);
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--forest-green), var(--forest-light));
             color: white;
-            border-radius: 12px 12px 0 0 !important;
-            font-weight: 600;
-            padding: 1rem 1.5rem;
+            padding: 1.2rem;
         }
         
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        /* Mapa */
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: #e5e7eb;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Cards rodals */
+        .rodal-card {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .rodal-card:hover {
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: var(--forest-light);
+        }
+        
+        .rodal-card.active {
+            border-color: var(--forest-green);
+            box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.15);
+            background: var(--forest-pale);
+        }
+        
+        .rodal-card.processed {
+            border-left: 4px solid var(--forest-green);
+        }
+        
+        .rodal-card-header {
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+        
+        .rodal-card-body {
+            padding: 0.75rem 1rem;
+            display: none;
+        }
+        
+        .rodal-card.expanded .rodal-card-body {
+            display: block;
+        }
+        
+        .badge-cv {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            border-radius: 6px;
+        }
+        
+        /* Formularis */
+        .form-control-sm, .form-select-sm {
+            font-size: 0.875rem;
+        }
+        
+        .form-label-sm {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Botons d'acció */
         .btn-forest {
             background-color: var(--forest-green);
             border-color: var(--forest-green);
             color: white;
-            font-weight: 600;
-            padding: 0.6rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            font-weight: 500;
         }
         
         .btn-forest:hover {
             background-color: var(--forest-dark);
             border-color: var(--forest-dark);
             color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(27, 67, 50, 0.3);
         }
         
-        .btn-export {
+        .btn-forest:disabled {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            opacity: 0.6;
+        }
+        
+        .btn-outline-forest {
+            color: var(--forest-green);
+            border-color: var(--forest-green);
+        }
+        
+        .btn-outline-forest:hover {
+            background-color: var(--forest-green);
+            color: white;
+        }
+        
+        .btn-export-gj {
             background-color: var(--wood-brown);
             border-color: var(--wood-brown);
             color: white;
-            font-weight: 600;
         }
         
-        .btn-export:hover {
+        .btn-export-gj:hover {
             background-color: #6d4c32;
-            border-color: #6d4c32;
             color: white;
         }
         
-        .form-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0.4rem;
+        /* Seccions */
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #6c757d;
+            font-weight: 700;
+            margin: 1.25rem 0 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1.5px solid #dee2e6;
-            padding: 0.6rem 1rem;
-            transition: all 0.2s ease;
+        /* Stats box */
+        .stats-box {
+            background: linear-gradient(135deg, var(--forest-pale), #ffffff);
+            border-radius: 10px;
+            padding: 1rem;
+            border: 1px solid #b7e4c7;
         }
         
-        .form-control:focus, .form-select:focus {
-            border-color: var(--forest-light);
-            box-shadow: 0 0 0 0.2rem rgba(82, 183, 136, 0.25);
-        }
-        
-        .result-box {
-            background: linear-gradient(135deg, var(--forest-pale) 0%, #ffffff 100%);
-            border-left: 5px solid var(--forest-green);
-            border-radius: 0 12px 12px 0;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
+        .stat-number {
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--forest-dark);
         }
         
-        .stat-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* Leaflet custom */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
         }
         
-        .mode-section {
-            display: none;
-            animation: fadeIn 0.4s ease;
+        .legend {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            line-height: 1.8;
+            font-size: 0.85rem;
         }
         
-        .mode-section.active {
-            display: block;
+        .legend i {
+            width: 14px;
+            height: 14px;
+            float: left;
+            margin-right: 8px;
+            margin-top: 4px;
+            border-radius: 3px;
+            opacity: 0.8;
         }
         
+        /* Punts d'inventari */
+        .point-marker {
+            background: var(--accent);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed #adb5bd;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .drop-zone.dragover {
+            border-color: var(--forest-green);
+            background: var(--forest-pale);
+        }
+        
+        /* Toast */
+        .toast-container {
+            z-index: 3000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                min-width: auto;
+                position: absolute;
+                height: 50%;
+                bottom: 0;
+                border-right: none;
+                border-top: 1px solid #dee2e6;
+            }
+            .app-container {
+                flex-direction: column;
+            }
+        }
+        
+        /* Scrollbar personalitzada */
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #adb5bd;
+            border-radius: 3px;
+        }
+        
+        /* Animacions */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .info-badge {
-            background-color: var(--forest-pale);
-            color: var(--forest-dark);
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
         }
         
-        .table-results th {
-            background-color: var(--forest-green);
+        /* Modal instruccions */
+        .instruccio-step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+        
+        .instruccio-num {
+            width: 32px;
+            height: 32px;
+            background: var(--forest-green);
             color: white;
-            font-weight: 600;
-        }
-        
-        .table-results td {
-            vertical-align: middle;
-        }
-        
-        footer {
-            color: #6c757d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
             font-size: 0.9rem;
         }
     </style>
@@ -160,564 +329,1009 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-forest navbar-dark mb-4">
-        <div class="container">
+    <nav class="navbar navbar-forest navbar-dark">
+        <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-tree-fill" viewBox="0 0 16 16">
-                    <path d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777l-3-4.5z"/>
-                </svg>
-                <span class="fw-bold">Calculador de Mostreig Forestal</span>
+                <i class="fas fa-tree"></i>
+                <span class="fw-bold">ForestGIS</span>
+                <span class="badge bg-white text-dark ms-2" style="font-size: 0.7rem;">v1.0</span>
             </a>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-light" onclick="mostrarInstruccions()">
+                    <i class="fas fa-book me-1"></i> Guia QGIS
+                </button>
+                <button class="btn btn-sm btn-light" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-upload me-1"></i> Carregar GeoJSON
+                </button>
+                <input type="file" id="fileInput" accept=".geojson,.json" style="display: none;" onchange="carregarFitxer(this)">
+            </div>
         </div>
     </nav>
 
-    <div class="container pb-5">
-        <div class="row g-4">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h5 class="mb-1"><i class="fas fa-layer-group me-2"></i>Gestió de Rodals</h5>
+                <small class="opacity-75">Configura els paràmetres d'inventari per rodal</small>
+            </div>
             
-            <!-- Columna d'entrada de dades -->
-            <div class="col-lg-5">
-                <div class="card card-forest h-100">
-                    <div class="card-header-forest">
-                        <i class="bi bi-sliders"></i> Paràmetres de l'Inventari
+            <div class="sidebar-content" id="sidebarContent">
+                
+                <!-- Estat inicial / drop zone -->
+                <div id="estatInicial">
+                    <div class="drop-zone mt-3" id="dropZone"
+                         ondragover="event.preventDefault(); this.classList.add('dragover');"
+                         ondragleave="this.classList.remove('dragover');"
+                         ondrop="handleDrop(event)">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <p class="mb-2 fw-semibold text-secondary">Arrossega un fitxer GeoJSON aquí</p>
+                        <p class="small text-muted mb-0">O fes clic a <strong>Carregar GeoJSON</strong> a la barra superior.</p>
+                        <p class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i>Format acceptat: GeoJSON amb polígons</p>
                     </div>
-                    <div class="card-body p-4">
-                        <form id="forestForm">
-                            
-                            <!-- Selector de Mode -->
-                            <div class="mb-4">
-                                <label for="modeSelect" class="form-label">Mode de càlcul</label>
-                                <select class="form-select" id="modeSelect" onchange="canviarMode()">
-                                    <option value="pilot" selected>Mode A - Inventari Pilot (dades pròpies)</option>
-                                    <option value="tipusMassa">Mode B - Estimació per Tipus de Massa (CV predefinit)</option>
-                                </select>
-                                <div class="form-text text-muted mt-1">
-                                    Tria si disposes d'un inventari pilot o vols estimar el CV segons el tipus de massa forestal.
-                                </div>
-                            </div>
+                    
+                    <div class="alert alert-light border mt-4">
+                        <h6 class="fw-bold text-secondary"><i class="fas fa-lightbulb text-warning me-2"></i>Com funciona?</h6>
+                        <ol class="small text-muted ps-3 mb-0">
+                            <li class="mb-1">Carrega el teu fitxer de rodals (GeoJSON des de QGIS)</li>
+                            <li class="mb-1">Selecciona un rodal i configura el CV i l'error</li>
+                            <li class="mb-1">Genera els punts d'inventari automàticament</li>
+                            <li>Exporta els resultats a GeoJSON o CSV</li>
+                        </ol>
+                    </div>
+                </div>
 
-                            <!-- Mode A: Inventari Pilot -->
-                            <div id="modePilot" class="mode-section active">
-                                <div class="mb-3">
-                                    <label for="mitjanaAB" class="form-label">Mitjana de l'àrea basimètrica (m²/ha)</label>
-                                    <input type="number" class="form-control" id="mitjanaAB" step="0.01" min="0" placeholder="Ex: 25.5">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="desviacioStd" class="form-label">Desviació estàndard (s) (m²/ha)</label>
-                                    <input type="number" class="form-control" id="desviacioStd" step="0.01" min="0" placeholder="Ex: 8.2">
-                                </div>
+                <!-- Llista de rodals (amagada inicialment) -->
+                <div id="llistaRodals" style="display: none;">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="section-title mb-0"><i class="fas fa-map"></i> Rodals carregats</span>
+                        <span class="badge bg-secondary" id="comptadorRodals">0</span>
+                    </div>
+                    
+                    <div id="rodalsContainer"></div>
+                    
+                    <!-- Resum global -->
+                    <div class="section-title"><i class="fas fa-chart-pie"></i> Resum global</div>
+                    <div class="stats-box mb-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="stat-number" id="totalRodals">0</div>
+                                <small class="text-muted">Rodals</small>
                             </div>
-
-                            <!-- Mode B: Tipus de Massa -->
-                            <div id="modeTipusMassa" class="mode-section">
-                                <div class="mb-3">
-                                    <label for="cvSelect" class="form-label">Coeficient de Variació (CV) estimat</label>
-                                    <select class="form-select" id="cvSelect">
-                                        <!-- 
-                                            NOTA PER AL DESENVOLUPADOR:
-                                            Si vols afegir o modificar els valors predefinits del CV,
-                                            edita els 'value' d'aquestes opcions. El valor ha d'estar en percentatge (ex: 20).
-                                        -->
-                                        <option value="20">Plantació Regular (CV = 20%)</option>
-                                        <option value="40" selected>Bosc Natural / Seminatural (CV = 40%)</option>
-                                        <option value="60">Massa Irregular / Complexa (CV = 60%)</option>
-                                    </select>
-                                    <div class="form-text text-muted mt-1">
-                                        Valors basats en bibliografia forestal habitual. Selecciona el que s'ajusti millor a la teva massa.
-                                    </div>
-                                </div>
+                            <div class="col-4">
+                                <div class="stat-number" id="totalPunts">0</div>
+                                <small class="text-muted">Punts</small>
                             </div>
-
-                            <!-- Paràmetres Comuns -->
-                            <hr class="my-4">
-                            
-                            <div class="mb-3">
-                                <label for="superficieEstrat" class="form-label">Superfície de l'estrat (ha)</label>
-                                <input type="number" class="form-control" id="superficieEstrat" step="0.01" min="0.01" placeholder="Ex: 15.5">
+                            <div class="col-4">
+                                <div class="stat-number" id="totalSup">0</div>
+                                <small class="text-muted">ha total</small>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="errorAdmissible" class="form-label">Error admissible (%)</label>
-                                <input type="number" class="form-control" id="errorAdmissible" step="0.1" min="0.1" max="50" value="10" placeholder="Ex: 10">
-                                <div class="form-text text-muted">Error relatiu admissible sobre la mitjana (ex: 10 per a ±10%).</div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="nivellConfiança" class="form-label">Nivell de confiança</label>
-                                <select class="form-select" id="nivellConfiança">
-                                    <!-- 
-                                        NOTA PER AL DESENVOLUPADOR:
-                                        Per afegir nous nivells de confiança, afegeix una opció amb el seu valor Z associat
-                                        a la funcio obtenirValorZ() més avall.
-                                    -->
-                                    <option value="90">90%</option>
-                                    <option value="95" selected>95%</option>
-                                    <option value="99">99%</option>
-                                </select>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-forest" onclick="calcularInventari()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-calculator me-2" viewBox="0 0 16 16">
-                                        <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/>
-                                        <path d="M4 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-2zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3-3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
-                                    </svg>
-                                    Calcular Disseny d'Inventari
-                                </button>
-                            </div>
-                        </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Exportació global -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-export-gj btn-sm" onclick="exportarTotsPuntsGeoJSON()" id="btnExportGJ" disabled>
+                            <i class="fas fa-file-export me-1"></i> Exportar TOTS els punts (GeoJSON)
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="exportarTotsPuntsCSV()" id="btnExportCSV" disabled>
+                            <i class="fas fa-table me-1"></i> Exportar TOTS els punts (CSV)
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Columna de resultats -->
-            <div class="col-lg-7">
-                <div class="card card-forest h-100">
-                    <div class="card-header-forest d-flex justify-content-between align-items-center">
-                        <span>Resultats del Càlcul</span>
-                        <span class="badge bg-white text-dark">ISO 31</span>
-                    </div>
-                    <div class="card-body p-4">
-                        
-                        <!-- Missatge inicial -->
-                        <div id="resultatsInicials" class="text-center py-5 text-muted">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#dee2e6" class="bi bi-clipboard-data mb-3" viewBox="0 0 16 16">
-                                <path d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm6-4a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0V7zM7 9a1 1 0 0 1 2 0v1H7V9z"/>
-                                <path d="M4 1.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm0 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm0 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1z"/>
-                                <path d="M9.5 0a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V.5a.5.5 0 0 1 .5-.5h3zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/>
-                            </svg>
-                            <p class="mb-0">Introdueix els paràmetres i prem <strong>Calcular</strong> per veure els resultats.</p>
-                        </div>
+        <!-- Mapa -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- Legend -->
+            <div class="legend leaflet-control" style="position: absolute; bottom: 20px; right: 20px; z-index: 1000;">
+                <div class="fw-bold mb-2">Llegenda</div>
+                <div><i style="background: var(--forest-green); opacity: 0.3; border: 2px solid var(--forest-dark);"></i> Rodals</div>
+                <div><i style="background: var(--accent); border: 2px solid #fff;"></i> Punts d'inventari</div>
+                <div><i style="background: #e74c3c; border: 2px solid #c0392b;"></i> Rodal seleccionat</div>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Contenidor de resultats (amagat inicialment) -->
-                        <div id="contenidorResultats" style="display: none;">
-                            
-                            <!-- Targetes resum -->
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-4">
-                                    <div class="result-box p-3 h-100">
-                                        <div class="stat-label">Nombre de parcel·les</div>
-                                        <div class="stat-value" id="resParcelles">-</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="result-box p-3 h-100">
-                                        <div class="stat-label">Espaiament (malla)</div>
-                                        <div class="stat-value" id="resEspaiament">-</div>
-                                        <small class="text-muted">m</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="result-box p-3 h-100">
-                                        <div class="stat-label">Error estimat</div>
-                                        <div class="stat-value" id="resError">-</div>
-                                        <small class="text-muted">%</small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Taula detallada -->
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-results table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Paràmetre</th>
-                                            <th>Valor</th>
-                                            <th>Unitat / Observació</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Mode de càlcul</td>
-                                            <td id="tabMode">-</td>
-                                            <td>-</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Superfície de l'estrat</td>
-                                            <td id="tabSuperficie">-</td>
-                                            <td>ha</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Coeficient de Variació (CV)</td>
-                                            <td id="tabCV">-</td>
-                                            <td>%</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Error admissible introduït</td>
-                                            <td id="tabErrorAdm">-</td>
-                                            <td>%</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Nivell de confiança</td>
-                                            <td id="tabConf">-</td>
-                                            <td>%</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Valor Z / t utilitzat</td>
-                                            <td id="tabZ">-</td>
-                                            <td>Coeficient de la distribució</td>
-                                        </tr>
-                                        <tr class="table-success">
-                                            <td><strong>Nombre de parcel·les (n)</strong></td>
-                                            <td><strong id="tabN">-</strong></td>
-                                            <td>unitats (arrodonit cap amunt)</td>
-                                        </tr>
-                                        <tr class="table-success">
-                                            <td><strong>Espaiament recomanat</strong></td>
-                                            <td><strong id="tabEspaiament">-</strong></td>
-                                            <td>metres (malla quadrada)</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Superfície per parcel·la (aprox.)</td>
-                                            <td id="tabSupParcela">-</td>
-                                            <td>m²</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Fórmula i nota tècnica -->
-                            <div class="alert alert-light border mt-3">
-                                <h6 class="fw-bold text-secondary mb-2">Fórmula aplicada</h6>
-                                <p class="mb-1 font-monospace">n = (Z² × CV²) / E²</p>
-                                <p class="mb-1 font-monospace">Espaiament = √(Superfície_m² / n)</p>
-                                <hr class="my-2">
-                                <p class="mb-0 small text-muted">
-                                    <strong>Nota:</strong> El nombre de parcel·les s'arrodoneix sempre a l'enter superior per garantir el nivell de confiança sol·licitat. 
-                                    L'espaiament es calcula suposant una distribució sistemàtica en malla quadrada.
-                                </p>
-                            </div>
-
-                            <!-- Botó exportar -->
-                            <div class="d-flex justify-content-end mt-3">
-                                <button type="button" class="btn btn-export" onclick="exportarCSV()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-file-earmark-arrow-down me-2" viewBox="0 0 16 16">
-                                        <path d="M8.5 6.5a.5.5 0 0 0-1 0v3.793L6.354 9.146a.5.5 0 1 0-.707.707l2 2a.5.5 0 0 0 .707 0l2-2a.5.5 0 0 0-.707-.707L8.5 10.293V6.5z"/>
-                                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
-                                    </svg>
-                                    Exportar a CSV
-                                </button>
-                            </div>
+    <!-- Modal: Instruccions QGIS -->
+    <div class="modal fade" id="modalInstruccions" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-book-open text-success me-2"></i>Guia: Exportar rodals des de QGIS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-4">Segueix aquests passos per preparar la teva capa de rodals a QGIS i exportar-la correctament:</p>
+                    
+                    <div class="instruccio-step">
+                        <div class="instruccio-num">1</div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Prepara la capa de rodals</h6>
+                            <p class="text-muted small mb-0">Assegura't que la teva capa està en un sistema de coordenades projectat (ex: <strong>EPSG:25831</strong> - ETRS89 UTM31N, o l'adequat per a la teva zona). Evita usar coordenades geogràfiques (EPSG:4326) perquè els càlculs de superfície i distàncies siguin correctes.</p>
                         </div>
                     </div>
+                    
+                    <div class="instruccio-step">
+                        <div class="instruccio-num">2</div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Afegeix un camp ID (recomanat)</h6>
+                            <p class="text-muted small mb-0">Obre la taula d'atributs i assegura't que existeix un camp que identifiqui cada rodal (per exemple: <code>id_rodal</code>, <code>nom</code> o <code>codigo</code>). Si no en tens, crea'n un amb la calculadora de camps: <code>@row_number</code>.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruccio-step">
+                        <div class="instruccio-num">3</div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Calcula la superfície (opcional però útil)</h6>
+                            <p class="text-muted small mb-0">Afegeix un camp numèric anomenat <code>superficie_ha</code> i calcula'l amb: <code>$area / 10000</code>. Això permetrà que l'app mostri la superfície exacta de cada rodal.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruccio-step">
+                        <div class="instruccio-num">4</div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Exporta a GeoJSON</h6>
+                            <p class="text-muted small mb-0">Clica dret a la capa → <strong>Exporta</strong> → <strong>Desa les entitats com...</strong>. Selecciona format <strong>GeoJSON</strong>. Assegura't que el CRS de sortida sigui el mateix projectat (EPSG:25831). Guarda el fitxer amb extensió <code>.geojson</code>.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruccio-step">
+                        <div class="instruccio-num">5</div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Carrega a ForestGIS</h6>
+                            <p class="text-muted small mb-0">Arrossega el fitxer a la zona de càrrega o fes clic al botó <strong>Carregar GeoJSON</strong>. L'aplicació detectarà automàticament els polígons i les seves propietats.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i><strong>Nota important:</strong> Si els teus rodals estan en GeoPackage, exporta'ls primer a GeoJSON des de QGIS seguint els passos anteriors. ForestGIS no llegeix directament fitxers <code>.gpkg</code>.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-forest" data-bs-dismiss="modal">Entesos!</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="text-center py-4 mt-2">
-        <div class="container">
-            <p class="mb-0">Calculador de Mostreig Forestal &copy; 2026. Aplicació d'ús tècnic per a projectes forestals.</p>
-        </div>
-    </footer>
+    <!-- Toast container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
     <script>
-        /**
-         * ============================================================
-         * CALCULADOR DE MOSTREIG FORESTAL
-         * ============================================================
-         * Aquest script conté tota la lògica de càlcul per al disseny
-         * d'inventaris forestals per mostreig sistemàtic.
-         * 
-         * COMENTARIS PER A FUTURS AJUSTOS:
-         * --------------------------------
-         * 1. VALORS DE CV PREDEFINITS:
-         *    Per modificar els valors del CV al Mode B, edita els 'value'
-         *    de les opcions del <select id="cvSelect"> a l'HTML.
-         *    Format: valor numèric en percentatge (sense el símbol %).
-         * 
-         * 2. NIVELLS DE CONFIANÇA:
-         *    Per afegir nous nivells (ex: 80%), afegeix una <option> a
-         *    l'HTML i el seu valor Z corresponent a la funció
-         *    obtenirValorZ() d'aquí sota.
-         * 
-         * 3. FÓRMULA DEL CÀLCUL:
-         *    La fórmula base és: n = (Z² × CV²) / E²
-         *    On:
-         *      - Z = valor de la distribució normal (Z) o t de Student
-         *      - CV = coeficient de variació (%)
-         *      - E = error admissible (com a fracció, ex: 10% = 0.10)
-         * 
-         * 4. ESPAIAMENT:
-         *    Espaiament = √(Superfície_total_m² / n)
-         *    Suposa una malla quadrada sistemàtica.
-         *    Si es vol una malla rectangular, caldrà definir una raó 
-         *    d'aspecte i ajustar: fila = √(Sup/n*raó), columna = fila/raó.
-         * 
-         * 5. APROXIMACIÓ Z vs t DE STUDENT:
-         *    Actualment s'utilitza Z (normal) per a tota n.
-         *    Si es vol usar t de Student per a mostres petites (n<30),
-         *    cal implementar una iteració: calcular n amb Z, obtenir
-         *    graus de llibertat (gl = n-1), buscar t per gl, recalcular.
-         *    Es pot fer amb una taula de lookup o una aproximació.
-         * ============================================================
-         */
+        // ============================================================
+        // FORESTGIS - GESTOR D'INVENTARIS FORESTALS PER RODALS
+        // ============================================================
+        // Aplicació modular per gestionar inventaris forestals mitjançant
+        // mostreig sistemàtic per rodals. Utilitza Leaflet per visualització
+        // i Turf.js per operacions geoespacials.
+        // ============================================================
 
-        // Objecte global per emmagatzemar els resultats actuals (per exportar)
-        let dadesResultat = {};
-
+        // ============================================================
+        // MÒDUL 1: CONFIGURACIÓ I ESTAT GLOBAL
+        // ============================================================
+        
         /**
-         * Funció: canviarMode
-         * -------------------
-         * Gestiona la visibilitat dels formularis segons el mode seleccionat.
-         * S'executa cada cop que l'usuari canvia el desplegable de mode.
+         * Estat global de l'aplicació.
+         * Conté totes les dades en memòria: rodals, capes del mapa,
+         * configuracions per rodal, etc.
          */
-        function canviarMode() {
-            const mode = document.getElementById('modeSelect').value;
-            const modePilot = document.getElementById('modePilot');
-            const modeTipusMassa = document.getElementById('modeTipusMassa');
-            
-            // Amaga tots dos abans de mostrar el correcte per evitar parpelleigs
-            modePilot.classList.remove('active');
-            modeTipusMassa.classList.remove('active');
-            
-            // Mostra la secció corresponent amb una petita animació CSS
-            if (mode === 'pilot') {
-                modePilot.classList.add('active');
-            } else {
-                modeTipusMassa.classList.add('active');
+        const AppState = {
+            rodals: [],           // Array d'objectes Rodal
+            capaRodals: null,     // L.LayerGroup per als polígons
+            capaPunts: null,      // L.LayerGroup per als punts d'inventari
+            mapa: null,           // Instància de L.Map
+            rodalSeleccionat: null, // ID del rodal actualment actiu
+            configCV: {           // Configuració predefinida de CV
+                'plantacio': { nom: 'Plantació Regular', valor: 20 },
+                'natural':   { nom: 'Bosc Natural/Seminatural', valor: 40 },
+                'irregular': { nom: 'Massa Irregular/Complexa', valor: 60 }
             }
-        }
+        };
 
         /**
-         * Funció: obtenirValorZ
-         * ---------------------
-         * Retorna el valor Z de la distribució normal estàndard segons
-         * el nivell de confiança seleccionat.
-         * 
-         * NOTA: Aquests són valors Z (normal) bidireccionals.
-         * Per usar t de Student, substitueix aquesta funció per una
-         * que retorni valors t segons graus de llibertat.
+         * Classe Rodal: representa un rodal forestal amb totes les
+         * seves propietats i el resultat del càlcul d'inventari.
          */
-        function obtenirValorZ(nivellConfiança) {
-            // Mapa de valors Z per als nivells de confiança suportats
-            const valorsZ = {
-                90: 1.645,   // α = 0.10 (bilateral)
-                95: 1.96,    // α = 0.05 (bilateral) - valor per defecte
-                99: 2.576    // α = 0.01 (bilateral)
-            };
-            
-            // Retorna el valor o 1.96 (95%) per defecte si no existeix
-            return valorsZ[nivellConfiança] || 1.96;
-        }
-
-        /**
-         * Funció: calcularInventari
-         * -------------------------
-         * Motor principal de càlcul. Recull les dades del formulari,
-         * valida-les, aplica les fórmules forestals i mostra els resultats.
-         */
-        function calcularInventari() {
-            // 1. RECOLLIDA DE DADES DEL FORMULARI
-            // -----------------------------------
-            const mode = document.getElementById('modeSelect').value;
-            const superficieHa = parseFloat(document.getElementById('superficieEstrat').value);
-            const errorAdmissiblePercent = parseFloat(document.getElementById('errorAdmissible').value);
-            const nivellConfiança = parseInt(document.getElementById('nivellConfiança').value);
-            
-            // 2. VALIDACIÓ BÀSICA
-            // -------------------
-            if (!superficieHa || superficieHa <= 0) {
-                alert("Si us plau, introdueix una superfície d'estrat vàlida (ha).");
-                return;
-            }
-            if (!errorAdmissiblePercent || errorAdmissiblePercent <= 0) {
-                alert("Si us plau, introdueix un error admissible vàlid (%).");
-                return;
-            }
-            
-            // 3. CÀLCUL DEL CV SEGONS EL MODE
-            // --------------------------------
-            let cvPercent = 0;
-            let textMode = "";
-            
-            if (mode === 'pilot') {
-                // Mode A: CV es calcula a partir de la mitjana i la desviació estàndard
-                // Fórmula: CV (%) = (s / mitjana) × 100
-                const mitjanaAB = parseFloat(document.getElementById('mitjanaAB').value);
-                const desviacioStd = parseFloat(document.getElementById('desviacioStd').value);
+        class Rodal {
+            constructor(id, nom, geometria, propietats, superficieHa) {
+                this.id = id;                    // Identificador únic
+                this.nom = nom || `Rodal ${id}`;  // Nom descriptiu
+                this.geometria = geometria;       // GeoJSON Feature (polígon)
+                this.propietatsOriginals = propietats; // Propietats del GeoJSON
+                this.superficieHa = superficieHa; // Superfície en hectàrees
                 
-                if (!mitjanaAB || mitjanaAB <= 0) {
-                    alert("La mitjana de l'àrea basimètrica ha de ser superior a 0.");
+                // Paràmetres d'inventari (per defecte)
+                this.tipusMassa = 'natural';      // Clau del tipus de massa
+                this.cvManual = null;             // CV manual (sobreescriu tipus)
+                this.errorAdmissible = 10;        // Error admissible (%)
+                this.nivellConfiança = 95;        // Nivell de confiança (%)
+                
+                // Resultats del càlcul
+                this.nParcelles = 0;              // Nombre de parcel·les calculades
+                this.espaiamentM = 0;             // Espaiament de la malla (m)
+                this.puntsGenerats = [];          // Array de punts [lng, lat]
+                this.processat = false;           // Si ja s'han generat punts
+            }
+        }
+
+        // ============================================================
+        // MÒDUL 2: INICIALITZACIÓ DEL MAPA (LEAFLET)
+        // ============================================================
+        
+        /**
+         * Inicialitza el mapa Leaflet amb capa base topogràfica
+         * i els grups de capes per rodals i punts.
+         */
+        function inicialitzarMapa() {
+            // Centrat aproximadament a Catalunya (modificar si cal)
+            AppState.mapa = L.map('map', {
+                center: [41.6, 1.8],
+                zoom: 8,
+                zoomControl: true
+            });
+
+            // Capa base: OpenStreetMap (gratuïta, no requereix token)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(AppState.mapa);
+
+            // Grups de capes per organitzar visualment
+            AppState.capaRodals = L.layerGroup().addTo(AppState.mapa);
+            AppState.capaPunts = L.layerGroup().addTo(AppState.mapa);
+        }
+
+        // ============================================================
+        // MÒDUL 3: CÀRREGA DE FITXERS GEOJSON
+        // ============================================================
+        
+        /**
+         * Gestiona el drop d'arxius (drag & drop).
+         */
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('dropZone').classList.remove('dragover');
+            
+            const arxius = event.dataTransfer.files;
+            if (arxius.length > 0) {
+                processarFitxer(arxius[0]);
+            }
+        }
+
+        /**
+         * Gestiona la càrrega via input file.
+         */
+        function carregarFitxer(input) {
+            if (input.files.length > 0) {
+                processarFitxer(input.files[0]);
+            }
+        }
+
+        /**
+         * Llegeix i processa un fitxer GeoJSON.
+         * Detecta polígons, calcula superfícies i crea els objectes Rodal.
+         */
+        function processarFitxer(fitxer) {
+            if (!fitxer.name.endsWith('.geojson') && !fitxer.name.endsWith('.json')) {
+                mostrarToast('Error', 'El fitxer ha de ser .geojson o .json', 'danger');
+                return;
+            }
+
+            const lector = new FileReader();
+            lector.onload = function(e) {
+                try {
+                    const geojson = JSON.parse(e.target.result);
+                    importarGeoJSON(geojson, fitxer.name);
+                } catch (err) {
+                    mostrarToast('Error', 'No s\'ha pogut llegir el fitxer GeoJSON. Revisa el format.', 'danger');
+                    console.error(err);
+                }
+            };
+            lector.readAsText(fitxer);
+        }
+
+        /**
+         * Importa les features d'un GeoJSON com a rodals.
+         * Filtra només polígons i multipolígons.
+         */
+        function importarGeoJSON(geojson, nomFitxer) {
+            // Netegem dades anteriors si n'hi ha
+            if (AppState.rodals.length > 0) {
+                if (!confirm('Ja hi ha rodals carregats. Vols substituir-los?')) {
                     return;
                 }
-                if (desviacioStd === undefined || desviacioStd < 0) {
-                    alert("Si us plau, introdueix una desviació estàndard vàlida.");
+                netejarTotesDades();
+            }
+
+            const features = geojson.features || [];
+            let comptador = 0;
+
+            features.forEach((feature, index) => {
+                const geomType = feature.geometry?.type;
+                
+                // Només acceptem polígons
+                if (geomType !== 'Polygon' && geomType !== 'MultiPolygon') {
                     return;
                 }
-                
-                cvPercent = (desviacioStd / mitjanaAB) * 100;
-                textMode = "Mode A - Inventari Pilot";
-                
-                // Emmagatzemem dades extra per l'exportació
-                dadesResultat.mitjanaAB = mitjanaAB;
-                dadesResultat.desviacioStd = desviacioStd;
-                
-            } else {
-                // Mode B: CV predefinit pel tipus de massa
-                // El valor ve directament del <select> (veure HTML per modificar)
-                cvPercent = parseFloat(document.getElementById('cvSelect').value);
-                textMode = "Mode B - Estimació per Tipus de Massa";
-                
-                // Emmagatzemem quin tipus s'ha triat
-                const selectCV = document.getElementById('cvSelect');
-                dadesResultat.tipusMassa = selectCV.options[selectCV.selectedIndex].text;
+
+                // Intentem obtenir un ID i nom del rodal
+                const props = feature.properties || {};
+                const id = props.id_rodal || props.ID_RODAL || props.id || props.ID || 
+                           props.codigo || props.CODIGO || props.nom || props.NOM || 
+                           `rodal_${index + 1}`;
+                const nom = props.nom || props.NOM || props.nombre || props.NOMBRE || id;
+
+                // Càlcul de superfície amb Turf.js (en hectàrees)
+                // NOTA: Turf.js assumeix coordenades geogràfiques (graus) i retorna m²
+                // Si el GeoJSON està projectat, el càlcul de turf.area pot no ser precís.
+                // Però per a la majoria de casos amb GeoJSON en graus, funciona bé.
+                let superficieHa = 0;
+                try {
+                    superficieHa = turf.area(feature) / 10000;
+                } catch (e) {
+                    // Si turf falla, intentem llegir del camp superficie_ha si existeix
+                    superficieHa = parseFloat(props.superficie_ha) || parseFloat(props.area_ha) || 0;
+                }
+
+                // Si ja ve amb superfície al GeoJSON, la prioritza
+                if (props.superficie_ha) {
+                    superficieHa = parseFloat(props.superficie_ha);
+                } else if (props.area_ha) {
+                    superficieHa = parseFloat(props.area_ha);
+                }
+
+                const rodal = new Rodal(id, nom, feature, props, superficieHa);
+                AppState.rodals.push(rodal);
+                comptador++;
+            });
+
+            if (comptador === 0) {
+                mostrarToast('Error', 'No s\'han trobat polígons vàlids al fitxer.', 'danger');
+                return;
             }
+
+            mostrarToast('Èxit', `S'han carregat ${comptador} rodals des de "${nomFitxer}"`, 'success');
+            renderitzarLlistaRodals();
+            renderitzarMapaRodals();
+            actualitzarResumGlobal();
             
-            // 4. PREPARACIÓ DE VARIABLES PER A LA FÓRMULA
-            // -------------------------------------------
-            // Convertim l'error de percentatge a fracció (ex: 10% -> 0.10)
-            const E = errorAdmissiblePercent / 100;
+            // Canviem la vista de la sidebar
+            document.getElementById('estatInicial').style.display = 'none';
+            document.getElementById('llistaRodals').style.display = 'block';
+        }
+
+        // ============================================================
+        // MÒDUL 4: RENDERITZACIÓ DE LA INTERFÍCIE
+        // ============================================================
+        
+        /**
+         * Genera la llista de targetes de rodals a la sidebar.
+         */
+        function renderitzarLlistaRodals() {
+            const container = document.getElementById('rodalsContainer');
+            container.innerHTML = '';
             
-            // Convertim el CV de percentatge a fracció per la fórmula
-            // (ex: 40% -> 0.40)
-            const CV = cvPercent / 100;
-            
-            // Obtenim el valor Z (o t) segons el nivell de confiança
-            const Z = obtenirValorZ(nivellConfiança);
-            
-            // 5. CÀLCUL DEL NOMBRE DE PARCEL·LES (n)
-            // ---------------------------------------
-            // Fórmula: n = (Z² × CV²) / E²
-            // On totes les variables estan en fraccions (no percentatge)
-            const nCalculat = (Math.pow(Z, 2) * Math.pow(CV, 2)) / Math.pow(E, 2);
-            
-            // Arrodonim SEMPRE cap amunt per garantir el nivell de confiança
-            // Math.ceil assegura que tenim com a mínim el nombre necessari
-            const nParcelles = Math.ceil(nCalculat);
-            
-            // 6. CÀLCUL DE L'ESPAIAMENT (MALLA QUADRADA)
-            // -------------------------------------------
-            // Convertim la superfície d'hectàrees a metres quadrats
-            // 1 ha = 10,000 m²
-            const superficieM2 = superficieHa * 10000;
-            
-            // Fórmula de l'espaiament en una malla quadrada sistemàtica:
-            // Espaiament = √(Superfície_total / n)
-            const espaiamentM = Math.sqrt(superficieM2 / nParcelles);
-            
-            // 7. CÀLCUL DE L'ERROR ESTIMAT REAL AMB 'n' ARRODONIT
-            // ----------------------------------------------------
-            // Si arrodonim n cap amunt, l'error real serà lleugerament inferior
-            // al sol·licitat. Ho calculem per informar a l'usuari.
-            // Reorganitzant la fórmula: E_real = Z × CV / √n
-            const errorEstimatPercent = (Z * CV / Math.sqrt(nParcelles)) * 100;
-            
-            // Superfície aproximada per parcel·la
-            const supPerParcela = superficieM2 / nParcelles;
-            
-            // 8. ACTUALITZACIÓ DE LA INTERFÍCIE
-            // ---------------------------------
-            document.getElementById('resultatsInicials').style.display = 'none';
-            document.getElementById('contenidorResultats').style.display = 'block';
-            
-            // Targetes resum
-            document.getElementById('resParcelles').textContent = nParcelles;
-            document.getElementById('resEspaiament').textContent = espaiamentM.toFixed(1);
-            document.getElementById('resError').textContent = errorEstimatPercent.toFixed(2);
-            
-            // Taula detallada
-            document.getElementById('tabMode').textContent = textMode;
-            document.getElementById('tabSuperficie').textContent = superficieHa.toFixed(2);
-            document.getElementById('tabCV').textContent = cvPercent.toFixed(2);
-            document.getElementById('tabErrorAdm').textContent = errorAdmissiblePercent.toFixed(1);
-            document.getElementById('tabConf').textContent = nivellConfiança + "%";
-            document.getElementById('tabZ').textContent = Z.toFixed(3);
-            document.getElementById('tabN').textContent = nParcelles;
-            document.getElementById('tabEspaiament').textContent = espaiamentM.toFixed(1) + " m";
-            document.getElementById('tabSupParcela').textContent = supPerParcela.toFixed(0);
-            
-            // 9. EMMAGATZEMAR DADES PER EXPORTACIÓ
-            // ------------------------------------
-            dadesResultat = {
-                ...dadesResultat,
-                mode: textMode,
-                superficieHa: superficieHa,
-                cvPercent: cvPercent.toFixed(2),
-                errorAdmissiblePercent: errorAdmissiblePercent.toFixed(1),
-                nivellConfiança: nivellConfiança,
-                valorZ: Z.toFixed(3),
-                nParcelles: nParcelles,
-                espaiamentM: espaiamentM.toFixed(1),
-                errorEstimatPercent: errorEstimatPercent.toFixed(2),
-                supPerParcelaM2: supPerParcela.toFixed(0),
-                dataCalcul: new Date().toLocaleString('ca-ES')
-            };
+            document.getElementById('comptadorRodals').textContent = AppState.rodals.length;
+
+            AppState.rodals.forEach((rodal, index) => {
+                const card = document.createElement('div');
+                card.className = `rodal-card ${rodal.processat ? 'processed' : ''} ${rodal.id === AppState.rodalSeleccionat ? 'active' : ''}`;
+                card.id = `rodal-card-${rodal.id}`;
+                card.onclick = (e) => {
+                    // Evitar que el clic als controls expandeixi/contrueixi
+                    if (e.target.closest('.form-control') || e.target.closest('.form-select') || e.target.closest('button')) return;
+                    toggleRodalExpand(rodal.id);
+                };
+                
+                // Badge de CV assignat
+                let cvBadge = '';
+                const cvActual = rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor;
+                if (rodal.processat) {
+                    cvBadge = `<span class="badge bg-success badge-cv"><i class="fas fa-check me-1"></i>${rodal.nParcelles} pts</span>`;
+                } else {
+                    cvBadge = `<span class="badge bg-secondary badge-cv">CV ${cvActual}%</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="rodal-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-dark">${index + 1}</span>
+                            <div>
+                                <div class="fw-semibold small">${rodal.nom}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">
+                                    ${rodal.superficieHa.toFixed(2)} ha
+                                </div>
+                            </div>
+                        </div>
+                        ${cvBadge}
+                    </div>
+                    <div class="rodal-card-body">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label class="form-label-sm">Tipus de massa / CV</label>
+                                <select class="form-select form-select-sm" onchange="actualitzarTipusMassa('${rodal.id}', this.value)">
+                                    <option value="plantacio" ${rodal.tipusMassa === 'plantacio' ? 'selected' : ''}>Plantació Regular (CV=20%)</option>
+                                    <option value="natural" ${rodal.tipusMassa === 'natural' ? 'selected' : ''}>Bosc Natural (CV=40%)</option>
+                                    <option value="irregular" ${rodal.tipusMassa === 'irregular' ? 'selected' : ''}>Massa Irregular (CV=60%)</option>
+                                    <option value="manual" ${rodal.cvManual !== null ? 'selected' : ''}>-- CV Manual --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-6" id="cv-manual-${rodal.id}" style="${rodal.cvManual !== null ? '' : 'display: none;'}">
+                                <label class="form-label-sm">CV manual (%)</label>
+                                <input type="number" class="form-control form-control-sm" 
+                                       value="${rodal.cvManual || ''}" 
+                                       onchange="actualitzarCVManual('${rodal.id}', this.value)"
+                                       placeholder="Ex: 35" min="1" max="200" step="1">
+                            </div>
+                            
+                            <div class="col-6">
+                                <label class="form-label-sm">Error admis. (%)</label>
+                                <input type="number" class="form-control form-control-sm" 
+                                       value="${rodal.errorAdmissible}" 
+                                       onchange="actualitzarError('${rodal.id}', this.value)"
+                                       min="1" max="50" step="0.5">
+                            </div>
+                            
+                            <div class="col-6">
+                                <label class="form-label-sm">Confiança (%)</label>
+                                <select class="form-select form-select-sm" onchange="actualitzarConfiança('${rodal.id}', this.value)">
+                                    <option value="90" ${rodal.nivellConfiança === 90 ? 'selected' : ''}>90%</option>
+                                    <option value="95" ${rodal.nivellConfiança === 95 ? 'selected' : ''}>95%</option>
+                                    <option value="99" ${rodal.nivellConfiança === 99 ? 'selected' : ''}>99%</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-6 d-flex align-items-end">
+                                <button class="btn btn-forest btn-sm w-100" onclick="generarPuntsRodal('${rodal.id}')">
+                                    <i class="fas fa-magic me-1"></i> Generar punts
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${rodal.processat ? `
+                        <div class="alert alert-success mt-2 mb-0 py-2" style="font-size: 0.8rem;">
+                            <i class="fas fa-check-circle me-1"></i>
+                            <strong>${rodal.nParcelles}</strong> parcel·les | 
+                            Espaiament: <strong>${rodal.espaiamentM.toFixed(1)} m</strong>
+                        </div>
+                        <div class="mt-2 d-flex gap-1">
+                            <button class="btn btn-outline-secondary btn-sm flex-fill" style="font-size: 0.75rem;" onclick="exportarPuntsRodalGeoJSON('${rodal.id}')">
+                                <i class="fas fa-file-code me-1"></i>GeoJSON
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm flex-fill" style="font-size: 0.75rem;" onclick="exportarPuntsRodalCSV('${rodal.id}')">
+                                <i class="fas fa-file-csv me-1"></i>CSV
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" style="font-size: 0.75rem;" onclick="esborrarPuntsRodal('${rodal.id}')" title="Esborrar punts">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
         }
 
         /**
-         * Funció: exportarCSV
-         * -------------------
-         * Genera un fitxer CSV amb tots els paràmetres i resultats
-         * del càlcul per a la seva documentació al projecte tècnic.
-         * 
-         * NOTA: S'utilitza el separador ';' per compatibilitat amb
-         * Excel en configuració regional catalana/espanyola.
+         * Renderitza els polígons dels rodals al mapa.
          */
-        function exportarCSV() {
-            // Comprovem que hi ha dades per exportar
-            if (!dadesResultat.nParcelles) {
-                alert("Primer has de realitzar un càlcul abans d'exportar.");
-                return;
-            }
+        function renderitzarMapaRodals() {
+            AppState.capaRodals.clearLayers();
             
-            // Capçalera i contingut del CSV
-            // Utilitzem ';' com a separador perquè s'obri correctament a Excel
-            const linies = [
-                ["Data del càlcul", dadesResultat.dataCalcul],
-                ["", ""],
-                ["PARAMETRES D'ENTRADA", ""],
-                ["Mode de càlcul", dadesResultat.mode],
-                ["Superfície de l'estrat (ha)", dadesResultat.superficieHa],
-                ["Coeficient de Variació CV (%)", dadesResultat.cvPercent],
-                ["Error admissible introduït (%)", dadesResultat.errorAdmissiblePercent],
-                ["Nivell de confiança (%)", dadesResultat.nivellConfiança],
-                ["Valor Z utilitzat", dadesResultat.valorZ],
-                ["", ""],
-                ["RESULTATS", ""],
-                ["Nombre de parcel·les (n)", dadesResultat.nParcelles],
-                ["Espaiament recomanat (m)", dadesResultat.espaiamentM],
-                ["Error estimat real (%)", dadesResultat.errorEstimatPercent],
-                ["Superfície aprox. per parcel·la (m²)", dadesResultat.supPerParcelaM2]
-            ];
-            
-            // Si és Mode A, afegim les dades de l'inventari pilot
-            if (dadesResultat.mitjanaAB !== undefined) {
-                linies.splice(5, 0, ["Mitjana AB (m²/ha)", dadesResultat.mitjanaAB]);
-                linies.splice(6, 0, ["Desviació estàndard (m²/ha)", dadesResultat.desviacioStd]);
-            }
-            
-            // Si és Mode B, afegim el tipus de massa
-            if (dadesResultat.tipusMassa !== undefined) {
-                linies.splice(5, 0, ["Tipus de massa seleccionat", dadesResultat.tipusMassa]);
-            }
-            
-            // Construïm el text CSV
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM per Excel
-            linies.forEach(function(fila) {
-                csvContent += fila[0] + ";" + fila[1] + "\n";
+            const geojsonLayer = L.geoJSON(AppState.rodals.map(r => r.geometria), {
+                style: function(feature) {
+                    return {
+                        color: '#1b4332',
+                        weight: 2,
+                        opacity: 0.8,
+                        fillColor: '#2d6a4f',
+                        fillOpacity: 0.2
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    // Busquem el rodal corresponent
+                    const rodal = AppState.rodals.find(r => 
+                        r.geometria === feature || 
+                        JSON.stringify(r.geometria.geometry) === JSON.stringify(feature.geometry)
+                    );
+                    
+                    if (rodal) {
+                        layer.rodalId = rodal.id;
+                        layer.bindPopup(`
+                            <strong>${rodal.nom}</strong><br>
+                            Superfície: ${rodal.superficieHa.toFixed(2)} ha<br>
+                            ${rodal.processat ? `Parcel·les: ${rodal.nParcelles}` : 'Sense punts generats'}
+                        `);
+                        
+                        layer.on('click', () => seleccionarRodal(rodal.id));
+                    }
+                }
             });
             
-            // Creem l'element d'enllaç temporal per forçar la descàrrega
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
+            AppState.capaRodals.addLayer(geojsonLayer);
             
-            // Nom del fitxer amb data per identificar-lo fàcilment
-            const dataStr = new Date().toISOString().slice(0,10);
-            link.setAttribute("download", `Inventari_Forestal_${dataStr}.csv`);
-            
-            // Afegim a DOM, cliquem i eliminem
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Ajustem el zoom per veure tots els rodals
+            if (AppState.rodals.length > 0) {
+                AppState.mapa.fitBounds(geojsonLayer.getBounds().pad(0.1));
+            }
         }
 
-        // Inicialització: assegurem que el mode correcte es mostra al carregar
+        /**
+         * Renderitza els punts d'inventari d'un rodal al mapa.
+         */
+        function renderitzarPuntsRodal(rodal) {
+            // Primer eliminem els punts antics d'aquest rodal si n'hi ha
+            esborrarPuntsVisualsRodal(rodal.id);
+            
+            if (!rodal.puntsGenerats || rodal.puntsGenerats.length === 0) return;
+            
+            rodal.puntsGenerats.forEach((pt, idx) => {
+                const marker = L.circleMarker([pt[1], pt[0]], {
+                    radius: 6,
+                    fillColor: '#e9c46a',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                });
+                
+                marker.rodalId = rodal.id;
+                marker.pointIndex = idx;
+                
+                marker.bindPopup(`
+                    <strong>Parcel·la ${idx + 1}</strong><br>
+                    Rodal: ${rodal.nom}<br>
+                    X: ${pt[0].toFixed(2)}<br>
+                    Y: ${pt[1].toFixed(2)}
+                `);
+                
+                // Tooltip permanent amb el número
+                marker.bindTooltip(`${idx + 1}`, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -8],
+                    className: 'bg-dark text-white px-1 rounded',
+                    opacity: 0.9
+                });
+                
+                AppState.capaPunts.addLayer(marker);
+            });
+        }
+
+        // ============================================================
+        // MÒDUL 5: INTERACCIÓ I GESTIÓ DE RODALS
+        // ============================================================
+        
+        function toggleRodalExpand(rodalId) {
+            const card = document.getElementById(`rodal-card-${rodalId}`);
+            const isExpanded = card.classList.contains('expanded');
+            
+            // Tanquem tots els altres
+            document.querySelectorAll('.rodal-card').forEach(c => c.classList.remove('expanded'));
+            
+            if (!isExpanded) {
+                card.classList.add('expanded');
+                seleccionarRodal(rodalId);
+            }
+        }
+
+        function seleccionarRodal(rodalId) {
+            AppState.rodalSeleccionat = rodalId;
+            
+            // Actualitzem classes visuals
+            document.querySelectorAll('.rodal-card').forEach(c => c.classList.remove('active'));
+            const card = document.getElementById(`rodal-card-${rodalId}`);
+            if (card) card.classList.add('active');
+            
+            // Resaltem el polígon al mapa
+            AppState.capaRodals.eachLayer(layer => {
+                if (layer.setStyle) {
+                    if (layer.rodalId === rodalId) {
+                        layer.setStyle({ color: '#e74c3c', weight: 3, fillOpacity: 0.35 });
+                        AppState.mapa.fitBounds(layer.getBounds().pad(0.2));
+                    } else {
+                        layer.setStyle({ color: '#1b4332', weight: 2, fillOpacity: 0.2 });
+                    }
+                }
+            });
+        }
+
+        function actualitzarTipusMassa(rodalId, valor) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (!rodal) return;
+            
+            rodal.tipusMassa = valor;
+            
+            // Mostrem/ocultem el camp de CV manual
+            const cvManualDiv = document.getElementById(`cv-manual-${rodalId}`);
+            if (valor === 'manual') {
+                cvManualDiv.style.display = 'block';
+                rodal.cvManual = rodal.cvManual || 40; // valor per defecte
+            } else {
+                cvManualDiv.style.display = 'none';
+                rodal.cvManual = null;
+            }
+            
+            renderitzarLlistaRodals();
+        }
+
+        function actualitzarCVManual(rodalId, valor) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (rodal) rodal.cvManual = parseFloat(valor) || 40;
+        }
+
+        function actualitzarError(rodalId, valor) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (rodal) rodal.errorAdmissible = parseFloat(valor) || 10;
+        }
+
+        function actualitzarConfiança(rodalId, valor) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (rodal) rodal.nivellConfiança = parseInt(valor) || 95;
+        }
+
+        // ============================================================
+        // MÒDUL 6: MOTOR DE CÀLCUL I GENERACIÓ DE PUNTS
+        // ============================================================
+        
+        /**
+         * Calcula el nombre de parcel·les i genera la quadrícula de punts
+         * dins del polígon del rodal utilitzant Turf.js.
+         */
+        function generarPuntsRodal(rodalId) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (!rodal) return;
+            
+            // 1. OBTENIR PARÀMETRES
+            const cvPercent = rodal.cvManual !== null ? rodal.cvManual : AppState.configCV[rodal.tipusMassa].valor;
+            const E = rodal.errorAdmissible / 100;
+            const CV = cvPercent / 100;
+            const Z = obtenirValorZ(rodal.nivellConfiança);
+            
+            // 2. CÀLCUL DE n
+            const nCalculat = (Math.pow(Z, 2) * Math.pow(CV, 2)) / Math.pow(E, 2);
+            rodal.nParcelles = Math.ceil(nCalculat);
+            
+            // 3. CÀLCUL DE L'ESPAIAMENT
+            // Superfície en m² (Turf area retorna m² per coordenades geogràfiques)
+            // NOTA IMPORTANT: Si el GeoJSON està en coordenades projectades (m),
+            // turf.area pot donar resultats incorrectes. En aquest cas, usar:
+            // superficieM2 = rodal.superficieHa * 10000
+            let superficieM2;
+            try {
+                superficieM2 = turf.area(rodal.geometria);
+            } catch(e) {
+                superficieM2 = rodal.superficieHa * 10000;
+            }
+            
+            rodal.espaiamentM = Math.sqrt(superficieM2 / rodal.nParcelles);
+            
+            // 4. GENERACIÓ DE PUNTS AMB TURF.JS
+            // Creem un bounding box del polígon i generem una quadrícula de punts
+            const bbox = turf.bbox(rodal.geometria);
+            
+            // Generem una malla de punts dins del bbox amb l'espaiament calculat
+            // NOTA: turf.pointGrid necessita l'espaiament EN GRAUS si les coordenades són geogràfiques.
+            // Si les coordenades són projectades (metres), l'espaiament ha d'estar en unitats del CRS.
+            // Aquesta és la part més delicada de l'aplicació.
+            
+            let puntosDentro = [];
+            
+            try {
+                // Intentem amb pointGrid
+                const options = { units: 'meters' };
+                const pointGrid = turf.pointGrid(bbox, rodal.espaiamentM, options);
+                
+                // Filtrem només els punts dins del polígon
+                puntosDentro = turf.pointsWithinPolygon(pointGrid, rodal.geometria);
+                
+            } catch (e) {
+                // Fallback: generació manual de quadrícula si Turf falla amb unitats
+                puntosDentro = generarQuadrículaManual(bbox, rodal.espaiamentM, rodal.geometria);
+            }
+            
+            // Si no hem obtingut prou punts (pot passar per arrodoniments),
+            // ajustem l'espaiament i regenerem
+            let features = puntosDentro.features || [];
+            
+            if (features.length < rodal.nParcelles && features.length > 0) {
+                // Recalculem amb més densitat
+                const ratio = Math.sqrt(rodal.nParcelles / features.length);
+                rodal.espaiamentM = rodal.espaiamentM / ratio;
+                
+                try {
+                    const pointGrid = turf.pointGrid(bbox, rodal.espaiamentM, { units: 'meters' });
+                    puntosDentro = turf.pointsWithinPolygon(pointGrid, rodal.geometria);
+                    features = puntosDentro.features || [];
+                } catch (e) {
+                    puntosDentro = generarQuadrículaManual(bbox, rodal.espaiamentM, rodal.geometria);
+                    features = puntosDentro.features || [];
+                }
+            }
+            
+            // Limitem al nombre calculat (si n'hi ha massa per precisió)
+            features = features.slice(0, rodal.nParcelles);
+            
+            // Actualitzem el nombre real de parcel·les
+            rodal.nParcelles = features.length;
+            
+            // Emmagatzemem les coordenades [lng, lat]
+            rodal.puntsGenerats = features.map(f => f.geometry.coordinates);
+            rodal.processat = true;
+            
+            // 5. ACTUALITZAR VISTA
+            renderitzarPuntsRodal(rodal);
+            renderitzarLlistaRodals();
+            actualitzarResumGlobal();
+            seleccionarRodal(rodalId);
+            
+            mostrarToast('Èxit', `S'han generat ${rodal.nParcelles} punts per "${rodal.nom}"`, 'success');
+        }
+
+        /**
+         * Fallback per generar una quadrícula de punts manualment si Turf
+         * té problemes amb les unitats del CRS.
+         */
+        function generarQuadrículaManual(bbox, espaiamentM, poligono) {
+            // bbox = [minX, minY, maxX, maxY]
+            const [minX, minY, maxX, maxY] = bbox;
+            
+            // Si les coordenades semblen geogràfiques (graus), convertim espaiament
+            // aproximadament: 1 grau latitud ≈ 111 km, 1 grau longitud ≈ 111 km * cos(lat)
+            const esGeo = Math.abs(minX) <= 180 && Math.abs(minY) <= 90;
+            
+            let stepX = espaiamentM;
+            let stepY = espaiamentM;
+            
+            if (esGeo) {
+                const latMed = (minY + maxY) / 2;
+                stepY = espaiamentM / 111000; // metres a graus latitud
+                stepX = espaiamentM / (111000 * Math.cos(latMed * Math.PI / 180));
+            }
+            
+            const puntos = [];
+            for (let x = minX + stepX/2; x <= maxX; x += stepX) {
+                for (let y = minY + stepY/2; y <= maxY; y += stepY) {
+                    const pt = turf.point([x, y]);
+                    if (turf.booleanPointInPolygon(pt, poligono)) {
+                        puntos.push(pt);
+                    }
+                }
+            }
+            
+            return turf.featureCollection(puntos);
+        }
+
+        /**
+         * Retorna el valor Z per al nivell de confiança.
+         */
+        function obtenirValorZ(conf) {
+            const valors = { 90: 1.645, 95: 1.96, 99: 2.576 };
+            return valors[conf] || 1.96;
+        }
+
+        // ============================================================
+        // MÒDUL 7: EXPORTACIÓ
+        // ============================================================
+        
+        /**
+         * Exporta els punts d'un rodal concret a GeoJSON.
+         */
+        function exportarPuntsRodalGeoJSON(rodalId) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (!rodal || !rodal.processat) return;
+            
+            const features = rodal.puntsGenerats.map((pt, idx) => ({
+                type: 'Feature',
+                properties: {
+                    id_parcela: idx + 1,
+                    rodal_id: rodal.id,
+                    rodal_nom: rodal.nom,
+                    cv: rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor,
+                    error_admissible: rodal.errorAdmissible,
+                    confiança: rodal.nivellConfiança,
+                    espaiament_m: rodal.espaiamentM
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: pt
+                }
+            }));
+            
+            const geojson = {
+                type: 'FeatureCollection',
+                crs: {
+                    type: 'name',
+                    properties: { name: 'urn:ogc:def:crs:EPSG::25831' } // Ajustar segons CRS real
+                },
+                features: features
+            };
+            
+            descarregarFitxer(JSON.stringify(geojson, null, 2), `punts_${rodal.nom}.geojson`, 'application/json');
+        }
+
+        /**
+         * Exporta els punts d'un rodal a CSV amb coordenades.
+         */
+        function exportarPuntsRodalCSV(rodalId) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (!rodal || !rodal.processat) return;
+            
+            let csv = 'id_parcela;rodal_id;rodal_nom;coord_x;coord_y;cv;error_admissible;confiança;espaiament_m\n';
+            
+            rodal.puntsGenerats.forEach((pt, idx) => {
+                csv += `${idx + 1};${rodal.id};${rodal.nom};${pt[0].toFixed(2)};${pt[1].toFixed(2)};` +
+                       `${rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor};` +
+                       `${rodal.errorAdmissible};${rodal.nivellConfiança};${rodal.espaiamentM.toFixed(1)}\n`;
+            });
+            
+            descarregarFitxer(csv, `punts_${rodal.nom}.csv`, 'text/csv');
+        }
+
+        /**
+         * Exporta TOTS els punts de TOTS els rodals a GeoJSON.
+         */
+        function exportarTotsPuntsGeoJSON() {
+            const totsFeatures = [];
+            
+            AppState.rodals.filter(r => r.processat).forEach(rodal => {
+                rodal.puntsGenerats.forEach((pt, idx) => {
+                    totsFeatures.push({
+                        type: 'Feature',
+                        properties: {
+                            id_parcela: idx + 1,
+                            rodal_id: rodal.id,
+                            rodal_nom: rodal.nom,
+                            cv: rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor,
+                            error_admissible: rodal.errorAdmissible,
+                            confiança: rodal.nivellConfiança,
+                            espaiament_m: rodal.espaiamentM
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: pt
+                        }
+                    });
+                });
+            });
+            
+            const geojson = {
+                type: 'FeatureCollection',
+                features: totsFeatures
+            };
+            
+            const dataStr = new Date().toISOString().slice(0,10);
+            descarregarFitxer(JSON.stringify(geojson, null, 2), `inventari_complet_${dataStr}.geojson`, 'application/json');
+        }
+
+        /**
+         * Exporta TOTS els punts de TOTS els rodals a CSV.
+         */
+        function exportarTotsPuntsCSV() {
+            let csv = 'id_parcela;rodal_id;rodal_nom;coord_x;coord_y;cv;error_admissible;confiança;espaiament_m\n';
+            
+            AppState.rodals.filter(r => r.processat).forEach(rodal => {
+                rodal.puntsGenerats.forEach((pt, idx) => {
+                    csv += `${idx + 1};${rodal.id};${rodal.nom};${pt[0].toFixed(2)};${pt[1].toFixed(2)};` +
+                           `${rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor};` +
+                           `${rodal.errorAdmissible};${rodal.nivellConfiança};${rodal.espaiamentM.toFixed(1)}\n`;
+                });
+            });
+            
+            const dataStr = new Date().toISOString().slice(0,10);
+            descarregarFitxer(csv, `inventari_complet_${dataStr}.csv`, 'text/csv');
+        }
+
+        /**
+         * Utilitat per forçar la descàrrega d'un fitxer.
+         */
+        function descarregarFitxer(contingut, nom, tipus) {
+            const blob = new Blob([contingut], { type: tipus });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nom;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ============================================================
+        // MÒDUL 8: UTILITATS I GESTIÓ D'ESTAT
+        // ============================================================
+        
+        function esborrarPuntsRodal(rodalId) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (!rodal) return;
+            
+            rodal.processat = false;
+            rodal.puntsGenerats = [];
+            rodal.nParcelles = 0;
+            rodal.espaiamentM = 0;
+            
+            esborrarPuntsVisualsRodal(rodalId);
+            renderitzarLlistaRodals();
+            actualitzarResumGlobal();
+        }
+
+        function esborrarPuntsVisualsRodal(rodalId) {
+            const capesAEsborrar = [];
+            AppState.capaPunts.eachLayer(layer => {
+                if (layer.rodalId === rodalId) {
+                    capesAEsborrar.push(layer);
+                }
+            });
+            capesAEsborrar.forEach(l => AppState.capaPunts.removeLayer(l));
+        }
+
+        function actualitzarResumGlobal() {
+            const totalRodals = AppState.rodals.length;
+            const totalPunts = AppState.rodals.reduce((sum, r) => sum + (r.nParcelles || 0), 0);
+            const totalSup = AppState.rodals.reduce((sum, r) => sum + r.superficieHa, 0);
+            
+            document.getElementById('totalRodals').textContent = totalRodals;
+            document.getElementById('totalPunts').textContent = totalPunts;
+            document.getElementById('totalSup').textContent = totalSup.toFixed(1);
+            
+            // Habilitar/deshabilitar botons d'exportació global
+            const tePunts = totalPunts > 0;
+            document.getElementById('btnExportGJ').disabled = !tePunts;
+            document.getElementById('btnExportCSV').disabled = !tePunts;
+        }
+
+        function netejarTotesDades() {
+            AppState.rodals = [];
+            AppState.rodalSeleccionat = null;
+            AppState.capaRodals.clearLayers();
+            AppState.capaPunts.clearLayers();
+            document.getElementById('rodalsContainer').innerHTML = '';
+        }
+
+        function mostrarToast(titol, missatge, tipus = 'info') {
+            const container = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const html = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${tipus} border-0 fade show" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${titol}</strong><br>${missatge}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+            const toastEl = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+            toast.show();
+            
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        function mostrarInstruccions() {
+            new bootstrap.Modal(document.getElementById('modalInstruccions')).show();
+        }
+
+        // ============================================================
+        // INICIALITZACIÓ
+        // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
-            canviarMode();
+            inicialitzarMapa();
         });
     </script>
 </body>
