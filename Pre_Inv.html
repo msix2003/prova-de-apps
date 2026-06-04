@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ForestGIS - Gestor d'Inventaris per Rodals</title>
+    <title>ForestGIS v2.0 - Gestor d'Inventaris per Rodals</title>
     
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,6 +22,7 @@
             --forest-pale: #d8f3dc;
             --wood-brown: #8b5e3c;
             --accent: #e9c46a;
+            --accent-random: #9b59b6;
         }
         
         body {
@@ -30,24 +31,21 @@
             overflow-x: hidden;
         }
         
-        /* Navbar */
         .navbar-forest {
             background: linear-gradient(90deg, var(--forest-dark) 0%, var(--forest-green) 100%);
             box-shadow: 0 2px 15px rgba(0,0,0,0.15);
             z-index: 2000;
         }
         
-        /* Layout principal */
         .app-container {
             height: calc(100vh - 56px);
             display: flex;
             flex-direction: row;
         }
         
-        /* Sidebar */
         .sidebar {
-            width: 420px;
-            min-width: 420px;
+            width: 440px;
+            min-width: 440px;
             background: #ffffff;
             border-right: 1px solid #dee2e6;
             display: flex;
@@ -69,7 +67,6 @@
             padding: 1rem;
         }
         
-        /* Mapa */
         .map-container {
             flex: 1;
             position: relative;
@@ -82,7 +79,6 @@
             z-index: 1;
         }
         
-        /* Cards rodals */
         .rodal-card {
             border: 1px solid #e9ecef;
             border-radius: 10px;
@@ -105,8 +101,12 @@
             background: var(--forest-pale);
         }
         
-        .rodal-card.processed {
-            border-left: 4px solid var(--forest-green);
+        .rodal-card.processed-grid {
+            border-left: 4px solid var(--accent);
+        }
+        
+        .rodal-card.processed-random {
+            border-left: 4px solid var(--accent-random);
         }
         
         .rodal-card-header {
@@ -132,7 +132,6 @@
             border-radius: 6px;
         }
         
-        /* Formularis */
         .form-control-sm, .form-select-sm {
             font-size: 0.875rem;
         }
@@ -144,7 +143,6 @@
             margin-bottom: 0.25rem;
         }
         
-        /* Botons d'acció */
         .btn-forest {
             background-color: var(--forest-green);
             border-color: var(--forest-green);
@@ -185,7 +183,6 @@
             color: white;
         }
         
-        /* Seccions */
         .section-title {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -198,7 +195,6 @@
             gap: 0.5rem;
         }
         
-        /* Stats box */
         .stats-box {
             background: linear-gradient(135deg, var(--forest-pale), #ffffff);
             border-radius: 10px;
@@ -210,12 +206,6 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--forest-dark);
-        }
-        
-        /* Leaflet custom */
-        .leaflet-popup-content-wrapper {
-            border-radius: 10px;
-            font-family: 'Inter', sans-serif;
         }
         
         .legend {
@@ -237,15 +227,6 @@
             opacity: 0.8;
         }
         
-        /* Punts d'inventari */
-        .point-marker {
-            background: var(--accent);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        
-        /* Drop zone */
         .drop-zone {
             border: 2px dashed #adb5bd;
             border-radius: 10px;
@@ -260,12 +241,10 @@
             background: var(--forest-pale);
         }
         
-        /* Toast */
         .toast-container {
             z-index: 3000;
         }
         
-        /* Responsive */
         @media (max-width: 992px) {
             .sidebar {
                 width: 100%;
@@ -281,7 +260,6 @@
             }
         }
         
-        /* Scrollbar personalitzada */
         .sidebar-content::-webkit-scrollbar {
             width: 6px;
         }
@@ -293,7 +271,6 @@
             border-radius: 3px;
         }
         
-        /* Animacions */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -303,7 +280,6 @@
             animation: fadeIn 0.4s ease forwards;
         }
         
-        /* Modal instruccions */
         .instruccio-step {
             display: flex;
             gap: 1rem;
@@ -324,6 +300,52 @@
             flex-shrink: 0;
             font-size: 0.9rem;
         }
+        
+        /* Patró selector */
+        .patro-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .patro-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 0.8rem;
+        }
+        
+        .patro-btn:hover {
+            border-color: var(--forest-light);
+        }
+        
+        .patro-btn.selected {
+            border-color: var(--forest-green);
+            background: var(--forest-pale);
+            color: var(--forest-dark);
+            font-weight: 600;
+        }
+        
+        .patro-btn i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Tooltip de punts */
+        .point-label {
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -334,7 +356,7 @@
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
                 <i class="fas fa-tree"></i>
                 <span class="fw-bold">ForestGIS</span>
-                <span class="badge bg-white text-dark ms-2" style="font-size: 0.7rem;">v1.0</span>
+                <span class="badge bg-white text-dark ms-2" style="font-size: 0.7rem;">v2.0</span>
             </a>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-light" onclick="mostrarInstruccions()">
@@ -358,7 +380,7 @@
             
             <div class="sidebar-content" id="sidebarContent">
                 
-                <!-- Estat inicial / drop zone -->
+                <!-- Estat inicial -->
                 <div id="estatInicial">
                     <div class="drop-zone mt-3" id="dropZone"
                          ondragover="event.preventDefault(); this.classList.add('dragover');"
@@ -367,21 +389,21 @@
                         <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
                         <p class="mb-2 fw-semibold text-secondary">Arrossega un fitxer GeoJSON aquí</p>
                         <p class="small text-muted mb-0">O fes clic a <strong>Carregar GeoJSON</strong> a la barra superior.</p>
-                        <p class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i>Format acceptat: GeoJSON amb polígons</p>
+                        <p class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i>Format: GeoJSON amb polígons. CRS projectat recomanat (EPSG:25831)</p>
                     </div>
                     
                     <div class="alert alert-light border mt-4">
                         <h6 class="fw-bold text-secondary"><i class="fas fa-lightbulb text-warning me-2"></i>Com funciona?</h6>
                         <ol class="small text-muted ps-3 mb-0">
                             <li class="mb-1">Carrega el teu fitxer de rodals (GeoJSON des de QGIS)</li>
-                            <li class="mb-1">Selecciona un rodal i configura el CV i l'error</li>
-                            <li class="mb-1">Genera els punts d'inventari automàticament</li>
-                            <li>Exporta els resultats a GeoJSON o CSV</li>
+                            <li class="mb-1">Selecciona un rodal i configura el CV, error i patró</li>
+                            <li class="mb-1">Tria <strong>Quadrícula</strong> (sistemàtic) o <strong>Aleatori</strong></li>
+                            <li>Genera i exporta els punts d'inventari</li>
                         </ol>
                     </div>
                 </div>
 
-                <!-- Llista de rodals (amagada inicialment) -->
+                <!-- Llista de rodals -->
                 <div id="llistaRodals" style="display: none;">
                     
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -391,7 +413,6 @@
                     
                     <div id="rodalsContainer"></div>
                     
-                    <!-- Resum global -->
                     <div class="section-title"><i class="fas fa-chart-pie"></i> Resum global</div>
                     <div class="stats-box mb-3">
                         <div class="row text-center">
@@ -410,7 +431,6 @@
                         </div>
                     </div>
                     
-                    <!-- Exportació global -->
                     <div class="d-grid gap-2">
                         <button class="btn btn-export-gj btn-sm" onclick="exportarTotsPuntsGeoJSON()" id="btnExportGJ" disabled>
                             <i class="fas fa-file-export me-1"></i> Exportar TOTS els punts (GeoJSON)
@@ -427,11 +447,11 @@
         <div class="map-container">
             <div id="map"></div>
             
-            <!-- Legend -->
             <div class="legend leaflet-control" style="position: absolute; bottom: 20px; right: 20px; z-index: 1000;">
                 <div class="fw-bold mb-2">Llegenda</div>
                 <div><i style="background: var(--forest-green); opacity: 0.3; border: 2px solid var(--forest-dark);"></i> Rodals</div>
-                <div><i style="background: var(--accent); border: 2px solid #fff;"></i> Punts d'inventari</div>
+                <div><i style="background: var(--accent); border: 2px solid #fff;"></i> Quadrícula (sistemàtic)</div>
+                <div><i style="background: var(--accent-random); border: 2px solid #fff;"></i> Aleatori</div>
                 <div><i style="background: #e74c3c; border: 2px solid #c0392b;"></i> Rodal seleccionat</div>
             </div>
         </div>
@@ -452,7 +472,7 @@
                         <div class="instruccio-num">1</div>
                         <div>
                             <h6 class="fw-bold mb-1">Prepara la capa de rodals</h6>
-                            <p class="text-muted small mb-0">Assegura't que la teva capa està en un sistema de coordenades projectat (ex: <strong>EPSG:25831</strong> - ETRS89 UTM31N, o l'adequat per a la teva zona). Evita usar coordenades geogràfiques (EPSG:4326) perquè els càlculs de superfície i distàncies siguin correctes.</p>
+                            <p class="text-muted small mb-0">Assegura't que la teva capa està en un <strong>sistema de coordenades projectat</strong> (ex: <strong>EPSG:25831</strong> - ETRS89 UTM31N). Això és CRÍTIC perquè els càlculs de superfície i distàncies siguin correctes. Evita coordenades geogràfiques (EPSG:4326).</p>
                         </div>
                     </div>
                     
@@ -476,7 +496,7 @@
                         <div class="instruccio-num">4</div>
                         <div>
                             <h6 class="fw-bold mb-1">Exporta a GeoJSON</h6>
-                            <p class="text-muted small mb-0">Clica dret a la capa → <strong>Exporta</strong> → <strong>Desa les entitats com...</strong>. Selecciona format <strong>GeoJSON</strong>. Assegura't que el CRS de sortida sigui el mateix projectat (EPSG:25831). Guarda el fitxer amb extensió <code>.geojson</code>.</p>
+                            <p class="text-muted small mb-0">Clica dret a la capa → <strong>Exporta</strong> → <strong>Desa les entitats com...</strong>. Selecciona format <strong>GeoJSON</strong>. Assegura't que el CRS de sortida sigui el <strong>mateix projectat</strong> (EPSG:25831). Guarda el fitxer amb extensió <code>.geojson</code>.</p>
                         </div>
                     </div>
                     
@@ -488,8 +508,8 @@
                         </div>
                     </div>
                     
-                    <div class="alert alert-info mt-3 mb-0">
-                        <i class="fas fa-info-circle me-2"></i><strong>Nota important:</strong> Si els teus rodals estan en GeoPackage, exporta'ls primer a GeoJSON des de QGIS seguint els passos anteriors. ForestGIS no llegeix directament fitxers <code>.gpkg</code>.
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i><strong>Important:</strong> Si els teus rodals estan en GeoPackage, exporta'ls primer a GeoJSON des de QGIS seguint els passos anteriors. ForestGIS no llegeix directament fitxers <code>.gpkg</code>.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -509,84 +529,69 @@
 
     <script>
         // ============================================================
-        // FORESTGIS - GESTOR D'INVENTARIS FORESTALS PER RODALS
+        // FORESTGIS v2.0 - GESTOR D'INVENTARIS FORESTALS PER RODALS
         // ============================================================
-        // Aplicació modular per gestionar inventaris forestals mitjançant
-        // mostreig sistemàtic per rodals. Utilitza Leaflet per visualització
-        // i Turf.js per operacions geoespacials.
+        // Millores v2.0:
+        // 1. Visualització correcta de GeoJSON amb coordsToLatLng
+        // 2. Generació de punts en quadrícula real (files x columnes)
+        // 3. Selector de patró: Quadrícula sistemàtica o Aleatori
         // ============================================================
 
         // ============================================================
         // MÒDUL 1: CONFIGURACIÓ I ESTAT GLOBAL
         // ============================================================
         
-        /**
-         * Estat global de l'aplicació.
-         * Conté totes les dades en memòria: rodals, capes del mapa,
-         * configuracions per rodal, etc.
-         */
         const AppState = {
-            rodals: [],           // Array d'objectes Rodal
-            capaRodals: null,     // L.LayerGroup per als polígons
-            capaPunts: null,      // L.LayerGroup per als punts d'inventari
-            mapa: null,           // Instància de L.Map
-            rodalSeleccionat: null, // ID del rodal actualment actiu
-            configCV: {           // Configuració predefinida de CV
+            rodals: [],
+            capaRodals: null,
+            capaPunts: null,
+            mapa: null,
+            rodalSeleccionat: null,
+            configCV: {
                 'plantacio': { nom: 'Plantació Regular', valor: 20 },
                 'natural':   { nom: 'Bosc Natural/Seminatural', valor: 40 },
                 'irregular': { nom: 'Massa Irregular/Complexa', valor: 60 }
             }
         };
 
-        /**
-         * Classe Rodal: representa un rodal forestal amb totes les
-         * seves propietats i el resultat del càlcul d'inventari.
-         */
         class Rodal {
             constructor(id, nom, geometria, propietats, superficieHa) {
-                this.id = id;                    // Identificador únic
-                this.nom = nom || `Rodal ${id}`;  // Nom descriptiu
-                this.geometria = geometria;       // GeoJSON Feature (polígon)
-                this.propietatsOriginals = propietats; // Propietats del GeoJSON
-                this.superficieHa = superficieHa; // Superfície en hectàrees
+                this.id = id;
+                this.nom = nom || `Rodal ${id}`;
+                this.geometria = geometria;
+                this.propietatsOriginals = propietats;
+                this.superficieHa = superficieHa;
                 
-                // Paràmetres d'inventari (per defecte)
-                this.tipusMassa = 'natural';      // Clau del tipus de massa
-                this.cvManual = null;             // CV manual (sobreescriu tipus)
-                this.errorAdmissible = 10;        // Error admissible (%)
-                this.nivellConfiança = 95;        // Nivell de confiança (%)
+                this.tipusMassa = 'natural';
+                this.cvManual = null;
+                this.errorAdmissible = 10;
+                this.nivellConfiança = 95;
+                this.patro = 'grid'; // 'grid' o 'random'
                 
-                // Resultats del càlcul
-                this.nParcelles = 0;              // Nombre de parcel·les calculades
-                this.espaiamentM = 0;             // Espaiament de la malla (m)
-                this.puntsGenerats = [];          // Array de punts [lng, lat]
-                this.processat = false;           // Si ja s'han generat punts
+                this.nParcelles = 0;
+                this.espaiamentM = 0;
+                this.puntsGenerats = [];
+                this.processat = false;
+                this.tipusGeneracio = null; // 'grid' o 'random'
             }
         }
 
         // ============================================================
-        // MÒDUL 2: INICIALITZACIÓ DEL MAPA (LEAFLET)
+        // MÒDUL 2: INICIALITZACIÓ DEL MAPA
         // ============================================================
         
-        /**
-         * Inicialitza el mapa Leaflet amb capa base topogràfica
-         * i els grups de capes per rodals i punts.
-         */
         function inicialitzarMapa() {
-            // Centrat aproximadament a Catalunya (modificar si cal)
             AppState.mapa = L.map('map', {
                 center: [41.6, 1.8],
                 zoom: 8,
                 zoomControl: true
             });
 
-            // Capa base: OpenStreetMap (gratuïta, no requereix token)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(AppState.mapa);
 
-            // Grups de capes per organitzar visualment
             AppState.capaRodals = L.layerGroup().addTo(AppState.mapa);
             AppState.capaPunts = L.layerGroup().addTo(AppState.mapa);
         }
@@ -595,32 +600,17 @@
         // MÒDUL 3: CÀRREGA DE FITXERS GEOJSON
         // ============================================================
         
-        /**
-         * Gestiona el drop d'arxius (drag & drop).
-         */
         function handleDrop(event) {
             event.preventDefault();
             document.getElementById('dropZone').classList.remove('dragover');
-            
             const arxius = event.dataTransfer.files;
-            if (arxius.length > 0) {
-                processarFitxer(arxius[0]);
-            }
+            if (arxius.length > 0) processarFitxer(arxius[0]);
         }
 
-        /**
-         * Gestiona la càrrega via input file.
-         */
         function carregarFitxer(input) {
-            if (input.files.length > 0) {
-                processarFitxer(input.files[0]);
-            }
+            if (input.files.length > 0) processarFitxer(input.files[0]);
         }
 
-        /**
-         * Llegeix i processa un fitxer GeoJSON.
-         * Detecta polígons, calcula superfícies i crea els objectes Rodal.
-         */
         function processarFitxer(fitxer) {
             if (!fitxer.name.endsWith('.geojson') && !fitxer.name.endsWith('.json')) {
                 mostrarToast('Error', 'El fitxer ha de ser .geojson o .json', 'danger');
@@ -633,23 +623,16 @@
                     const geojson = JSON.parse(e.target.result);
                     importarGeoJSON(geojson, fitxer.name);
                 } catch (err) {
-                    mostrarToast('Error', 'No s\'ha pogut llegir el fitxer GeoJSON. Revisa el format.', 'danger');
+                    mostrarToast('Error', 'No s\'ha pogut llegir el fitxer GeoJSON.', 'danger');
                     console.error(err);
                 }
             };
             lector.readAsText(fitxer);
         }
 
-        /**
-         * Importa les features d'un GeoJSON com a rodals.
-         * Filtra només polígons i multipolígons.
-         */
         function importarGeoJSON(geojson, nomFitxer) {
-            // Netegem dades anteriors si n'hi ha
             if (AppState.rodals.length > 0) {
-                if (!confirm('Ja hi ha rodals carregats. Vols substituir-los?')) {
-                    return;
-                }
+                if (!confirm('Ja hi ha rodals carregats. Vols substituir-los?')) return;
                 netejarTotesDades();
             }
 
@@ -658,37 +641,24 @@
 
             features.forEach((feature, index) => {
                 const geomType = feature.geometry?.type;
-                
-                // Només acceptem polígons
-                if (geomType !== 'Polygon' && geomType !== 'MultiPolygon') {
-                    return;
-                }
+                if (geomType !== 'Polygon' && geomType !== 'MultiPolygon') return;
 
-                // Intentem obtenir un ID i nom del rodal
                 const props = feature.properties || {};
                 const id = props.id_rodal || props.ID_RODAL || props.id || props.ID || 
                            props.codigo || props.CODIGO || props.nom || props.NOM || 
                            `rodal_${index + 1}`;
                 const nom = props.nom || props.NOM || props.nombre || props.NOMBRE || id;
 
-                // Càlcul de superfície amb Turf.js (en hectàrees)
-                // NOTA: Turf.js assumeix coordenades geogràfiques (graus) i retorna m²
-                // Si el GeoJSON està projectat, el càlcul de turf.area pot no ser precís.
-                // Però per a la majoria de casos amb GeoJSON en graus, funciona bé.
+                // Càlcul de superfície amb Turf.js (retorna m²)
                 let superficieHa = 0;
                 try {
                     superficieHa = turf.area(feature) / 10000;
                 } catch (e) {
-                    // Si turf falla, intentem llegir del camp superficie_ha si existeix
                     superficieHa = parseFloat(props.superficie_ha) || parseFloat(props.area_ha) || 0;
                 }
 
-                // Si ja ve amb superfície al GeoJSON, la prioritza
-                if (props.superficie_ha) {
-                    superficieHa = parseFloat(props.superficie_ha);
-                } else if (props.area_ha) {
-                    superficieHa = parseFloat(props.area_ha);
-                }
+                if (props.superficie_ha) superficieHa = parseFloat(props.superficie_ha);
+                else if (props.area_ha) superficieHa = parseFloat(props.area_ha);
 
                 const rodal = new Rodal(id, nom, feature, props, superficieHa);
                 AppState.rodals.push(rodal);
@@ -705,7 +675,6 @@
             renderitzarMapaRodals();
             actualitzarResumGlobal();
             
-            // Canviem la vista de la sidebar
             document.getElementById('estatInicial').style.display = 'none';
             document.getElementById('llistaRodals').style.display = 'block';
         }
@@ -714,33 +683,40 @@
         // MÒDUL 4: RENDERITZACIÓ DE LA INTERFÍCIE
         // ============================================================
         
-        /**
-         * Genera la llista de targetes de rodals a la sidebar.
-         */
         function renderitzarLlistaRodals() {
             const container = document.getElementById('rodalsContainer');
             container.innerHTML = '';
-            
             document.getElementById('comptadorRodals').textContent = AppState.rodals.length;
 
             AppState.rodals.forEach((rodal, index) => {
                 const card = document.createElement('div');
-                card.className = `rodal-card ${rodal.processat ? 'processed' : ''} ${rodal.id === AppState.rodalSeleccionat ? 'active' : ''}`;
+                
+                let cardClass = 'rodal-card';
+                if (rodal.id === AppState.rodalSeleccionat) cardClass += ' active';
+                if (rodal.processat) {
+                    cardClass += rodal.tipusGeneracio === 'random' ? ' processed-random' : ' processed-grid';
+                }
+                card.className = cardClass;
                 card.id = `rodal-card-${rodal.id}`;
+                
                 card.onclick = (e) => {
-                    // Evitar que el clic als controls expandeixi/contrueixi
-                    if (e.target.closest('.form-control') || e.target.closest('.form-select') || e.target.closest('button')) return;
+                    if (e.target.closest('.form-control') || e.target.closest('.form-select') || 
+                        e.target.closest('button') || e.target.closest('.patro-btn')) return;
                     toggleRodalExpand(rodal.id);
                 };
-                
-                // Badge de CV assignat
-                let cvBadge = '';
-                const cvActual = rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor;
+
+                let badgeInfo = '';
                 if (rodal.processat) {
-                    cvBadge = `<span class="badge bg-success badge-cv"><i class="fas fa-check me-1"></i>${rodal.nParcelles} pts</span>`;
+                    const icon = rodal.tipusGeneracio === 'random' ? 'fa-dice' : 'fa-th';
+                    const color = rodal.tipusGeneracio === 'random' ? 'bg-purple' : 'bg-success';
+                    badgeInfo = `<span class="badge ${color} badge-cv"><i class="fas ${icon} me-1"></i>${rodal.nParcelles} pts</span>`;
                 } else {
-                    cvBadge = `<span class="badge bg-secondary badge-cv">CV ${cvActual}%</span>`;
+                    const cvAct = rodal.cvManual !== null ? rodal.cvManual : AppState.configCV[rodal.tipusMassa].valor;
+                    badgeInfo = `<span class="badge bg-secondary badge-cv">CV ${cvAct}%</span>`;
                 }
+
+                const patroGridSel = rodal.patro === 'grid' ? 'selected' : '';
+                const patroRandomSel = rodal.patro === 'random' ? 'selected' : '';
 
                 card.innerHTML = `
                     <div class="rodal-card-header">
@@ -753,9 +729,23 @@
                                 </div>
                             </div>
                         </div>
-                        ${cvBadge}
+                        ${badgeInfo}
                     </div>
                     <div class="rodal-card-body">
+                        
+                        <!-- Selector de patró -->
+                        <label class="form-label-sm">Patró de mostreig</label>
+                        <div class="patro-selector">
+                            <div class="patro-btn ${patroGridSel}" onclick="seleccionarPatro('${rodal.id}', 'grid', this)">
+                                <i class="fas fa-th"></i>
+                                Quadrícula
+                            </div>
+                            <div class="patro-btn ${patroRandomSel}" onclick="seleccionarPatro('${rodal.id}', 'random', this)">
+                                <i class="fas fa-dice"></i>
+                                Aleatori
+                            </div>
+                        </div>
+                        
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label-sm">Tipus de massa / CV</label>
@@ -777,7 +767,7 @@
                             
                             <div class="col-6">
                                 <label class="form-label-sm">Error admis. (%)</label>
-                                <input type="number" class="form-control form-control-sm" 
+                                <input type="number" class="form-control form-select-sm" 
                                        value="${rodal.errorAdmissible}" 
                                        onchange="actualitzarError('${rodal.id}', this.value)"
                                        min="1" max="50" step="0.5">
@@ -803,7 +793,8 @@
                         <div class="alert alert-success mt-2 mb-0 py-2" style="font-size: 0.8rem;">
                             <i class="fas fa-check-circle me-1"></i>
                             <strong>${rodal.nParcelles}</strong> parcel·les | 
-                            Espaiament: <strong>${rodal.espaiamentM.toFixed(1)} m</strong>
+                            Patró: <strong>${rodal.tipusGeneracio === 'random' ? 'Aleatori' : 'Quadrícula'}</strong>
+                            ${rodal.tipusGeneracio === 'grid' ? `| Espaiament: <strong>${rodal.espaiamentM.toFixed(1)} m</strong>` : ''}
                         </div>
                         <div class="mt-2 d-flex gap-1">
                             <button class="btn btn-outline-secondary btn-sm flex-fill" style="font-size: 0.75rem;" onclick="exportarPuntsRodalGeoJSON('${rodal.id}')">
@@ -824,13 +815,30 @@
             });
         }
 
+        // ============================================================
+        // MÒDUL 5: VISUALITZACIÓ AL MAPA (CORREGIDA)
+        // ============================================================
+        
         /**
          * Renderitza els polígons dels rodals al mapa.
+         * CORRECCIÓ v2.0: S'usa coordsToLatLng per assegurar la correcta
+         * inversió de coordenades [X,Y] → [lat,lng].
          */
         function renderitzarMapaRodals() {
             AppState.capaRodals.clearLayers();
             
-            const geojsonLayer = L.geoJSON(AppState.rodals.map(r => r.geometria), {
+            // Creem un FeatureCollection per passar a L.geoJSON
+            const featureCollection = {
+                type: 'FeatureCollection',
+                features: AppState.rodals.map(r => r.geometria)
+            };
+            
+            const geojsonLayer = L.geoJSON(featureCollection, {
+                // CORRECCIÓ CRÍTICA: Leaflet espera [lat, lng] però GeoJSON
+                // ve en [lng, lat]. coordsToLatLng inverteix automàticament.
+                coordsToLatLng: function(coords) {
+                    return L.latLng(coords[1], coords[0]);
+                },
                 style: function(feature) {
                     return {
                         color: '#1b4332',
@@ -841,10 +849,10 @@
                     };
                 },
                 onEachFeature: function(feature, layer) {
-                    // Busquem el rodal corresponent
+                    // Busquem el rodal corresponent per geometria
                     const rodal = AppState.rodals.find(r => 
-                        r.geometria === feature || 
-                        JSON.stringify(r.geometria.geometry) === JSON.stringify(feature.geometry)
+                        JSON.stringify(r.geometria.geometry.coordinates) === 
+                        JSON.stringify(feature.geometry.coordinates)
                     );
                     
                     if (rodal) {
@@ -852,7 +860,7 @@
                         layer.bindPopup(`
                             <strong>${rodal.nom}</strong><br>
                             Superfície: ${rodal.superficieHa.toFixed(2)} ha<br>
-                            ${rodal.processat ? `Parcel·les: ${rodal.nParcelles}` : 'Sense punts generats'}
+                            ${rodal.processat ? `Parcel·les: ${rodal.nParcelles} (${rodal.tipusGeneracio})` : 'Sense punts generats'}
                         `);
                         
                         layer.on('click', () => seleccionarRodal(rodal.id));
@@ -862,7 +870,6 @@
             
             AppState.capaRodals.addLayer(geojsonLayer);
             
-            // Ajustem el zoom per veure tots els rodals
             if (AppState.rodals.length > 0) {
                 AppState.mapa.fitBounds(geojsonLayer.getBounds().pad(0.1));
             }
@@ -870,18 +877,25 @@
 
         /**
          * Renderitza els punts d'inventari d'un rodal al mapa.
+         * CORRECCIÓ v2.0: Els punts es renderitzen com [lat, lng] per Leaflet.
          */
         function renderitzarPuntsRodal(rodal) {
-            // Primer eliminem els punts antics d'aquest rodal si n'hi ha
             esborrarPuntsVisualsRodal(rodal.id);
             
             if (!rodal.puntsGenerats || rodal.puntsGenerats.length === 0) return;
             
+            const color = rodal.tipusGeneracio === 'random' ? '#9b59b6' : '#e9c46a';
+            const borderColor = rodal.tipusGeneracio === 'random' ? '#8e44ad' : '#d4a017';
+            
             rodal.puntsGenerats.forEach((pt, idx) => {
-                const marker = L.circleMarker([pt[1], pt[0]], {
-                    radius: 6,
-                    fillColor: '#e9c46a',
-                    color: '#fff',
+                // pt ve com [X, Y] del GeoJSON. Leaflet vol [lat, lng] = [Y, X]
+                const lat = pt[1];
+                const lng = pt[0];
+                
+                const marker = L.circleMarker([lat, lng], {
+                    radius: 7,
+                    fillColor: color,
+                    color: borderColor,
                     weight: 2,
                     opacity: 1,
                     fillOpacity: 0.9
@@ -893,17 +907,17 @@
                 marker.bindPopup(`
                     <strong>Parcel·la ${idx + 1}</strong><br>
                     Rodal: ${rodal.nom}<br>
-                    X: ${pt[0].toFixed(2)}<br>
-                    Y: ${pt[1].toFixed(2)}
+                    X: ${lng.toFixed(2)}<br>
+                    Y: ${lat.toFixed(2)}<br>
+                    Patró: ${rodal.tipusGeneracio === 'random' ? 'Aleatori' : 'Quadrícula'}
                 `);
                 
-                // Tooltip permanent amb el número
                 marker.bindTooltip(`${idx + 1}`, {
                     permanent: true,
                     direction: 'top',
-                    offset: [0, -8],
-                    className: 'bg-dark text-white px-1 rounded',
-                    opacity: 0.9
+                    offset: [0, -10],
+                    className: 'point-label',
+                    opacity: 1
                 });
                 
                 AppState.capaPunts.addLayer(marker);
@@ -911,16 +925,13 @@
         }
 
         // ============================================================
-        // MÒDUL 5: INTERACCIÓ I GESTIÓ DE RODALS
+        // MÒDUL 6: INTERACCIÓ I GESTIÓ DE RODALS
         // ============================================================
         
         function toggleRodalExpand(rodalId) {
             const card = document.getElementById(`rodal-card-${rodalId}`);
             const isExpanded = card.classList.contains('expanded');
-            
-            // Tanquem tots els altres
             document.querySelectorAll('.rodal-card').forEach(c => c.classList.remove('expanded'));
-            
             if (!isExpanded) {
                 card.classList.add('expanded');
                 seleccionarRodal(rodalId);
@@ -929,13 +940,10 @@
 
         function seleccionarRodal(rodalId) {
             AppState.rodalSeleccionat = rodalId;
-            
-            // Actualitzem classes visuals
             document.querySelectorAll('.rodal-card').forEach(c => c.classList.remove('active'));
             const card = document.getElementById(`rodal-card-${rodalId}`);
             if (card) card.classList.add('active');
             
-            // Resaltem el polígon al mapa
             AppState.capaRodals.eachLayer(layer => {
                 if (layer.setStyle) {
                     if (layer.rodalId === rodalId) {
@@ -948,17 +956,28 @@
             });
         }
 
+        function seleccionarPatro(rodalId, patro, element) {
+            const rodal = AppState.rodals.find(r => r.id === rodalId);
+            if (!rodal) return;
+            
+            rodal.patro = patro;
+            
+            // Actualitzem la UI del selector
+            const card = element.closest('.rodal-card');
+            card.querySelectorAll('.patro-btn').forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
         function actualitzarTipusMassa(rodalId, valor) {
             const rodal = AppState.rodals.find(r => r.id === rodalId);
             if (!rodal) return;
             
             rodal.tipusMassa = valor;
-            
-            // Mostrem/ocultem el camp de CV manual
             const cvManualDiv = document.getElementById(`cv-manual-${rodalId}`);
+            
             if (valor === 'manual') {
                 cvManualDiv.style.display = 'block';
-                rodal.cvManual = rodal.cvManual || 40; // valor per defecte
+                rodal.cvManual = rodal.cvManual || 40;
             } else {
                 cvManualDiv.style.display = 'none';
                 rodal.cvManual = null;
@@ -983,18 +1002,19 @@
         }
 
         // ============================================================
-        // MÒDUL 6: MOTOR DE CÀLCUL I GENERACIÓ DE PUNTS
+        // MÒDUL 7: MOTOR DE CÀLCUL I GENERACIÓ DE PUNTS (CORREGIT)
         // ============================================================
         
         /**
-         * Calcula el nombre de parcel·les i genera la quadrícula de punts
-         * dins del polígon del rodal utilitzant Turf.js.
+         * Genera punts d'inventari dins del polígon segons el patró triat:
+         * - 'grid': Quadrícula sistemàtica real (files i columnes)
+         * - 'random': Distribució aleatòria dins del polígon
          */
         function generarPuntsRodal(rodalId) {
             const rodal = AppState.rodals.find(r => r.id === rodalId);
             if (!rodal) return;
             
-            // 1. OBTENIR PARÀMETRES
+            // 1. PARÀMETRES
             const cvPercent = rodal.cvManual !== null ? rodal.cvManual : AppState.configCV[rodal.tipusMassa].valor;
             const E = rodal.errorAdmissible / 100;
             const CV = cvPercent / 100;
@@ -1004,11 +1024,7 @@
             const nCalculat = (Math.pow(Z, 2) * Math.pow(CV, 2)) / Math.pow(E, 2);
             rodal.nParcelles = Math.ceil(nCalculat);
             
-            // 3. CÀLCUL DE L'ESPAIAMENT
-            // Superfície en m² (Turf area retorna m² per coordenades geogràfiques)
-            // NOTA IMPORTANT: Si el GeoJSON està en coordenades projectades (m),
-            // turf.area pot donar resultats incorrectes. En aquest cas, usar:
-            // superficieM2 = rodal.superficieHa * 10000
+            // 3. SUPERFÍCIE REAL EN m²
             let superficieM2;
             try {
                 superficieM2 = turf.area(rodal.geometria);
@@ -1016,59 +1032,28 @@
                 superficieM2 = rodal.superficieHa * 10000;
             }
             
-            rodal.espaiamentM = Math.sqrt(superficieM2 / rodal.nParcelles);
+            // 4. GENERACIÓ DE PUNTS SEGONS EL PATRÓ
+            rodal.tipusGeneracio = rodal.patro;
             
-            // 4. GENERACIÓ DE PUNTS AMB TURF.JS
-            // Creem un bounding box del polígon i generem una quadrícula de punts
-            const bbox = turf.bbox(rodal.geometria);
-            
-            // Generem una malla de punts dins del bbox amb l'espaiament calculat
-            // NOTA: turf.pointGrid necessita l'espaiament EN GRAUS si les coordenades són geogràfiques.
-            // Si les coordenades són projectades (metres), l'espaiament ha d'estar en unitats del CRS.
-            // Aquesta és la part més delicada de l'aplicació.
-            
-            let puntosDentro = [];
-            
-            try {
-                // Intentem amb pointGrid
-                const options = { units: 'meters' };
-                const pointGrid = turf.pointGrid(bbox, rodal.espaiamentM, options);
+            if (rodal.patro === 'grid') {
+                // ========== QUADRÍCULA SISTEMÀTICA ==========
+                // Calculem l'espaiament per obtenir ~n punts en una malla quadrada
+                rodal.espaiamentM = Math.sqrt(superficieM2 / rodal.nParcelles);
+                rodal.puntsGenerats = generarQuadrículaReal(rodal.geometria, rodal.espaiamentM);
                 
-                // Filtrem només els punts dins del polígon
-                puntosDentro = turf.pointsWithinPolygon(pointGrid, rodal.geometria);
-                
-            } catch (e) {
-                // Fallback: generació manual de quadrícula si Turf falla amb unitats
-                puntosDentro = generarQuadrículaManual(bbox, rodal.espaiamentM, rodal.geometria);
+            } else {
+                // ========== ALEATORI ==========
+                rodal.espaiamentM = 0; // No aplica per aleatori
+                rodal.puntsGenerats = generarAleatori(rodal.geometria, rodal.nParcelles);
             }
             
-            // Si no hem obtingut prou punts (pot passar per arrodoniments),
-            // ajustem l'espaiament i regenerem
-            let features = puntosDentro.features || [];
-            
-            if (features.length < rodal.nParcelles && features.length > 0) {
-                // Recalculem amb més densitat
-                const ratio = Math.sqrt(rodal.nParcelles / features.length);
-                rodal.espaiamentM = rodal.espaiamentM / ratio;
-                
-                try {
-                    const pointGrid = turf.pointGrid(bbox, rodal.espaiamentM, { units: 'meters' });
-                    puntosDentro = turf.pointsWithinPolygon(pointGrid, rodal.geometria);
-                    features = puntosDentro.features || [];
-                } catch (e) {
-                    puntosDentro = generarQuadrículaManual(bbox, rodal.espaiamentM, rodal.geometria);
-                    features = puntosDentro.features || [];
-                }
+            // Si hem generat més punts del compte (per arrodoniments de malla), retallem
+            if (rodal.puntsGenerats.length > rodal.nParcelles) {
+                rodal.puntsGenerats = rodal.puntsGenerats.slice(0, rodal.nParcelles);
             }
             
-            // Limitem al nombre calculat (si n'hi ha massa per precisió)
-            features = features.slice(0, rodal.nParcelles);
-            
-            // Actualitzem el nombre real de parcel·les
-            rodal.nParcelles = features.length;
-            
-            // Emmagatzemem les coordenades [lng, lat]
-            rodal.puntsGenerats = features.map(f => f.geometry.coordinates);
+            // Actualitzem el nombre real
+            rodal.nParcelles = rodal.puntsGenerats.length;
             rodal.processat = true;
             
             // 5. ACTUALITZAR VISTA
@@ -1077,58 +1062,105 @@
             actualitzarResumGlobal();
             seleccionarRodal(rodalId);
             
-            mostrarToast('Èxit', `S'han generat ${rodal.nParcelles} punts per "${rodal.nom}"`, 'success');
+            const patroText = rodal.patro === 'grid' ? 'quadrícula' : 'aleatori';
+            mostrarToast('Èxit', `S'han generat ${rodal.nParcelles} punts (${patroText}) per "${rodal.nom}"`, 'success');
         }
 
         /**
-         * Fallback per generar una quadrícula de punts manualment si Turf
-         * té problemes amb les unitats del CRS.
+         * Genera una quadrícula sistemàtica REAL dins d'un polígon.
+         * CORRECCIÓ v2.0: Crea una malla amb files i columnes regulars,
+         * no una línia de punts.
+         * 
+         * @param {Feature} poligono - GeoJSON Feature del polígon
+         * @param {number} espaciado - Distància entre punts en metres (o unitats del CRS)
+         * @returns {Array} Array de coordenades [X, Y]
          */
-        function generarQuadrículaManual(bbox, espaiamentM, poligono) {
-            // bbox = [minX, minY, maxX, maxY]
+        function generarQuadrículaReal(poligono, espaciado) {
+            const bbox = turf.bbox(poligono);
             const [minX, minY, maxX, maxY] = bbox;
             
-            // Si les coordenades semblen geogràfiques (graus), convertim espaiament
-            // aproximadament: 1 grau latitud ≈ 111 km, 1 grau longitud ≈ 111 km * cos(lat)
-            const esGeo = Math.abs(minX) <= 180 && Math.abs(minY) <= 90;
+            // Detectem si les coordenades són geogràfiques (graus) o projectades (metres)
+            const esGeo = Math.abs(minX) <= 180 && Math.abs(maxX) <= 180 && 
+                          Math.abs(minY) <= 90 && Math.abs(maxY) <= 90;
             
-            let stepX = espaiamentM;
-            let stepY = espaiamentM;
+            let stepX = espaciado;
+            let stepY = espaciado;
             
+            // Si són coordenades geogràfiques, convertim l'espaiament a graus
             if (esGeo) {
                 const latMed = (minY + maxY) / 2;
-                stepY = espaiamentM / 111000; // metres a graus latitud
-                stepX = espaiamentM / (111000 * Math.cos(latMed * Math.PI / 180));
+                // 1 grau latitud ≈ 111 km
+                // 1 grau longitud ≈ 111 km * cos(latitud)
+                stepY = espaciado / 111000;
+                stepX = espaciado / (111000 * Math.cos(latMed * Math.PI / 180));
             }
             
             const puntos = [];
-            for (let x = minX + stepX/2; x <= maxX; x += stepX) {
-                for (let y = minY + stepY/2; y <= maxY; y += stepY) {
+            
+            // Generem la quadrícula: files (Y) i columnes (X)
+            // Comencem amb un offset de mig pas per centrar la malla
+            const offsetX = stepX / 2;
+            const offsetY = stepY / 2;
+            
+            for (let x = minX + offsetX; x <= maxX; x += stepX) {
+                for (let y = minY + offsetY; y <= maxY; y += stepY) {
                     const pt = turf.point([x, y]);
                     if (turf.booleanPointInPolygon(pt, poligono)) {
-                        puntos.push(pt);
+                        puntos.push([x, y]);
                     }
                 }
             }
             
-            return turf.featureCollection(puntos);
+            return puntos;
         }
 
         /**
-         * Retorna el valor Z per al nivell de confiança.
+         * Genera punts distribuïts aleatòriament dins d'un polígon.
+         * Utilitza el mètode de rebutjar mostres fora del polígon.
+         * 
+         * @param {Feature} poligono - GeoJSON Feature del polígon
+         * @param {number} n - Nombre de punts a generar
+         * @returns {Array} Array de coordenades [X, Y]
          */
+        function generarAleatori(poligono, n) {
+            const bbox = turf.bbox(poligono);
+            const [minX, minY, maxX, maxY] = bbox;
+            
+            const puntos = [];
+            let intents = 0;
+            const maxIntents = n * 50; // Límit de seguretat per evitar bucle infinit
+            
+            while (puntos.length < n && intents < maxIntents) {
+                intents++;
+                
+                // Generem coordenades aleatòries dins del bounding box
+                const x = minX + Math.random() * (maxX - minX);
+                const y = minY + Math.random() * (maxY - minY);
+                
+                const pt = turf.point([x, y]);
+                
+                // Comprovem si el punt cau dins del polígon
+                if (turf.booleanPointInPolygon(pt, poligono)) {
+                    puntos.push([x, y]);
+                }
+            }
+            
+            if (puntos.length < n) {
+                mostrarToast('Avís', `Només s'han pogut generar ${puntos.length} punts aleatoris vàlids dins el polígon.`, 'warning');
+            }
+            
+            return puntos;
+        }
+
         function obtenirValorZ(conf) {
             const valors = { 90: 1.645, 95: 1.96, 99: 2.576 };
             return valors[conf] || 1.96;
         }
 
         // ============================================================
-        // MÒDUL 7: EXPORTACIÓ
+        // MÒDUL 8: EXPORTACIÓ
         // ============================================================
         
-        /**
-         * Exporta els punts d'un rodal concret a GeoJSON.
-         */
         function exportarPuntsRodalGeoJSON(rodalId) {
             const rodal = AppState.rodals.find(r => r.id === rodalId);
             if (!rodal || !rodal.processat) return;
@@ -1139,50 +1171,43 @@
                     id_parcela: idx + 1,
                     rodal_id: rodal.id,
                     rodal_nom: rodal.nom,
+                    patro: rodal.tipusGeneracio,
                     cv: rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor,
                     error_admissible: rodal.errorAdmissible,
                     confiança: rodal.nivellConfiança,
-                    espaiament_m: rodal.espaiamentM
+                    espaiament_m: rodal.espaiamentM || null
                 },
                 geometry: {
                     type: 'Point',
-                    coordinates: pt
+                    coordinates: pt // [X, Y] en el CRS original
                 }
             }));
             
             const geojson = {
                 type: 'FeatureCollection',
-                crs: {
-                    type: 'name',
-                    properties: { name: 'urn:ogc:def:crs:EPSG::25831' } // Ajustar segons CRS real
-                },
                 features: features
             };
             
             descarregarFitxer(JSON.stringify(geojson, null, 2), `punts_${rodal.nom}.geojson`, 'application/json');
         }
 
-        /**
-         * Exporta els punts d'un rodal a CSV amb coordenades.
-         */
         function exportarPuntsRodalCSV(rodalId) {
             const rodal = AppState.rodals.find(r => r.id === rodalId);
             if (!rodal || !rodal.processat) return;
             
-            let csv = 'id_parcela;rodal_id;rodal_nom;coord_x;coord_y;cv;error_admissible;confiança;espaiament_m\n';
+            let csv = 'id_parcela;rodal_id;rodal_nom;coord_x;coord_y;patro;cv;error_admissible;confiança;espaiament_m\n';
             
             rodal.puntsGenerats.forEach((pt, idx) => {
                 csv += `${idx + 1};${rodal.id};${rodal.nom};${pt[0].toFixed(2)};${pt[1].toFixed(2)};` +
+                       `${rodal.tipusGeneracio};` +
                        `${rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor};` +
-                       `${rodal.errorAdmissible};${rodal.nivellConfiança};${rodal.espaiamentM.toFixed(1)}\n`;
+                       `${rodal.errorAdmissible};${rodal.nivellConfiança};` +
+                       `${rodal.espaiamentM ? rodal.espaiamentM.toFixed(1) : 'N/A'}\n`;
             });
             
             descarregarFitxer(csv, `punts_${rodal.nom}.csv`, 'text/csv');
         }
 
-        /**
-         * Exporta TOTS els punts de TOTS els rodals a GeoJSON.
-         */
         function exportarTotsPuntsGeoJSON() {
             const totsFeatures = [];
             
@@ -1194,10 +1219,11 @@
                             id_parcela: idx + 1,
                             rodal_id: rodal.id,
                             rodal_nom: rodal.nom,
+                            patro: rodal.tipusGeneracio,
                             cv: rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor,
                             error_admissible: rodal.errorAdmissible,
                             confiança: rodal.nivellConfiança,
-                            espaiament_m: rodal.espaiamentM
+                            espaiament_m: rodal.espaiamentM || null
                         },
                         geometry: {
                             type: 'Point',
@@ -1216,17 +1242,16 @@
             descarregarFitxer(JSON.stringify(geojson, null, 2), `inventari_complet_${dataStr}.geojson`, 'application/json');
         }
 
-        /**
-         * Exporta TOTS els punts de TOTS els rodals a CSV.
-         */
         function exportarTotsPuntsCSV() {
-            let csv = 'id_parcela;rodal_id;rodal_nom;coord_x;coord_y;cv;error_admissible;confiança;espaiament_m\n';
+            let csv = 'id_parcela;rodal_id;rodal_nom;coord_x;coord_y;patro;cv;error_admissible;confiança;espaiament_m\n';
             
             AppState.rodals.filter(r => r.processat).forEach(rodal => {
                 rodal.puntsGenerats.forEach((pt, idx) => {
                     csv += `${idx + 1};${rodal.id};${rodal.nom};${pt[0].toFixed(2)};${pt[1].toFixed(2)};` +
+                           `${rodal.tipusGeneracio};` +
                            `${rodal.cvManual || AppState.configCV[rodal.tipusMassa].valor};` +
-                           `${rodal.errorAdmissible};${rodal.nivellConfiança};${rodal.espaiamentM.toFixed(1)}\n`;
+                           `${rodal.errorAdmissible};${rodal.nivellConfiança};` +
+                           `${rodal.espaiamentM ? rodal.espaiamentM.toFixed(1) : 'N/A'}\n`;
                 });
             });
             
@@ -1234,9 +1259,6 @@
             descarregarFitxer(csv, `inventari_complet_${dataStr}.csv`, 'text/csv');
         }
 
-        /**
-         * Utilitat per forçar la descàrrega d'un fitxer.
-         */
         function descarregarFitxer(contingut, nom, tipus) {
             const blob = new Blob([contingut], { type: tipus });
             const url = URL.createObjectURL(blob);
@@ -1250,7 +1272,7 @@
         }
 
         // ============================================================
-        // MÒDUL 8: UTILITATS I GESTIÓ D'ESTAT
+        // MÒDUL 9: UTILITATS
         // ============================================================
         
         function esborrarPuntsRodal(rodalId) {
@@ -1261,6 +1283,7 @@
             rodal.puntsGenerats = [];
             rodal.nParcelles = 0;
             rodal.espaiamentM = 0;
+            rodal.tipusGeneracio = null;
             
             esborrarPuntsVisualsRodal(rodalId);
             renderitzarLlistaRodals();
@@ -1270,9 +1293,7 @@
         function esborrarPuntsVisualsRodal(rodalId) {
             const capesAEsborrar = [];
             AppState.capaPunts.eachLayer(layer => {
-                if (layer.rodalId === rodalId) {
-                    capesAEsborrar.push(layer);
-                }
+                if (layer.rodalId === rodalId) capesAEsborrar.push(layer);
             });
             capesAEsborrar.forEach(l => AppState.capaPunts.removeLayer(l));
         }
@@ -1286,7 +1307,6 @@
             document.getElementById('totalPunts').textContent = totalPunts;
             document.getElementById('totalSup').textContent = totalSup.toFixed(1);
             
-            // Habilitar/deshabilitar botons d'exportació global
             const tePunts = totalPunts > 0;
             document.getElementById('btnExportGJ').disabled = !tePunts;
             document.getElementById('btnExportCSV').disabled = !tePunts;
@@ -1304,8 +1324,15 @@
             const container = document.querySelector('.toast-container');
             const toastId = 'toast-' + Date.now();
             
+            const colors = {
+                success: 'bg-success',
+                danger: 'bg-danger',
+                warning: 'bg-warning text-dark',
+                info: 'bg-info text-dark'
+            };
+            
             const html = `
-                <div id="${toastId}" class="toast align-items-center text-white bg-${tipus} border-0 fade show" role="alert">
+                <div id="${toastId}" class="toast align-items-center text-white ${colors[tipus] || 'bg-info'} border-0 fade show" role="alert">
                     <div class="d-flex">
                         <div class="toast-body">
                             <strong>${titol}</strong><br>${missatge}
@@ -1317,9 +1344,8 @@
             
             container.insertAdjacentHTML('beforeend', html);
             const toastEl = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+            const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
             toast.show();
-            
             toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
         }
 
