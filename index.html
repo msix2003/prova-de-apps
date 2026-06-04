@@ -269,6 +269,7 @@ button { cursor: pointer; border: none; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
+<base target="_blank">
 </head>
 <body>
 <div id="hub-root">
@@ -382,7 +383,13 @@ const T = {
     appRelascopiName:'Relascopi de Bitterlich', appRelascopiDesc:'Càlcul de la àrea basal amb relascopi',
     appAltimetreName:'Alçades d\'arbres', appAltimetreDesc:'Aplicació per calcular alçades d\'arbres',
     appAnalisiName:'Eina d\'Anàlisi', appAnalisiDesc:'Anàlisi de dades i resultats del M.S.i.X',
-    appSylvaName:'SylvaMind AI', appSylvaDesc:'Intel·ligència artificial per a gestió forestal',
+    appSylvaName:'SylvaMind AI', appSylvaDesc:'Intel·ligència artificial per a gestió forestal'
+    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de boscos mediterranis',
+    appInputsName:'Inputs', appInputsDesc:'Entrada de dades forestals',
+    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de boscos mediterranis',
+    appInputsName:'Inputs', appInputsDesc:'Entrada de dades forestals',
+    appSimboscmedName:'SIMBOSCMED', appSimboscmedDesc:'Simulador de boscos mediterranis',
+    appInputsName:'Inputs', appInputsDesc:'Entrada de dades forestals',,
     errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
     errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
     accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
@@ -452,6 +459,8 @@ const APPS = [
   { nameKey:'appInventariName', descKey:'appInventariDesc', icon:'🌲', url:'Inventari.html', badge:'v10', active:true, categoria:'camp' },
   { nameKey:'appRelascopiName', descKey:'appRelascopiDesc', icon:'🎯', url:'Relascopi.html', badge:'v1',  active:true, categoria:'camp' },
   { nameKey:'appAltimetreName', descKey:'appAltimetreDesc', icon:'⚡', url:'altimetre.html', badge:'v1',  active:true, categoria:'camp' },
+  { nameKey:'appSimboscmedName', descKey:'appSimboscmedDesc', icon:'🌳', url:'simboscmed.html', badge:'Shiny', active:true, categoria:'despatx' },
+  { nameKey:'appInputsName',    descKey:'appInputsDesc',    icon:'📥', url:'inputs.html',   badge:'Shiny', active:true, categoria:'despatx' },
   { nameKey:'appAnalisiName',   descKey:'appAnalisiDesc',   icon:'📊', url:'analisi.html',  badge:'v4',  active:true, categoria:'despatx' },
   { nameKey:'appSylvaName',     descKey:'appSylvaDesc',     icon:'🧠', url:'sylvamind.html', badge:'IA',  active:true, categoria:'despatx' }
 ];
