@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a3d2b">
-<title>PTGMF · Dubtes Freqüents</title>
+<title>M.S.X. · Dubtes Freqüents</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -214,8 +214,8 @@ const BOT_DATA = {
   }
 };
 
-function getLang() { return localStorage.getItem('ptgmf_lang') || 'ca'; }
-function setLang(lang) { localStorage.setItem('ptgmf_lang', lang); applyLang(lang); }
+function getLang() { return localStorage.getItem('M.S.X._lang') || 'ca'; }
+function setLang(lang) { localStorage.setItem('M.S.X._lang', lang); applyLang(lang); }
 function cycleLang() {
   const cur = getLang();
   setLang(LANGS[(LANGS.indexOf(cur) + 1) % LANGS.length]);
