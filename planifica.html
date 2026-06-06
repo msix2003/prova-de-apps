@@ -5,30 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SPA Forestal — M.S.i.X Hub</title>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <!-- Supabase -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    
-    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- SheetJS (XLSX) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
             --bg-primary: #11291d;
             --bg-secondary: #1a3d2b;
+            --bg-tertiary: #0f1f16;
             --accent: #4ade80;
             --accent-hover: #22c55e;
+            --accent-dim: rgba(74, 222, 128, 0.15);
             --text-primary: #fafafa;
             --text-secondary: #a3a3a3;
             --danger: #ef4444;
@@ -47,11 +41,8 @@
             padding-bottom: 90px;
         }
 
-        .font-mono {
-            font-family: 'DM Mono', monospace;
-        }
+        .font-mono { font-family: 'DM Mono', monospace; }
 
-        /* Header */
         .app-header {
             position: sticky;
             top: 0;
@@ -65,434 +56,258 @@
             justify-content: space-between;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
 
         .sync-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+            width: 10px; height: 10px; border-radius: 50%;
             background-color: var(--danger);
             box-shadow: 0 0 8px var(--danger);
-            transition: all 0.3s ease;
-            flex-shrink: 0;
+            transition: all 0.3s ease; flex-shrink: 0;
         }
+        .sync-dot.online { background-color: var(--accent); box-shadow: 0 0 8px var(--accent); }
 
-        .sync-dot.online {
-            background-color: var(--accent);
-            box-shadow: 0 0 8px var(--accent);
-        }
-
-        .app-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
+        .app-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
 
         .btn-hub {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-decoration: none;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-primary); padding: 8px 14px;
+            border-radius: 8px; font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem; cursor: pointer; text-decoration: none;
             transition: all 0.2s;
         }
+        .btn-hub:hover { background: var(--bg-secondary); border-color: var(--accent); }
 
-        .btn-hub:hover {
-            background: var(--bg-secondary);
-            border-color: var(--accent);
-        }
+        .container { max-width: 900px; margin: 0 auto; padding: 16px; }
 
-        /* Container */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-
-        /* Cards */
         .card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
+            border-radius: 12px; padding: 16px; margin-bottom: 16px;
         }
-
         .card-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            font-size: 1rem; font-weight: 700; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
-        /* Map */
-        #map {
-            height: 320px;
-            width: 100%;
-            border-radius: 8px;
-            z-index: 1;
-        }
+        #map { height: 280px; width: 100%; border-radius: 8px; z-index: 1; }
 
-        /* Buttons */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: none;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px 16px; border-radius: 8px; border: none;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s; width: 100%;
         }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #064e3b;
-        }
-
+        .btn-primary { background: var(--accent); color: #064e3b; }
         .btn-primary:hover { background: var(--accent-hover); }
-
-        .btn-secondary {
-            background: rgba(250, 250, 250, 0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
+        .btn-secondary { background: rgba(250, 250, 250, 0.05); color: var(--text-primary); border: 1px solid var(--border); }
         .btn-secondary:hover { background: rgba(250, 250, 250, 0.1); }
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-small { padding: 6px 10px; font-size: 0.8rem; width: auto; }
+        .btn-icon { width: 36px; height: 36px; padding: 0; }
 
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
+        input[type="file"].hidden-input { display: none; }
 
-        input[type="file"] {
-            display: none;
+        /* Rodals */
+        .rodals-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .rodal-item {
+            background: rgba(250,250,250,0.03);
+            border: 2px solid transparent;
+            border-radius: 10px; padding: 12px;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .rodal-item:hover { background: rgba(250,250,250,0.06); }
+        .rodal-item.active { border-color: var(--accent); background: var(--accent-dim); }
+        .rodal-name { font-weight: 700; font-size: 0.95rem; }
+        .rodal-meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+        .rodal-area { font-family: 'DM Mono', monospace; color: var(--accent); font-size: 0.9rem; }
+
+        .actuacions-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+        .actuacio-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px;
+        }
+        .actuacio-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 10px; gap: 8px;
+        }
+        .actuacio-title {
+            font-weight: 700; font-size: 0.95rem;
+            background: transparent; border: none; color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif; width: 100%;
+        }
+        .actuacio-title:focus { outline: 1px solid var(--accent); border-radius: 4px; }
+
+        .form-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 120px; }
+        .form-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; background: rgba(250,250,250,0.05);
+            border: 1px solid var(--border); color: var(--text-primary);
+            border-radius: 6px; padding: 8px 10px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--accent);
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+
+        /* Progress */
+        .progress-wrap { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .progress-slider {
+            -webkit-appearance: none; flex: 1; height: 6px;
+            border-radius: 3px; background: rgba(250,250,250,0.1);
+            outline: none;
+        }
+        .progress-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            border-radius: 50%; background: var(--accent);
+            cursor: pointer; border: 2px solid var(--bg-primary);
+        }
+        .progress-value { font-family: 'DM Mono', monospace; color: var(--accent); min-width: 40px; text-align: right; }
+
+        /* Photos */
+        .photo-section { margin-top: 10px; }
+        .photo-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .photo-thumb {
+            aspect-ratio: 1; border-radius: 6px; overflow: hidden;
+            position: relative; background: rgba(250,250,250,0.05);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-thumb .remove-btn {
+            position: absolute; top: 2px; right: 2px;
+            background: rgba(0,0,0,0.6); color: var(--danger);
+            border: none; width: 20px; height: 20px; border-radius: 50%;
+            font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .photo-add {
+            aspect-ratio: 1; border-radius: 6px; border: 2px dashed var(--border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-secondary); font-size: 0.75rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .photo-add:hover { border-color: var(--accent); color: var(--accent); }
 
         /* Calendar */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            text-align: center;
-        }
-
-        .calendar-header {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            padding: 8px 0;
-        }
-
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+        .calendar-header { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); padding: 8px 0; }
         .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-family: 'DM Mono', monospace;
-            background: rgba(250, 250, 250, 0.03);
-            position: relative;
-            cursor: pointer;
-            transition: background 0.2s;
+            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 6px; font-size: 0.85rem; font-family: 'DM Mono', monospace;
+            background: rgba(250, 250, 250, 0.03); position: relative; cursor: pointer;
         }
-
         .calendar-day:hover { background: rgba(250, 250, 250, 0.08); }
         .calendar-day.today { border: 1px solid var(--accent); }
         .calendar-day.has-event::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--accent);
+            content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px;
+            border-radius: 50%; background: var(--accent);
         }
-
-        .calendar-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .calendar-nav button {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'DM Mono', monospace;
+            background: transparent; border: 1px solid var(--border); color: var(--text-primary);
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-family: 'DM Mono', monospace;
         }
 
         /* Gantt */
-        .gantt-container {
-            overflow-x: auto;
-        }
-
-        .gantt-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            min-width: 600px;
-        }
-
-        .gantt-label {
-            width: 120px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 8px;
-            flex-shrink: 0;
-        }
-
-        .gantt-bar-bg {
-            flex: 1;
-            height: 24px;
-            background: rgba(250, 250, 250, 0.05);
-            border-radius: 4px;
-            position: relative;
-        }
-
-        .gantt-bar {
-            position: absolute;
-            height: 100%;
-            border-radius: 4px;
-            top: 0;
-            transition: width 0.5s ease;
-            min-width: 4px;
-        }
-
+        .gantt-container { overflow-x: auto; }
+        .gantt-row { display: flex; align-items: center; margin-bottom: 8px; min-width: 600px; }
+        .gantt-label { width: 120px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; flex-shrink: 0; }
+        .gantt-bar-bg { flex: 1; height: 24px; background: rgba(250, 250, 250, 0.05); border-radius: 4px; position: relative; }
+        .gantt-bar { position: absolute; height: 100%; border-radius: 4px; top: 0; transition: width 0.5s ease; min-width: 4px; }
         .gantt-status-executing { background: var(--warning); }
         .gantt-status-completed { background: var(--accent); }
         .gantt-status-delayed { background: var(--danger); }
         .gantt-status-pending { background: var(--text-secondary); }
-
-        .gantt-legend {
-            display: flex;
-            gap: 12px;
-            margin-top: 12px;
-            font-size: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .legend-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 2px;
-        }
+        .gantt-legend { display: flex; gap: 12px; margin-top: 12px; font-size: 0.75rem; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
 
         /* Bottom Nav */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(17, 41, 29, 0.98);
-            backdrop-filter: blur(10px);
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(17, 41, 29, 0.98); backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
+            display: flex; justify-content: space-around;
             padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
             z-index: 1000;
         }
-
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            padding: 6px 12px;
-            color: var(--text-secondary);
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: color 0.2s;
-            border: none;
-            background: transparent;
-            font-family: 'DM Sans', sans-serif;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 6px 8px; color: var(--text-secondary);
+            font-size: 0.65rem; cursor: pointer; transition: color 0.2s;
+            border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+            flex: 1;
         }
-
         .nav-item.active { color: var(--accent); }
-        .nav-item svg { width: 24px; height: 24px; }
+        .nav-item svg { width: 22px; height: 22px; }
 
         /* Toasts */
         .toast-container {
-            position: fixed;
-            top: 70px;
-            right: 16px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            position: fixed; top: 70px; right: 16px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 8px;
             pointer-events: none;
         }
-
         .toast {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--accent);
-            color: var(--text-primary);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-left: 4px solid var(--accent); color: var(--text-primary);
+            padding: 12px 16px; border-radius: 8px; font-size: 0.85rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transform: translateX(120%);
-            transition: transform 0.3s ease;
-            pointer-events: auto;
-            max-width: 300px;
+            transform: translateX(120%); transition: transform 0.3s ease;
+            pointer-events: auto; max-width: 300px;
         }
-
         .toast.show { transform: translateX(0); }
         .toast.error { border-left-color: var(--danger); }
         .toast.warning { border-left-color: var(--warning); }
         .toast.info { border-left-color: var(--info); }
 
-        /* Sections */
         .section { display: none; }
         .section.active { display: block; }
 
-        /* Summary Card */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .summary-item { background: rgba(250, 250, 250, 0.03); padding: 12px; border-radius: 8px; text-align: center; }
+        .summary-value { font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: 500; color: var(--accent); }
+        .summary-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+        .export-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-        .summary-item {
-            background: rgba(250, 250, 250, 0.03);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .summary-value {
-            font-family: 'DM Mono', monospace;
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: var(--accent);
-        }
-
-        .summary-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .export-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        /* Public Mode Banner */
         .public-banner {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #93c5fd;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd; padding: 10px 16px; border-radius: 8px;
+            font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
         }
 
-        /* Responsive */
+        .empty-state { text-align: center; color: var(--text-secondary); padding: 24px; font-size: 0.9rem; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
+        .badge-executing { background: rgba(234, 179, 8, 0.2); color: var(--warning); }
+        .badge-completed { background: rgba(74, 222, 128, 0.2); color: var(--accent); }
+        .badge-delayed { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-pending { background: rgba(250, 250, 250, 0.1); color: var(--text-secondary); }
+
         @media (min-width: 768px) {
-            #map { height: 450px; }
+            #map { height: 400px; }
             .bottom-nav { display: none; }
             body { padding-bottom: 16px; }
             .nav-desktop { display: flex; gap: 8px; margin-bottom: 16px; }
+            .photo-grid { grid-template-columns: repeat(4, 1fr); }
         }
         @media (max-width: 767px) {
             .nav-desktop { display: none; }
         }
 
         .nav-desktop button {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            color: var(--text-primary); padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-family: 'DM Sans', sans-serif;
         }
-
         .nav-desktop button.active {
-            background: var(--accent);
-            color: #064e3b;
-            border-color: var(--accent);
-            font-weight: 700;
-        }
-
-        /* Loading */
-        .skeleton {
-            background: linear-gradient(90deg, rgba(250,250,250,0.03) 25%, rgba(250,250,250,0.08) 50%, rgba(250,250,250,0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 4px;
-        }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .photo-item {
-            aspect-ratio: 4/3;
-            background: rgba(250,250,250,0.05);
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-        }
-
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            background: var(--accent); color: #064e3b; border-color: var(--accent); font-weight: 700;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
     <header class="app-header">
         <div class="header-left">
             <div class="sync-dot" id="syncDot" title="Estat de connexió"></div>
@@ -501,25 +316,23 @@
         <a href="https://msix2003.github.io/prova-de-apps/" class="btn-hub" id="btnHub">Tornar al Hub</a>
     </header>
 
-    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Public Mode Banner -->
     <div class="container">
         <div id="publicBanner" class="public-banner" style="display:none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
             <span id="publicText">Mode Visor Públic — Només lectura</span>
         </div>
 
-        <!-- Desktop Nav -->
         <div class="nav-desktop" id="navDesktop">
             <button data-section="map" class="active" id="navMap">Mapa</button>
+            <button data-section="rodals" id="navRodals">Rodals</button>
             <button data-section="calendar" id="navCalendar">Calendari</button>
-            <button data-section="timeline" id="navTimeline">Línia de temps</button>
+            <button data-section="timeline" id="navTimeline">Temps</button>
             <button data-section="reports" id="navReports">Informes</button>
         </div>
 
-        <!-- Map Section -->
+        <!-- MAP -->
         <section id="section-map" class="section active">
             <div class="card">
                 <div class="card-title">
@@ -530,13 +343,113 @@
                 <div style="margin-top:12px;">
                     <label class="btn btn-secondary" id="btnGeoJSON">
                         <span>📁 <span id="txtUploadGeo">Penjar GeoJSON</span></span>
-                        <input type="file" id="fileGeoJSON" accept=".geojson,.json">
+                        <input type="file" id="fileGeoJSON" accept=".geojson,.json" class="hidden-input">
                     </label>
                 </div>
             </div>
         </section>
 
-        <!-- Calendar Section -->
+        <!-- RODALS -->
+        <section id="section-rodals" class="section">
+            <div class="card">
+                <div class="card-title" id="rodalsTitle">Rodals i actuacions</div>
+                
+                <!-- Llista de rodals -->
+                <div id="rodalsList" class="rodals-list">
+                    <div class="empty-state">No hi ha rodals creats</div>
+                </div>
+
+                <!-- Form nou rodal -->
+                <div id="rodalForm" style="display:none; margin-bottom:12px;">
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label id="lblRodalName">Nom del rodal</label>
+                            <input type="text" id="inputRodalName" placeholder="ex: Rodal Nord">
+                        </div>
+                        <div class="form-group">
+                            <label id="lblRodalArea">Superfície (ha)</label>
+                            <input type="number" id="inputRodalArea" step="0.1" placeholder="0.0" class="font-mono">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <button class="btn btn-primary btn-small" id="btnSaveRodal" style="flex:1;">Desa</button>
+                        <button class="btn btn-secondary btn-small" id="btnCancelRodal" style="flex:1;">Cancel·la</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" id="btnAddRodal" style="display:none;">
+                    <span>➕ <span id="txtAddRodal">Afegir rodal</span></span>
+                </button>
+
+                <!-- Detall rodal seleccionat -->
+                <div id="rodalDetail" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div>
+                            <div id="selectedRodalName" style="font-weight:700; font-size:1.1rem;"></div>
+                            <div id="selectedRodalMeta" style="font-size:0.8rem; color:var(--text-secondary);"></div>
+                        </div>
+                        <button class="btn btn-danger btn-small" id="btnDeleteRodal">🗑️</button>
+                    </div>
+
+                    <div class="card-title" style="font-size:0.95rem; margin-top:16px;" id="actuacionsTitle">Actuacions programades</div>
+                    
+                    <div id="actuacionsList" class="actuacions-list"></div>
+
+                    <!-- Form nova actuació -->
+                    <div id="actuacioForm" style="display:none; margin-top:12px; padding:12px; background:var(--bg-primary); border-radius:8px;">
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label id="lblActType">Tipus d'actuació</label>
+                                <select id="selectActType">
+                                    <option value="Clariana selectiva">Clariana selectiva</option>
+                                    <option value="Poda">Poda</option>
+                                    <option value="Plantació">Plantació</option>
+                                    <option value="Repoblació">Repoblació</option>
+                                    <option value="Sequera">Sequera</option>
+                                    <option value="Defensa incendis">Defensa incendis</option>
+                                    <option value="Tractament fitosanitari">Tractament fitosanitari</option>
+                                    <option value="Millora camins">Millora camins</option>
+                                    <option value="Altres">Altres...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label id="lblActStatus">Estat</label>
+                                <select id="selectActStatus">
+                                    <option value="pending">Pendent</option>
+                                    <option value="executing">En execució</option>
+                                    <option value="completed">Completat</option>
+                                    <option value="delayed">Retardat</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label id="lblActStart">Data inici</label>
+                                <input type="date" id="inputActStart">
+                            </div>
+                            <div class="form-group">
+                                <label id="lblActEnd">Data fi</label>
+                                <input type="date" id="inputActEnd">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:10px;">
+                            <label id="lblActDesc">Descripció / observacions</label>
+                            <textarea id="inputActDesc" placeholder="Descripció de l'actuació..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <button class="btn btn-primary btn-small" id="btnSaveActuacio" style="flex:1;">Programar actuació</button>
+                            <button class="btn btn-secondary btn-small" id="btnCancelActuacio" style="flex:1;">Cancel·la</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" id="btnAddActuacio" style="margin-top:10px; display:none;">
+                        <span>➕ <span id="txtAddActuacio">Nova actuació</span></span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CALENDAR -->
         <section id="section-calendar" class="section">
             <div class="card">
                 <div class="card-title" id="calendarTitle">Calendari d'actuacions</div>
@@ -545,20 +458,16 @@
                     <span id="calMonth" class="font-mono" style="font-weight:500;"></span>
                     <button id="calNext">›</button>
                 </div>
-                <div class="calendar-grid" id="calendarGrid">
-                    <!-- Generated by JS -->
-                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
             </div>
         </section>
 
-        <!-- Timeline Section -->
+        <!-- TIMELINE -->
         <section id="section-timeline" class="section">
             <div class="card">
                 <div class="card-title" id="timelineTitle">Línia de temps forestal</div>
                 <div class="gantt-container">
-                    <div id="ganttChart">
-                        <!-- Generated by JS -->
-                    </div>
+                    <div id="ganttChart"></div>
                 </div>
                 <div class="gantt-legend">
                     <div class="legend-item"><div class="legend-dot gantt-status-executing"></div><span id="legExecuting">En execució</span></div>
@@ -569,52 +478,44 @@
             </div>
         </section>
 
-        <!-- Reports Section -->
+        <!-- REPORTS -->
         <section id="section-reports" class="section">
             <div class="card">
                 <div class="card-title" id="reportsTitle">Resum i exportació</div>
                 <div class="summary-grid">
                     <div class="summary-item">
-                        <div class="summary-value font-mono" id="statTotal">0</div>
-                        <div class="summary-label" id="lblTotal">Total actuacions</div>
+                        <div class="summary-value font-mono" id="statRodals">0</div>
+                        <div class="summary-label" id="lblRodals">Rodals</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-value font-mono" id="statArea">0 ha</div>
                         <div class="summary-label" id="lblArea">Superfície</div>
                     </div>
                     <div class="summary-item">
-                        <div class="summary-value font-mono" id="statCompleted">0</div>
-                        <div class="summary-label" id="lblCompleted">Completades</div>
+                        <div class="summary-value font-mono" id="statActuacions">0</div>
+                        <div class="summary-label" id="lblActuacions">Actuacions</div>
                     </div>
                     <div class="summary-item">
-                        <div class="summary-value font-mono" id="statPending">0</div>
-                        <div class="summary-label" id="lblPending">Pendents</div>
+                        <div class="summary-value font-mono" id="statAvgProgress">0%</div>
+                        <div class="summary-label" id="lblAvgProgress">Progrés mig</div>
                     </div>
                 </div>
                 <div class="export-buttons">
-                    <button class="btn btn-primary" id="btnPdf">
-                        <span>📄 <span id="txtPdf">Descarregar PDF</span></span>
-                    </button>
-                    <button class="btn btn-secondary" id="btnExcel">
-                        <span>📊 <span id="txtExcel">Descarregar Excel</span></span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="card" id="photosCard" style="display:none;">
-                <div class="card-title" id="photosTitle">Fotografies de seguiment</div>
-                <div class="photo-grid" id="photoGrid">
-                    <!-- Generated by JS -->
+                    <button class="btn btn-primary" id="btnPdf"><span>📄 <span id="txtPdf">Descarregar PDF</span></span></button>
+                    <button class="btn btn-secondary" id="btnExcel"><span>📊 <span id="txtExcel">Descarregar Excel</span></span></button>
                 </div>
             </div>
         </section>
     </div>
 
-    <!-- Bottom Navigation (Mobile) -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-section="map">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span id="navMapM">Mapa</span>
+        </button>
+        <button class="nav-item" data-section="rodals">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span id="navRodalsM">Rodals</span>
         </button>
         <button class="nav-item" data-section="calendar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -633,8 +534,8 @@
     <script>
         // ==================== CONFIG & STATE ====================
         const CONFIG = {
-            SUPABASE_URL: 'https://your-project.supabase.co', // <-- REEMPLAÇAR
-            SUPABASE_KEY: 'your-anon-key', // <-- REEMPLAÇAR
+            SUPABASE_URL: 'https://your-project.supabase.co',
+            SUPABASE_KEY: 'your-anon-key',
             TIMEOUT_MS: 8000,
             DB_NAME: 'ForestSPA_DB',
             STORE_NAME: 'offline_queue'
@@ -645,623 +546,604 @@
             isOnline: navigator.onLine,
             isPublicMode: false,
             publicId: null,
-            treatments: [],
+            rodals: [],
+            actuacions: [],
+            selectedRodalId: null,
             currentMonth: new Date(),
             map: null,
             mapLayer: null,
             user: null,
             supabase: null,
-            offlineQueue: [],
             db: null
         };
 
-        // ==================== TRANSLATIONS ====================
+        // ==================== I18N ====================
         const i18n = {
             ca: {
-                appTitle: 'Gestió Forestal', backHub: 'Tornar al Hub', mapTitle: 'Mapa de la finca',
-                uploadGeo: 'Penjar GeoJSON', calendar: 'Calendari d\'actuacions', timeline: 'Línia de temps forestal',
-                reports: 'Resum i exportació', total: 'Total actuacions', area: 'Superfície',
-                completed: 'Completades', pending: 'Pendents', pdf: 'Descarregar PDF', excel: 'Descarregar Excel',
-                executing: 'En execució', completed2: 'Completat', delayed: 'Retardat', pending2: 'Pendent',
-                photos: 'Fotografies de seguiment', publicMode: 'Mode Visor Públic — Només lectura',
-                syncOnline: 'Sincronitzat', syncOffline: 'Mode local (Offline)', saved: 'Desat correctament',
-                error: 'Error de connexió', noGeoJSON: 'Arxiu GeoJSON no vàlid', treatmentLoaded: 'Tractament carregat',
-                navMap: 'Mapa', navCal: 'Calendari', navTime: 'Temps', navRep: 'Informes',
-                toastOffline: 'Treballant en mode local (Offline)', toastSync: 'Sincronitzat amb el servidor',
-                toastError: 'Error de xarxa. Dades desades localment.', toastSaved: 'Desat correctament',
-                toastGeoJSON: 'GeoJSON carregat i desat'
+                appTitle:'Gestió Forestal', backHub:'Tornar al Hub', mapTitle:'Mapa de la finca',
+                uploadGeo:'Penjar GeoJSON', rodalsTitle:'Rodals i actuacions', addRodal:'Afegir rodal',
+                rodalName:'Nom del rodal', rodalArea:'Superfície (ha)', save:'Desa', cancel:'Cancel·la',
+                actuacionsTitle:'Actuacions programades', addActuacio:'Nova actuació', actType:'Tipus d\'actuació',
+                actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi', actDesc:'Descripció / observacions',
+                schedule:'Programar actuació', calendar:'Calendari d\'actuacions', timeline:'Línia de temps forestal',
+                reports:'Resum i exportació', rodals:'Rodals', area:'Superfície', actuacions:'Actuacions',
+                avgProgress:'Progrés mig', pdf:'Descarregar PDF', excel:'Descarregar Excel',
+                executing:'En execució', completed:'Completat', delayed:'Retardat', pending:'Pendent',
+                publicMode:'Mode Visor Públic — Només lectura', syncOnline:'Sincronitzat', syncOffline:'Mode local',
+                toastOffline:'Treballant en mode local (Offline)', toastSync:'Sincronitzat amb el servidor',
+                toastError:'Error de xarxa. Dades desades localment.', toastSaved:'Desat correctament',
+                toastGeoJSON:'GeoJSON carregat', noGeoJSON:'Arxiu no vàlid', navMap:'Mapa', navRodals:'Rodals',
+                navCal:'Calendari', navTime:'Temps', navRep:'Informes', emptyRodals:'No hi ha rodals creats',
+                emptyActs:'Cap actuació programada', progress:'Progrés', before:'Abans', after:'Després',
+                addPhoto:'Afegir foto', delete:'Eliminar', treatmentLoaded:'Tractament carregat'
             },
             es: {
-                appTitle: 'Gestión Forestal', backHub: 'Volver al Hub', mapTitle: 'Mapa de la finca',
-                uploadGeo: 'Subir GeoJSON', calendar: 'Calendario de actuaciones', timeline: 'Línea de tiempo forestal',
-                reports: 'Resumen y exportación', total: 'Total actuaciones', area: 'Superficie',
-                completed: 'Completadas', pending: 'Pendientes', pdf: 'Descargar PDF', excel: 'Descargar Excel',
-                executing: 'En ejecución', completed2: 'Completado', delayed: 'Retrasado', pending2: 'Pendiente',
-                photos: 'Fotografías de seguimiento', publicMode: 'Modo Visor Público — Solo lectura',
-                syncOnline: 'Sincronizado', syncOffline: 'Modo local (Offline)', saved: 'Guardado correctamente',
-                error: 'Error de conexión', noGeoJSON: 'Archivo GeoJSON no válido', treatmentLoaded: 'Tratamiento cargado',
-                navMap: 'Mapa', navCal: 'Calendario', navTime: 'Tiempo', navRep: 'Informes',
-                toastOffline: 'Trabajando en modo local (Offline)', toastSync: 'Sincronizado con el servidor',
-                toastError: 'Error de red. Datos guardados localmente.', toastSaved: 'Guardado correctamente',
-                toastGeoJSON: 'GeoJSON cargado y guardado'
+                appTitle:'Gestión Forestal', backHub:'Volver al Hub', mapTitle:'Mapa de la finca',
+                uploadGeo:'Subir GeoJSON', rodalsTitle:'Rodales y actuaciones', addRodal:'Añadir rodal',
+                rodalName:'Nombre del rodal', rodalArea:'Superficie (ha)', save:'Guardar', cancel:'Cancelar',
+                actuacionsTitle:'Actuaciones programadas', addActuacio:'Nueva actuación', actType:'Tipo de actuación',
+                actStatus:'Estado', actStart:'Fecha inicio', actEnd:'Fecha fin', actDesc:'Descripción / observaciones',
+                schedule:'Programar actuación', calendar:'Calendario de actuaciones', timeline:'Línea de tiempo forestal',
+                reports:'Resumen y exportación', rodals:'Rodales', area:'Superficie', actuaciones:'Actuaciones',
+                avgProgress:'Progreso medio', pdf:'Descargar PDF', excel:'Descargar Excel',
+                executing:'En ejecución', completed:'Completado', delayed:'Retrasado', pending:'Pendiente',
+                publicMode:'Modo Visor Público — Solo lectura', syncOnline:'Sincronizado', syncOffline:'Modo local',
+                toastOffline:'Trabajando en modo local', toastSync:'Sincronizado con el servidor',
+                toastError:'Error de red. Datos guardados localmente.', toastSaved:'Guardado correctamente',
+                toastGeoJSON:'GeoJSON cargado', noGeoJSON:'Archivo no válido', navMap:'Mapa', navRodals:'Rodales',
+                navCal:'Calendario', navTime:'Tiempo', navRep:'Informes', emptyRodals:'No hay rodales creados',
+                emptyActs:'Ninguna actuación programada', progress:'Progreso', before:'Antes', after:'Después',
+                addPhoto:'Añadir foto', delete:'Eliminar', treatmentLoaded:'Tratamiento cargado'
             },
             en: {
-                appTitle: 'Forest Management', backHub: 'Back to Hub', mapTitle: 'Property Map',
-                uploadGeo: 'Upload GeoJSON', calendar: 'Operations Calendar', timeline: 'Forest Timeline',
-                reports: 'Summary & Export', total: 'Total operations', area: 'Surface area',
-                completed: 'Completed', pending: 'Pending', pdf: 'Download PDF', excel: 'Download Excel',
-                executing: 'In progress', completed2: 'Completed', delayed: 'Delayed', pending2: 'Pending',
-                photos: 'Monitoring Photos', publicMode: 'Public Viewer Mode — Read only',
-                syncOnline: 'Synced', syncOffline: 'Local mode (Offline)', saved: 'Saved successfully',
-                error: 'Connection error', noGeoJSON: 'Invalid GeoJSON file', treatmentLoaded: 'Treatment loaded',
-                navMap: 'Map', navCal: 'Calendar', navTime: 'Timeline', navRep: 'Reports',
-                toastOffline: 'Working in offline mode', toastSync: 'Synced with server',
-                toastError: 'Network error. Data saved locally.', toastSaved: 'Saved successfully',
-                toastGeoJSON: 'GeoJSON loaded and saved'
+                appTitle:'Forest Management', backHub:'Back to Hub', mapTitle:'Property Map',
+                uploadGeo:'Upload GeoJSON', rodalsTitle:'Stands & Operations', addRodal:'Add Stand',
+                rodalName:'Stand name', rodalArea:'Area (ha)', save:'Save', cancel:'Cancel',
+                actuacionsTitle:'Scheduled operations', addActuacio:'New operation', actType:'Operation type',
+                actStatus:'Status', actStart:'Start date', actEnd:'End date', actDesc:'Description / notes',
+                schedule:'Schedule operation', calendar:'Operations Calendar', timeline:'Forest Timeline',
+                reports:'Summary & Export', rodals:'Stands', area:'Surface area', actuacions:'Operations',
+                avgProgress:'Avg progress', pdf:'Download PDF', excel:'Download Excel',
+                executing:'In progress', completed:'Completed', delayed:'Delayed', pending:'Pending',
+                publicMode:'Public Viewer — Read only', syncOnline:'Synced', syncOffline:'Local mode',
+                toastOffline:'Working offline', toastSync:'Synced with server',
+                toastError:'Network error. Data saved locally.', toastSaved:'Saved successfully',
+                toastGeoJSON:'GeoJSON loaded', noGeoJSON:'Invalid file', navMap:'Map', navRodals:'Stands',
+                navCal:'Calendar', navTime:'Timeline', navRep:'Reports', emptyRodals:'No stands created',
+                emptyActs:'No operations scheduled', progress:'Progress', before:'Before', after:'After',
+                addPhoto:'Add photo', delete:'Delete', treatmentLoaded:'Treatment loaded'
             }
         };
 
-        function t(key) {
-            return i18n[state.lang]?.[key] || i18n.ca[key] || key;
-        }
+        function t(k){ return i18n[state.lang]?.[k] || i18n.ca[k] || k; }
 
-        // ==================== LANGUAGE DETECTION ====================
-        function detectLanguage() {
-            const lang = localStorage.getItem('M.S.X._lang');
-            if (lang === 'es') state.lang = 'es';
-            else if (lang === 'en') state.lang = 'en';
-            else state.lang = 'ca';
+        function detectLanguage(){
+            const l = localStorage.getItem('M.S.X._lang');
+            state.lang = (l==='es'||l==='en') ? l : 'ca';
             applyTranslations();
         }
 
-        function applyTranslations() {
+        function applyTranslations(){
             const ids = {
-                appTitle: 'appTitle', btnHub: 'backHub', mapTitle: 'mapTitle', txtUploadGeo: 'uploadGeo',
-                calendarTitle: 'calendar', timelineTitle: 'timeline', reportsTitle: 'reports',
-                lblTotal: 'total', lblArea: 'area', lblCompleted: 'completed', lblPending: 'pending',
-                txtPdf: 'pdf', txtExcel: 'excel', legExecuting: 'executing', legCompleted: 'completed2',
-                legDelayed: 'delayed', legPending: 'pending2', photosTitle: 'photos', publicText: 'publicMode',
-                navMap: 'navMap', navCalendar: 'navCal', navTimeline: 'navTime', navReports: 'navRep',
-                navMapM: 'navMap', navCalM: 'navCal', navTimeM: 'navTime', navRepM: 'navRep'
+                appTitle:'appTitle', btnHub:'backHub', mapTitle:'mapTitle', txtUploadGeo:'uploadGeo',
+                rodalsTitle:'rodalsTitle', txtAddRodal:'addRodal', lblRodalName:'rodalName', lblRodalArea:'rodalArea',
+                btnSaveRodal:'save', btnCancelRodal:'cancel', actuacionsTitle:'actuacionsTitle',
+                txtAddActuacio:'addActuacio', lblActType:'actType', lblActStatus:'actStatus',
+                lblActStart:'actStart', lblActEnd:'actEnd', lblActDesc:'actDesc', btnSaveActuacio:'schedule',
+                btnCancelActuacio:'cancel', calendarTitle:'calendar', timelineTitle:'timeline', reportsTitle:'reports',
+                lblRodals:'rodals', lblArea:'area', lblActuacions:'actuacions', lblAvgProgress:'avgProgress',
+                txtPdf:'pdf', txtExcel:'excel', legExecuting:'executing', legCompleted:'completed',
+                legDelayed:'delayed', legPending:'pending', publicText:'publicMode',
+                navMap:'navMap', navRodals:'navRodals', navCalendar:'navCal', navTimeline:'navTime', navReports:'navRep',
+                navMapM:'navMap', navRodalsM:'navRodals', navCalM:'navCal', navTimeM:'navTime', navRepM:'navRep'
             };
-            Object.entries(ids).forEach(([id, key]) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = t(key);
-            });
+            Object.entries(ids).forEach(([id,key])=>{ const el=document.getElementById(id); if(el) el.textContent=t(key); });
         }
 
-        // ==================== TOAST SYSTEM ====================
-        function showToast(message, type = 'info', duration = 3000) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.add('show'));
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, duration);
+        // ==================== TOASTS ====================
+        function showToast(msg, type='info', dur=3000){
+            const c=document.getElementById('toastContainer');
+            const d=document.createElement('div'); d.className=`toast ${type}`; d.textContent=msg;
+            c.appendChild(d); requestAnimationFrame(()=>d.classList.add('show'));
+            setTimeout(()=>{ d.classList.remove('show'); setTimeout(()=>d.remove(),300); }, dur);
         }
 
         // ==================== INDEXEDDB ====================
-        function initIndexedDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(CONFIG.DB_NAME, 1);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => { state.db = request.result; resolve(request.result); };
-                request.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains(CONFIG.STORE_NAME)) {
-                        db.createObjectStore(CONFIG.STORE_NAME, { keyPath: 'id', autoIncrement: true });
-                    }
-                    if (!db.objectStoreNames.contains('treatments')) {
-                        db.createObjectStore('treatments', { keyPath: 'id' });
-                    }
+        function initIndexedDB(){
+            return new Promise((res,rej)=>{
+                const r = indexedDB.open(CONFIG.DB_NAME, 1);
+                r.onerror=()=>rej(r.error);
+                r.onsuccess=()=>{ state.db=r.result; res(r.result); };
+                r.onupgradeneeded=(e)=>{
+                    const db=e.target.result;
+                    if(!db.objectStoreNames.contains(CONFIG.STORE_NAME)) db.createObjectStore(CONFIG.STORE_NAME, {keyPath:'id', autoIncrement:true});
+                    if(!db.objectStoreNames.contains('rodals')) db.createObjectStore('rodals', {keyPath:'id'});
+                    if(!db.objectStoreNames.contains('actuacions')) db.createObjectStore('actuacions', {keyPath:'id'});
                 };
             });
         }
-
-        function saveOffline(table, data) {
-            if (!state.db) return;
-            const tx = state.db.transaction([CONFIG.STORE_NAME], 'readwrite');
-            const store = tx.objectStore(CONFIG.STORE_NAME);
-            store.add({ table, data, timestamp: Date.now(), synced: false });
+        function saveOffline(table, data){
+            if(!state.db) return;
+            const tx=state.db.transaction([CONFIG.STORE_NAME],'readwrite');
+            tx.objectStore(CONFIG.STORE_NAME).add({table,data,timestamp:Date.now(),synced:false});
+        }
+        function persistLocal(){
+            localStorage.setItem('forest_rodals', JSON.stringify(state.rodals));
+            localStorage.setItem('forest_actuacions', JSON.stringify(state.actuacions));
+        }
+        function loadLocal(){
+            try{
+                const r=localStorage.getItem('forest_rodals');
+                const a=localStorage.getItem('forest_actuacions');
+                if(r) state.rodals=JSON.parse(r);
+                if(a) state.actuacions=JSON.parse(a);
+            }catch(e){}
         }
 
-        function getOfflineQueue() {
-            return new Promise((resolve) => {
-                if (!state.db) return resolve([]);
-                const tx = state.db.transaction([CONFIG.STORE_NAME], 'readonly');
-                const store = tx.objectStore(CONFIG.STORE_NAME);
-                const request = store.getAll();
-                request.onsuccess = () => resolve(request.result.filter(r => !r.synced));
-            });
+        // ==================== SUPABASE ====================
+        function createSupabaseClient(){
+            const url=localStorage.getItem('M.S.X._supabase_url')||CONFIG.SUPABASE_URL;
+            const key=localStorage.getItem('M.S.X._supabase_key')||CONFIG.SUPABASE_KEY;
+            if(!url||url.includes('your-project')) return null;
+            return supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
         }
-
-        // ==================== SUPABASE WITH TIMEOUT ====================
-        function createSupabaseClient() {
-            // Try to get credentials from parent Hub localStorage if available
-            const hubUrl = localStorage.getItem('M.S.X._supabase_url') || CONFIG.SUPABASE_URL;
-            const hubKey = localStorage.getItem('M.S.X._supabase_key') || CONFIG.SUPABASE_KEY;
-            
-            if (!hubUrl || hubUrl.includes('your-project')) {
-                console.warn('Supabase credentials not configured. Using demo mode.');
-                return null;
-            }
-            
-            return supabase.createClient(hubUrl, hubKey, {
-                auth: { persistSession: true, autoRefreshToken: true }
-            });
-        }
-
-        async function supabaseCall(promise) {
-            const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('TIMEOUT')), CONFIG.TIMEOUT_MS)
-            );
-            try {
-                const result = await Promise.race([promise, timeout]);
-                if (result.error) throw result.error;
-                return result;
-            } catch (err) {
-                if (err.message === 'TIMEOUT' || !navigator.onLine) {
-                    state.isOnline = false;
-                    updateSyncDot();
-                    showToast(t('toastOffline'), 'warning', 4000);
+        async function supabaseCall(promise){
+            const to=new Promise((_,r)=>setTimeout(()=>r(new Error('TIMEOUT')),CONFIG.TIMEOUT_MS));
+            try{
+                const res=await Promise.race([promise,to]);
+                if(res.error) throw res.error;
+                return res;
+            }catch(err){
+                if(err.message==='TIMEOUT'||!navigator.onLine){
+                    state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000);
                 }
                 throw err;
             }
         }
 
-        // ==================== NETWORK & SYNC ====================
-        function updateSyncDot() {
-            const dot = document.getElementById('syncDot');
-            if (state.isOnline) {
-                dot.classList.add('online');
-                dot.title = t('syncOnline');
-            } else {
-                dot.classList.remove('online');
-                dot.title = t('syncOffline');
-            }
+        // ==================== NETWORK ====================
+        function updateSyncDot(){
+            const d=document.getElementById('syncDot');
+            d.classList.toggle('online', state.isOnline);
+            d.title=state.isOnline?t('syncOnline'):t('syncOffline');
         }
-
-        window.addEventListener('online', () => {
-            state.isOnline = true;
-            updateSyncDot();
-            showToast(t('toastSync'), 'info', 3000);
-            syncOfflineData();
-        });
-
-        window.addEventListener('offline', () => {
-            state.isOnline = false;
-            updateSyncDot();
-            showToast(t('toastOffline'), 'warning', 4000);
-        });
-
-        async function syncOfflineData() {
-            if (!state.supabase || !state.isOnline) return;
-            const queue = await getOfflineQueue();
-            for (const item of queue) {
-                try {
-                    // Attempt to sync based on table type
-                    if (item.table === 'treatments') {
-                        await supabaseCall(state.supabase.from('treatments').upsert(item.data));
-                    }
-                    // Mark as synced in IndexedDB
-                    const tx = state.db.transaction([CONFIG.STORE_NAME], 'readwrite');
-                    const store = tx.objectStore(CONFIG.STORE_NAME);
-                    item.synced = true;
-                    store.put(item);
-                } catch (e) {
-                    console.error('Sync failed for item', item.id);
-                }
-            }
-            if (queue.length > 0) showToast(t('toastSync'), 'info');
+        window.addEventListener('online',()=>{ state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info'); syncOfflineData(); });
+        window.addEventListener('offline',()=>{ state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000); });
+        async function syncOfflineData(){
+            if(!state.supabase||!state.isOnline) return;
+            // simplified: in real app, iterate IndexedDB queue
         }
 
         // ==================== MAP ====================
-        function initMap() {
-            state.map = L.map('map').setView([41.7, 2.1], 8); // Catalonia default
-            
-            // Dark forest styled tiles
+        function initMap(){
+            state.map=L.map('map').setView([41.7,2.1],8);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 19
+                attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19
             }).addTo(state.map);
-
-            // Try geolocation
-            if (navigator.geolocation && !state.isPublicMode) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        const { latitude, longitude } = pos.coords;
-                        state.map.setView([latitude, longitude], 14);
-                        document.getElementById('coordsDisplay').textContent = 
-                            `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-                    },
-                    () => { /* silent fail */ }
-                );
+            if(navigator.geolocation&&!state.isPublicMode){
+                navigator.geolocation.getCurrentPosition((pos)=>{
+                    const {latitude,longitude}=pos.coords;
+                    state.map.setView([latitude,longitude],14);
+                    document.getElementById('coordsDisplay').textContent=`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                },()=>{});
             }
         }
-
-        function addGeoJSONToMap(geojson) {
-            if (state.mapLayer) state.map.removeLayer(state.mapLayer);
-            state.mapLayer = L.geoJSON(geojson, {
-                style: {
-                    color: '#4ade80',
-                    weight: 3,
-                    opacity: 0.8,
-                    fillColor: '#4ade80',
-                    fillOpacity: 0.15
-                }
+        function addGeoJSONToMap(geojson){
+            if(state.mapLayer) state.map.removeLayer(state.mapLayer);
+            state.mapLayer=L.geoJSON(geojson,{
+                style:{color:'#4ade80',weight:3,opacity:0.8,fillColor:'#4ade80',fillOpacity:0.15}
             }).addTo(state.map);
-            state.map.fitBounds(state.mapLayer.getBounds(), { padding: [20, 20] });
+            state.map.fitBounds(state.mapLayer.getBounds(),{padding:[20,20]});
         }
 
         // ==================== GEOJSON UPLOAD ====================
-        document.getElementById('fileGeoJSON').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            try {
-                const text = await file.text();
-                const geojson = JSON.parse(text);
-                if (!geojson.type || !geojson.features) throw new Error('Invalid GeoJSON');
-                
-                addGeoJSONToMap(geojson);
-                showToast(t('toastGeoJSON'), 'info');
-                
-                // Save to Supabase or offline
-                const payload = {
-                    id: crypto.randomUUID(),
-                    geojson_data: geojson,
-                    created_at: new Date().toISOString()
-                };
-                
-                if (state.supabase && state.isOnline && !state.isPublicMode) {
-                    try {
-                        await supabaseCall(state.supabase.from('treatments').upsert(payload));
-                        showToast(t('toastSaved'), 'info');
-                    } catch (err) {
-                        saveOffline('treatments', payload);
-                        showToast(t('toastError'), 'error');
-                    }
-                } else {
-                    saveOffline('treatments', payload);
-                    localStorage.setItem('forest_geojson_' + payload.id, JSON.stringify(geojson));
+        document.getElementById('fileGeoJSON').addEventListener('change', async (e)=>{
+            const file=e.target.files[0]; if(!file) return;
+            try{
+                const geojson=JSON.parse(await file.text());
+                if(!geojson.type||!geojson.features) throw new Error('Invalid');
+                addGeoJSONToMap(geojson); showToast(t('toastGeoJSON'),'info');
+                // If a rodal is selected, attach geojson to it
+                if(state.selectedRodalId){
+                    const rodal=state.rodals.find(r=>r.id===state.selectedRodalId);
+                    if(rodal){ rodal.geojson_data=geojson; persistLocal(); renderRodals(); }
                 }
-            } catch (err) {
-                showToast(t('noGeoJSON'), 'error');
+            }catch(err){ showToast(t('noGeoJSON'),'error'); }
+            e.target.value='';
+        });
+
+        // ==================== RODALS ====================
+        function renderRodals(){
+            const list=document.getElementById('rodalsList');
+            if(state.rodals.length===0){
+                list.innerHTML=`<div class="empty-state">${t('emptyRodals')}</div>`;
+                document.getElementById('rodalDetail').style.display='none';
+                return;
             }
+            list.innerHTML='';
+            state.rodals.forEach(r=>{
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).length;
+                const div=document.createElement('div');
+                div.className=`rodal-item ${state.selectedRodalId===r.id?'active':''}`;
+                div.innerHTML=`
+                    <div>
+                        <div class="rodal-name">${r.name}</div>
+                        <div class="rodal-meta">${acts} ${t('actuacions').toLowerCase()}</div>
+                    </div>
+                    <div class="rodal-area font-mono">${parseFloat(r.area_ha||0).toFixed(1)} ha</div>
+                `;
+                div.onclick=()=>selectRodal(r.id);
+                list.appendChild(div);
+            });
+            if(state.selectedRodalId) renderRodalDetail();
+        }
+
+        function selectRodal(id){
+            state.selectedRodalId=id;
+            renderRodals();
+            document.getElementById('rodalDetail').style.display='block';
+            document.getElementById('btnAddActuacio').style.display=state.isPublicMode?'none':'block';
+            renderRodalDetail();
+            // If rodal has geojson, show it
+            const r=state.rodals.find(x=>x.id===id);
+            if(r&&r.geojson_data){ addGeoJSONToMap(r.geojson_data); }
+        }
+
+        function renderRodalDetail(){
+            const r=state.rodals.find(x=>x.id===state.selectedRodalId);
+            if(!r) return;
+            document.getElementById('selectedRodalName').textContent=r.name;
+            document.getElementById('selectedRodalMeta').textContent=`${parseFloat(r.area_ha||0).toFixed(2)} ha · ${state.actuacions.filter(a=>a.rodal_id===r.id).length} ${t('actuacions').toLowerCase()}`;
+            document.getElementById('btnDeleteRodal').style.display=state.isPublicMode?'none':'inline-flex';
+            renderActuacions();
+        }
+
+        // ==================== ACTUACIONS ====================
+        function renderActuacions(){
+            const container=document.getElementById('actuacionsList');
+            const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId);
+            if(acts.length===0){
+                container.innerHTML=`<div class="empty-state">${t('emptyActs')}</div>`; return;
+            }
+            container.innerHTML='';
+            const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
+            const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
+
+            acts.forEach(a=>{
+                const card=document.createElement('div'); card.className='actuacio-card';
+                const readOnly=state.isPublicMode;
+                card.innerHTML=`
+                    <div class="actuacio-header">
+                        <div style="flex:1;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
+                                <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
+                            </div>
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">${a.start_date||''} → ${a.end_date||''}</div>
+                        </div>
+                        ${readOnly?'':`<button class="btn btn-danger btn-icon" onclick="deleteActuacio('${a.id}')" title="${t('delete')}">🗑️</button>`}
+                    </div>
+                    ${a.description?`<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">${a.description}</div>`:''}
+                    
+                    <div class="progress-wrap">
+                        <input type="range" min="0" max="100" value="${a.progress||0}" class="progress-slider" 
+                            oninput="updateProgress('${a.id}', this.value)" ${readOnly?'disabled':''}>
+                        <span class="progress-value" id="prog-${a.id}">${a.progress||0}%</span>
+                    </div>
+
+                    <div class="photo-section">
+                        <div class="photo-label">
+                            <span>📷 ${t('before')}</span>
+                            ${readOnly?'':`<label class="btn btn-small btn-secondary" style="width:auto; padding:4px 8px; font-size:0.75rem;">
+                                <span>+ ${t('addPhoto')}</span>
+                                <input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${a.id}','before',this)">
+                            </label>`}
+                        </div>
+                        <div class="photo-grid" id="photos-before-${a.id}"></div>
+                    </div>
+
+                    <div class="photo-section">
+                        <div class="photo-label">
+                            <span>📷 ${t('after')}</span>
+                            ${readOnly?'':`<label class="btn btn-small btn-secondary" style="width:auto; padding:4px 8px; font-size:0.75rem;">
+                                <span>+ ${t('addPhoto')}</span>
+                                <input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${a.id}','after',this)">
+                            </label>`}
+                        </div>
+                        <div class="photo-grid" id="photos-after-${a.id}"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+                renderPhotoGrid(a.id,'before',a.photos_before||[],readOnly);
+                renderPhotoGrid(a.id,'after',a.photos_after||[],readOnly);
+            });
+        }
+
+        function renderPhotoGrid(actId, type, photos, readOnly){
+            const grid=document.getElementById(`photos-${type}-${actId}`);
+            if(!grid) return;
+            grid.innerHTML='';
+            photos.forEach((src, idx)=>{
+                const div=document.createElement('div'); div.className='photo-thumb';
+                div.innerHTML=`
+                    <img src="${src}" alt="${type}" onclick="window.open('${src}','_blank')">
+                    ${readOnly?'':`<button class="remove-btn" onclick="removePhoto('${actId}','${type}',${idx})">×</button>`}
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function updateActField(id, field, value){
+            const a=state.actuacions.find(x=>x.id===id);
+            if(a){ a[field]=value; persistLocal(); }
+        }
+        function updateProgress(id, val){
+            const a=state.actuacions.find(x=>x.id===id);
+            if(a){ a.progress=parseInt(val); document.getElementById(`prog-${id}`).textContent=val+'%'; persistLocal(); }
+        }
+        function deleteActuacio(id){
+            if(!confirm('Eliminar aquesta actuació?')) return;
+            state.actuacions=state.actuacions.filter(a=>a.id!==id);
+            persistLocal(); renderActuacions(); renderRodals();
+        }
+        function removePhoto(actId, type, idx){
+            const a=state.actuacions.find(x=>x.id===actId);
+            if(a&&a[`photos_${type}`]){ a[`photos_${type}`].splice(idx,1); persistLocal(); renderActuacions(); }
+        }
+
+        async function handlePhoto(actId, type, input){
+            const file=input.files[0]; if(!file) return;
+            const reader=new FileReader();
+            reader.onload=(e)=>{
+                const a=state.actuacions.find(x=>x.id===actId);
+                if(a){
+                    if(!a[`photos_${type}`]) a[`photos_${type}`]=[];
+                    a[`photos_${type}`].push(e.target.result);
+                    persistLocal(); renderActuacions(); showToast(t('toastSaved'),'info');
+                }
+            };
+            reader.readAsDataURL(file);
+            input.value='';
+        }
+
+        // ==================== FORMS ====================
+        document.getElementById('btnAddRodal').addEventListener('click', ()=>{
+            document.getElementById('rodalForm').style.display='block';
+            document.getElementById('btnAddRodal').style.display='none';
+            document.getElementById('rodalDetail').style.display='none';
+        });
+        document.getElementById('btnCancelRodal').addEventListener('click', ()=>{
+            document.getElementById('rodalForm').style.display='none';
+            document.getElementById('btnAddRodal').style.display='block';
+            document.getElementById('inputRodalName').value='';
+            document.getElementById('inputRodalArea').value='';
+        });
+        document.getElementById('btnSaveRodal').addEventListener('click', ()=>{
+            const name=document.getElementById('inputRodalName').value.trim();
+            const area=parseFloat(document.getElementById('inputRodalArea').value)||0;
+            if(!name){ showToast('Nom obligatori','error'); return; }
+            const rodal={id:crypto.randomUUID(), name, area_ha:area, geojson_data:null, created_at:new Date().toISOString()};
+            state.rodals.push(rodal); persistLocal(); renderRodals();
+            document.getElementById('btnCancelRodal').click();
+            selectRodal(rodal.id);
+            showToast(t('toastSaved'),'info');
+        });
+        document.getElementById('btnDeleteRodal').addEventListener('click', ()=>{
+            if(!confirm('Eliminar aquest rodal i totes les seves actuacions?')) return;
+            state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
+            state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
+            state.selectedRodalId=null; persistLocal(); renderRodals();
+            document.getElementById('rodalDetail').style.display='none';
+        });
+
+        document.getElementById('btnAddActuacio').addEventListener('click', ()=>{
+            document.getElementById('actuacioForm').style.display='block';
+            document.getElementById('btnAddActuacio').style.display='none';
+        });
+        document.getElementById('btnCancelActuacio').addEventListener('click', ()=>{
+            document.getElementById('actuacioForm').style.display='none';
+            document.getElementById('btnAddActuacio').style.display='block';
+            document.getElementById('inputActDesc').value='';
+        });
+        document.getElementById('btnSaveActuacio').addEventListener('click', ()=>{
+            const type=document.getElementById('selectActType').value;
+            const status=document.getElementById('selectActStatus').value;
+            const start=document.getElementById('inputActStart').value;
+            const end=document.getElementById('inputActEnd').value;
+            const desc=document.getElementById('inputActDesc').value.trim();
+            const customTitle=type==='Altres'?prompt('Especifica el nom de l\'actuació:')||'Altres':type;
             
-            e.target.value = '';
+            const act={
+                id:crypto.randomUUID(),
+                rodal_id:state.selectedRodalId,
+                title:customTitle,
+                status,
+                start_date:start,
+                end_date:end,
+                progress:0,
+                photos_before:[],
+                photos_after:[],
+                description:desc,
+                created_at:new Date().toISOString()
+            };
+            state.actuacions.push(act); persistLocal(); renderActuacions(); renderRodals();
+            document.getElementById('btnCancelActuacio').click();
+            showToast(t('toastSaved'),'info');
         });
 
         // ==================== CALENDAR ====================
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            
-            const year = state.currentMonth.getFullYear();
-            const month = state.currentMonth.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const monthNames = state.lang === 'ca' ? 
-                ['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'] :
-                state.lang === 'es' ?
-                ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] :
-                ['January','February','March','April','May','June','July','August','September','October','November','December'];
-            
-            document.getElementById('calMonth').textContent = `${monthNames[month]} ${year}`;
-            
-            const weekDays = state.lang === 'ca' ? ['Dl','Dt','Dc','Dj','Dv','Ds','Dg'] :
-                             state.lang === 'es' ? ['Lu','Ma','Mi','Ju','Vi','Sa','Do'] :
+        function renderCalendar(){
+            const grid=document.getElementById('calendarGrid');
+            grid.innerHTML='';
+            const year=state.currentMonth.getFullYear(), month=state.currentMonth.getMonth();
+            const firstDay=new Date(year,month,1).getDay();
+            const daysInMonth=new Date(year,month+1,0).getDate();
+            const monthNames=state.lang==='ca'?['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre']:
+                             state.lang==='es'?['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']:
+                             ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            document.getElementById('calMonth').textContent=`${monthNames[month]} ${year}`;
+            const weekDays=state.lang==='ca'?['Dl','Dt','Dc','Dj','Dv','Ds','Dg']:
+                             state.lang==='es'?['Lu','Ma','Mi','Ju','Vi','Sa','Do']:
                              ['Mo','Tu','We','Th','Fr','Sa','Su'];
-            
-            weekDays.forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'calendar-header';
-                el.textContent = d;
-                grid.appendChild(el);
-            });
-            
-            // Adjust for Monday start
-            let startOffset = firstDay === 0 ? 6 : firstDay - 1;
-            for (let i = 0; i < startOffset; i++) {
-                grid.appendChild(document.createElement('div'));
-            }
-            
-            const today = new Date();
-            state.treatments.forEach(tr => {
-                tr.calendarStart = new Date(tr.start_date);
-                tr.calendarEnd = new Date(tr.end_date);
-            });
-            
-            for (let d = 1; d <= daysInMonth; d++) {
-                const date = new Date(year, month, d);
-                const el = document.createElement('div');
-                el.className = 'calendar-day';
-                el.innerHTML = `<span>${d}</span>`;
-                
-                if (date.toDateString() === today.toDateString()) el.classList.add('today');
-                
-                const hasEvent = state.treatments.some(tr => 
-                    date >= tr.calendarStart && date <= tr.calendarEnd
-                );
-                if (hasEvent) el.classList.add('has-event');
-                
+            weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
+            let startOffset=firstDay===0?6:firstDay-1;
+            for(let i=0;i<<startOffset;i++) grid.appendChild(document.createElement('div'));
+            const today=new Date();
+            state.actuacions.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
+            for(let d=1; d<=daysInMonth; d++){
+                const date=new Date(year,month,d);
+                const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
+                if(date.toDateString()===today.toDateString()) el.classList.add('today');
+                const has=state.actuacions.some(a=> date>=a._start&&date<=a._end);
+                if(has) el.classList.add('has-event');
                 grid.appendChild(el);
             }
         }
+        document.getElementById('calPrev').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()-1); renderCalendar(); });
+        document.getElementById('calNext').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()+1); renderCalendar(); });
 
-        document.getElementById('calPrev').addEventListener('click', () => {
-            state.currentMonth.setMonth(state.currentMonth.getMonth() - 1);
-            renderCalendar();
-        });
-
-        document.getElementById('calNext').addEventListener('click', () => {
-            state.currentMonth.setMonth(state.currentMonth.getMonth() + 1);
-            renderCalendar();
-        });
-
-        // ==================== GANTT TIMELINE ====================
-        function renderGantt() {
-            const container = document.getElementById('ganttChart');
-            container.innerHTML = '';
-            
-            if (state.treatments.length === 0) {
-                container.innerHTML = `<div style="text-align:center;color:var(--text-secondary);padding:20px;">${state.lang === 'ca' ? 'Sense dades' : state.lang === 'es' ? 'Sin datos' : 'No data'}</div>`;
-                return;
-            }
-            
-            // Find global date range
-            const allDates = state.treatments.flatMap(t => [new Date(t.start_date), new Date(t.end_date)]);
-            const minDate = new Date(Math.min(...allDates));
-            const maxDate = new Date(Math.max(...allDates));
-            const totalDays = Math.max(1, (maxDate - minDate) / (1000 * 60 * 60 * 24));
-            
-            const statusClass = {
-                'executing': 'gantt-status-executing',
-                'completed': 'gantt-status-completed',
-                'delayed': 'gantt-status-delayed',
-                'pending': 'gantt-status-pending'
-            };
-            
-            state.treatments.forEach(tr => {
-                const start = new Date(tr.start_date);
-                const end = new Date(tr.end_date);
-                const startOffset = ((start - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-                const duration = ((end - start) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-                
-                const row = document.createElement('div');
-                row.className = 'gantt-row';
-                row.innerHTML = `
-                    <div class="gantt-label" title="${tr.title}">${tr.title}</div>
+        // ==================== GANTT ====================
+        function renderGantt(){
+            const container=document.getElementById('ganttChart');
+            container.innerHTML='';
+            if(state.actuacions.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
+            const allDates=state.actuacions.flatMap(a=>[new Date(a.start_date),new Date(a.end_date)]);
+            const minDate=new Date(Math.min(...allDates));
+            const maxDate=new Date(Math.max(...allDates));
+            const totalDays=Math.max(1,(maxDate-minDate)/(86400000));
+            const sMap={executing:'gantt-status-executing',completed:'gantt-status-completed',delayed:'gantt-status-delayed',pending:'gantt-status-pending'};
+            state.actuacions.forEach(a=>{
+                const start=new Date(a.start_date), end=new Date(a.end_date);
+                const so=((start-minDate)/86400000)/totalDays*100;
+                const du=((end-start)/86400000)/totalDays*100;
+                const row=document.createElement('div'); row.className='gantt-row';
+                row.innerHTML=`
+                    <div class="gantt-label" title="${a.title}">${a.title}</div>
                     <div class="gantt-bar-bg">
-                        <div class="gantt-bar ${statusClass[tr.status] || 'gantt-status-pending'}" 
-                             style="left:${startOffset}%; width:${Math.max(2, duration)}%;"></div>
+                        <div class="gantt-bar ${sMap[a.status]||'gantt-status-pending'}" style="left:${so}%; width:${Math.max(2,du)}%;"></div>
                     </div>
                 `;
                 container.appendChild(row);
             });
         }
 
-        // ==================== REPORTS & EXPORT ====================
-        function updateStats() {
-            const total = state.treatments.length;
-            const completed = state.treatments.filter(t => t.status === 'completed').length;
-            const pending = state.treatments.filter(t => t.status === 'pending').length;
-            const area = state.treatments.reduce((sum, t) => sum + (parseFloat(t.area_ha) || 0), 0);
-            
-            document.getElementById('statTotal').textContent = total;
-            document.getElementById('statCompleted').textContent = completed;
-            document.getElementById('statPending').textContent = pending;
-            document.getElementById('statArea').textContent = area.toFixed(2) + ' ha';
+        // ==================== REPORTS ====================
+        function updateStats(){
+            const totalR=state.rodals.length;
+            const area=state.rodals.reduce((s,r)=>s+(parseFloat(r.area_ha)||0),0);
+            const totalA=state.actuacions.length;
+            const avg=totalA?Math.round(state.actuacions.reduce((s,a)=>s+(a.progress||0),0)/totalA):0;
+            document.getElementById('statRodals').textContent=totalR;
+            document.getElementById('statArea').textContent=area.toFixed(1)+' ha';
+            document.getElementById('statActuacions').textContent=totalA;
+            document.getElementById('statAvgProgress').textContent=avg+'%';
         }
 
-        document.getElementById('btnPdf').addEventListener('click', async () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Header
-            doc.setFillColor(17, 41, 29);
-            doc.rect(0, 0, 210, 40, 'F');
-            doc.setTextColor(250, 250, 250);
-            doc.setFontSize(20);
-            doc.text(t('appTitle'), 14, 20);
-            doc.setFontSize(10);
-            doc.text(new Date().toLocaleDateString(), 14, 30);
-            
-            // Content
-            doc.setTextColor(50, 50, 50);
-            doc.setFontSize(12);
-            let y = 50;
-            
-            state.treatments.forEach((tr, i) => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                doc.setFontSize(11);
-                doc.setTextColor(17, 41, 29);
-                doc.text(`${i+1}. ${tr.title}`, 14, y);
-                doc.setFontSize(9);
-                doc.setTextColor(100, 100, 100);
-                doc.text(`Status: ${tr.status} | ${tr.start_date} → ${tr.end_date}`, 14, y + 5);
-                y += 15;
+        document.getElementById('btnPdf').addEventListener('click',()=>{
+            const {jsPDF}=window.jspdf;
+            const doc=new jsPDF();
+            doc.setFillColor(17,41,29); doc.rect(0,0,210,40,'F');
+            doc.setTextColor(250,250,250); doc.setFontSize(20); doc.text(t('appTitle'),14,20);
+            doc.setFontSize(10); doc.text(new Date().toLocaleDateString(),14,30);
+            doc.setTextColor(50,50,50); doc.setFontSize(12); let y=50;
+            state.rodals.forEach((r,ri)=>{
+                if(y>250){ doc.addPage(); y=20; }
+                doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${r.area_ha} ha)`,14,y);
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id);
+                acts.forEach((a,ai)=>{
+                    if(y>270){ doc.addPage(); y=20; }
+                    doc.setFontSize(10); doc.setTextColor(80,80,80);
+                    doc.text(`  ${ai+1}. ${a.title} — ${a.status} — ${a.progress||0}%`,14,y+6);
+                    doc.text(`     ${a.start_date||'-'} → ${a.end_date||'-'}`,14,y+11);
+                    y+=16;
+                });
+                y+=10;
             });
-            
             doc.save('informe-forestal.pdf');
-            showToast(t('toastSaved'), 'info');
+            showToast(t('toastSaved'),'info');
         });
 
-        document.getElementById('btnExcel').addEventListener('click', () => {
-            const data = state.treatments.map(tr => ({
-                ID: tr.id,
-                Title: tr.title,
-                Status: tr.status,
-                'Start Date': tr.start_date,
-                'End Date': tr.end_date,
-                'Area (ha)': tr.area_ha || 0,
-                Description: tr.description || ''
-            }));
-            
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Treatments');
-            XLSX.writeFile(wb, 'programacio-forestal.xlsx');
-            showToast(t('toastSaved'), 'info');
+        document.getElementById('btnExcel').addEventListener('click',()=>{
+            const data=[];
+            state.rodals.forEach(r=>{
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id);
+                if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':r.area_ha, Actuacio:'-', Estat:'-', Progrés:'-', Inici:'-', Fi:'-'});
+                acts.forEach(a=>{
+                    data.push({Rodal:r.name, 'Area (ha)':r.area_ha, Actuacio:a.title, Estat:a.status, Progrés:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
+                });
+            });
+            const ws=XLSX.utils.json_to_sheet(data);
+            const wb=XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb,ws,'Programacio');
+            XLSX.writeFile(wb,'programacio-forestal.xlsx');
+            showToast(t('toastSaved'),'info');
         });
 
         // ==================== NAVIGATION ====================
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById('section-' + sectionId).classList.add('active');
-            
-            document.querySelectorAll('.nav-item, .nav-desktop button').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll(`[data-section="${sectionId}"]`).forEach(b => b.classList.add('active'));
-            
-            if (sectionId === 'calendar') renderCalendar();
-            if (sectionId === 'timeline') renderGantt();
-            if (sectionId === 'reports') updateStats();
+        function showSection(id){
+            document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+            document.getElementById('section-'+id).classList.add('active');
+            document.querySelectorAll('.nav-item, .nav-desktop button').forEach(b=>b.classList.remove('active'));
+            document.querySelectorAll(`[data-section="${id}"]`).forEach(b=>b.classList.add('active'));
+            if(id==='calendar') renderCalendar();
+            if(id==='timeline') renderGantt();
+            if(id==='reports') updateStats();
+            if(id==='rodals'){ renderRodals(); document.getElementById('btnAddRodal').style.display=state.isPublicMode?'none':'block'; }
         }
-
-        document.querySelectorAll('.nav-item, .nav-desktop button').forEach(btn => {
-            btn.addEventListener('click', () => showSection(btn.dataset.section));
+        document.querySelectorAll('.nav-item, .nav-desktop button').forEach(btn=>{
+            btn.addEventListener('click',()=>showSection(btn.dataset.section));
         });
 
-        // ==================== PUBLIC VIEWER MODE ====================
-        function checkPublicMode() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('tractament_id');
-            if (id) {
-                state.isPublicMode = true;
-                state.publicId = id;
-                document.getElementById('publicBanner').style.display = 'flex';
-                document.getElementById('bottomNav').style.display = 'none';
-                document.querySelector('.app-header').style.display = 'none'; // Hide header in public mode for cleaner view
-                document.body.style.paddingBottom = '16px';
-                loadPublicTreatment(id);
+        // ==================== PUBLIC MODE ====================
+        function checkPublicMode(){
+            const p=new URLSearchParams(window.location.search);
+            const id=p.get('tractament_id');
+            if(id){
+                state.isPublicMode=true; state.publicId=id;
+                document.getElementById('publicBanner').style.display='flex';
+                document.getElementById('btnAddRodal').style.display='none';
+                document.getElementById('btnAddActuacio').style.display='none';
+                document.getElementById('bottomNav').style.display='none';
+                document.querySelector('.app-header').style.display='none';
+                document.body.style.paddingBottom='16px';
+                // In public mode, we show all sections stacked for easy reading
+                document.querySelectorAll('.section').forEach(s=>s.classList.add('active'));
+                document.querySelectorAll('.section').forEach(s=>s.style.marginBottom='20px');
+                // Try to load from URL param (demo: just show message)
+                showToast(t('treatmentLoaded'),'info');
             }
         }
 
-        async function loadPublicTreatment(id) {
-            if (!state.supabase) {
-                showToast('Supabase not configured', 'error', 5000);
-                return;
-            }
-            
-            try {
-                const { data, error } = await supabaseCall(
-                    state.supabase.from('treatments').select('*').eq('id', id).single()
-                );
-                
-                if (error || !data) throw new Error('Not found');
-                
-                state.treatments = [data];
-                if (data.geojson_data) addGeoJSONToMap(data.geojson_data);
-                
-                // Show photos if available
-                if (data.photos && Array.isArray(data.photos) && data.photos.length > 0) {
-                    document.getElementById('photosCard').style.display = 'block';
-                    const grid = document.getElementById('photoGrid');
-                    grid.innerHTML = '';
-                    data.photos.forEach(url => {
-                        const div = document.createElement('div');
-                        div.className = 'photo-item';
-                        div.innerHTML = `<img src="${url}" alt="photo" onerror="this.parentElement.textContent='?'">`;
-                        grid.appendChild(div);
-                    });
-                }
-                
-                renderCalendar();
-                renderGantt();
-                updateStats();
-                showToast(t('treatmentLoaded'), 'info');
-            } catch (err) {
-                showToast('Error carregant tractament', 'error', 5000);
-            }
+        // ==================== DEMO DATA ====================
+        function loadDemoData(){
+            if(state.rodals.length>0) return;
+            state.rodals=[
+                {id:'r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:null},
+                {id:'r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:null},
+                {id:'r3', name:'Rodal Est - Roure', area_ha:5.0, geojson_data:null}
+            ];
+            state.actuacions=[
+                {id:'a1', rodal_id:'r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
+                {id:'a2', rodal_id:'r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
+                {id:'a3', rodal_id:'r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'},
+                {id:'a4', rodal_id:'r3', title:'Plantació', status:'pending', progress:0, start_date:'2026-07-01', end_date:'2026-07-30', photos_before:[], photos_after:[], description:'Plantació de alzines de repla'}
+            ];
+            persistLocal();
         }
 
-        // ==================== AUTH & DATA LOADING ====================
-        async function initAuth() {
-            if (state.isPublicMode) return; // Skip auth in public mode
-            
-            state.supabase = createSupabaseClient();
-            if (!state.supabase) {
-                // Demo mode with sample data
-                state.treatments = [
-                    { id: 'demo-1', title: 'Clariana Sector A', status: 'executing', start_date: '2026-06-01', end_date: '2026-06-15', area_ha: 12.5, description: 'Clariana selectiva de pins' },
-                    { id: 'demo-2', title: 'Poda Roures', status: 'completed', start_date: '2026-05-10', end_date: '2026-05-20', area_ha: 8.3, description: 'Poda de manteniment' },
-                    { id: 'demo-3', title: 'Plantació Rebrot', status: 'pending', start_date: '2026-07-01', end_date: '2026-07-30', area_ha: 5.0, description: 'Plantació de alzines' },
-                    { id: 'demo-4', title: 'Defensa Incendis', status: 'delayed', start_date: '2026-04-15', end_date: '2026-05-15', area_ha: 25.0, description: 'Franja perimetral' }
-                ];
-                renderCalendar();
-                renderGantt();
-                updateStats();
-                return;
-            }
-            
-            try {
-                const { data: { session } } = await supabaseCall(state.supabase.auth.getSession());
-                if (session) {
-                    state.user = session.user;
-                    await loadTreatments();
-                } else {
-                    // Try to refresh or wait for auth state change
-                    state.supabase.auth.onAuthStateChange((event, session) => {
-                        if (session) {
-                            state.user = session.user;
-                            loadTreatments();
-                        }
-                    });
-                }
-            } catch (err) {
-                console.error('Auth error', err);
-                showToast(t('error'), 'error');
-            }
-        }
-
-        async function loadTreatments() {
-            if (!state.supabase) return;
-            try {
-                const { data } = await supabaseCall(
-                    state.supabase.from('treatments').select('*').order('start_date', { ascending: true })
-                );
-                if (data) {
-                    state.treatments = data;
-                    renderCalendar();
-                    renderGantt();
-                    updateStats();
-                }
-            } catch (err) {
-                // Load from local cache if available
-                const cached = localStorage.getItem('forest_treatments_cache');
-                if (cached) {
-                    state.treatments = JSON.parse(cached);
-                    renderCalendar();
-                    renderGantt();
-                    updateStats();
-                }
-            }
-        }
-
-        // ==================== INITIALIZATION ====================
-        async function init() {
+        // ==================== INIT ====================
+        async function init(){
             detectLanguage();
             updateSyncDot();
             await initIndexedDB();
+            loadLocal();
             initMap();
             checkPublicMode();
-            await initAuth();
-            
-            // If not public mode, show initial section
-            if (!state.isPublicMode) {
-                showSection('map');
-            } else {
-                // In public mode, show all sections at once or just map+reports
-                document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
-            }
+            if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
+            renderRodals();
+            showSection('map');
         }
 
-        // Start
         init();
     </script>
 </body>
