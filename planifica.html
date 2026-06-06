@@ -11,211 +11,95 @@
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
-            --bg-primary: #11291d;
-            --bg-secondary: #1a3d2b;
-            --bg-tertiary: #0f1f16;
-            --accent: #4ade80;
-            --accent-hover: #22c55e;
-            --accent-dim: rgba(74, 222, 128, 0.15);
-            --text-primary: #fafafa;
-            --text-secondary: #a3a3a3;
-            --danger: #ef4444;
-            --warning: #eab308;
-            --info: #3b82f6;
-            --border: rgba(250, 250, 250, 0.1);
+            --bg-primary: #11291d; --bg-secondary: #1a3d2b; --bg-tertiary: #0f1f16;
+            --accent: #4ade80; --accent-hover: #22c55e; --accent-dim: rgba(74,222,128,0.15);
+            --text-primary: #fafafa; --text-secondary: #a3a3a3;
+            --danger: #ef4444; --warning: #eab308; --info: #3b82f6;
+            --border: rgba(250,250,250,0.1);
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            padding-bottom: 90px;
-        }
-
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow-x: hidden; padding-bottom: 90px; }
         .font-mono { font-family: 'DM Mono', monospace; }
 
-        .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(17, 41, 29, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
+        .app-header { position: sticky; top: 0; z-index: 1000; background: rgba(17,41,29,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
         .header-left { display: flex; align-items: center; gap: 12px; }
-
-        .sync-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background-color: var(--danger);
-            box-shadow: 0 0 8px var(--danger);
-            transition: all 0.3s ease; flex-shrink: 0;
-        }
-        .sync-dot.online { background-color: var(--accent); box-shadow: 0 0 8px var(--accent); }
-
+        .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px var(--danger); transition: all 0.3s; flex-shrink: 0; }
+        .sync-dot.online { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
         .app-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
-
-        .btn-hub {
-            background: transparent; border: 1px solid var(--border);
-            color: var(--text-primary); padding: 8px 14px;
-            border-radius: 8px; font-family: 'DM Sans', sans-serif;
-            font-size: 0.85rem; cursor: pointer; text-decoration: none;
-            transition: all 0.2s;
-        }
+        .btn-hub { background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 8px 14px; border-radius: 8px; font-family: 'DM Sans'; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: all 0.2s; }
         .btn-hub:hover { background: var(--bg-secondary); border-color: var(--accent); }
 
         .container { max-width: 900px; margin: 0 auto; padding: 16px; }
-
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px; padding: 16px; margin-bottom: 16px;
-        }
-        .card-title {
-            font-size: 1rem; font-weight: 700; margin-bottom: 12px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
 
         #map { height: 280px; width: 100%; border-radius: 8px; z-index: 1; }
-
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 10px 16px; border-radius: 8px; border: none;
-            font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-            cursor: pointer; transition: all 0.2s; width: 100%;
-        }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: 8px; border: none; font-family: 'DM Sans'; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
         .btn-primary { background: var(--accent); color: #064e3b; }
         .btn-primary:hover { background: var(--accent-hover); }
-        .btn-secondary { background: rgba(250, 250, 250, 0.05); color: var(--text-primary); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: rgba(250, 250, 250, 0.1); }
-        .btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-secondary { background: rgba(250,250,250,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(250,250,250,0.1); }
+        .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
         .btn-small { padding: 6px 10px; font-size: 0.8rem; width: auto; }
         .btn-icon { width: 36px; height: 36px; padding: 0; }
-
         input[type="file"].hidden-input { display: none; }
 
         /* Rodals */
         .rodals-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-        .rodal-item {
-            background: rgba(250,250,250,0.03);
-            border: 2px solid transparent;
-            border-radius: 10px; padding: 12px;
-            cursor: pointer; transition: all 0.2s;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .rodal-item { background: rgba(250,250,250,0.03); border: 2px solid transparent; border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
         .rodal-item:hover { background: rgba(250,250,250,0.06); }
         .rodal-item.active { border-color: var(--accent); background: var(--accent-dim); }
         .rodal-name { font-weight: 700; font-size: 0.95rem; }
         .rodal-meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
-        .rodal-area { font-family: 'DM Mono', monospace; color: var(--accent); font-size: 0.9rem; }
+        .rodal-area { font-family: 'DM Mono'; color: var(--accent); font-size: 0.9rem; }
 
         .actuacions-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
-        .actuacio-card {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 10px; padding: 14px;
-        }
-        .actuacio-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 10px; gap: 8px;
-        }
-        .actuacio-title {
-            font-weight: 700; font-size: 0.95rem;
-            background: transparent; border: none; color: var(--text-primary);
-            font-family: 'DM Sans', sans-serif; width: 100%;
-        }
+        .actuacio-card { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+        .actuacio-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
+        .actuacio-title { font-weight: 700; font-size: 0.95rem; background: transparent; border: none; color: var(--text-primary); font-family: 'DM Sans'; width: 100%; }
         .actuacio-title:focus { outline: 1px solid var(--accent); border-radius: 4px; }
 
         .form-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
         .form-group { flex: 1; min-width: 120px; }
         .form-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; background: rgba(250,250,250,0.05);
-            border: 1px solid var(--border); color: var(--text-primary);
-            border-radius: 6px; padding: 8px 10px;
-            font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: var(--accent);
-        }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; background: rgba(250,250,250,0.05); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; padding: 8px 10px; font-family: 'DM Sans'; font-size: 0.9rem; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
         .form-group textarea { resize: vertical; min-height: 60px; }
 
-        /* Progress */
         .progress-wrap { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-        .progress-slider {
-            -webkit-appearance: none; flex: 1; height: 6px;
-            border-radius: 3px; background: rgba(250,250,250,0.1);
-            outline: none;
-        }
-        .progress-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 18px; height: 18px;
-            border-radius: 50%; background: var(--accent);
-            cursor: pointer; border: 2px solid var(--bg-primary);
-        }
-        .progress-value { font-family: 'DM Mono', monospace; color: var(--accent); min-width: 40px; text-align: right; }
+        .progress-slider { -webkit-appearance: none; flex: 1; height: 6px; border-radius: 3px; background: rgba(250,250,250,0.1); outline: none; }
+        .progress-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg-primary); }
+        .progress-value { font-family: 'DM Mono'; color: var(--accent); min-width: 40px; text-align: right; }
 
-        /* Photos */
         .photo-section { margin-top: 10px; }
-        .photo-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .photo-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .photo-thumb {
-            aspect-ratio: 1; border-radius: 6px; overflow: hidden;
-            position: relative; background: rgba(250,250,250,0.05);
-            display: flex; align-items: center; justify-content: center;
-        }
+        .photo-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; position: relative; background: rgba(250,250,250,0.05); display: flex; align-items: center; justify-content: center; }
         .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-thumb .remove-btn {
-            position: absolute; top: 2px; right: 2px;
-            background: rgba(0,0,0,0.6); color: var(--danger);
-            border: none; width: 20px; height: 20px; border-radius: 50%;
-            font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-        .photo-add {
-            aspect-ratio: 1; border-radius: 6px; border: 2px dashed var(--border);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--text-secondary); font-size: 0.75rem; cursor: pointer;
-            transition: all 0.2s;
-        }
+        .photo-thumb .remove-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: var(--danger); border: none; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .photo-add { aspect-ratio: 1; border-radius: 6px; border: 2px dashed var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
         .photo-add:hover { border-color: var(--accent); color: var(--accent); }
 
-        /* Calendar */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .calendar-header { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); padding: 8px 0; }
-        .calendar-day {
-            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 6px; font-size: 0.85rem; font-family: 'DM Mono', monospace;
-            background: rgba(250, 250, 250, 0.03); position: relative; cursor: pointer;
-        }
-        .calendar-day:hover { background: rgba(250, 250, 250, 0.08); }
+        .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.85rem; font-family: 'DM Mono'; background: rgba(250,250,250,0.03); position: relative; cursor: pointer; }
+        .calendar-day:hover { background: rgba(250,250,250,0.08); }
         .calendar-day.today { border: 1px solid var(--accent); }
-        .calendar-day.has-event::after {
-            content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px;
-            border-radius: 50%; background: var(--accent);
-        }
+        .calendar-day.has-event::after { content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
         .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .calendar-nav button {
-            background: transparent; border: 1px solid var(--border); color: var(--text-primary);
-            width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-family: 'DM Mono', monospace;
-        }
+        .calendar-nav button { background: transparent; border: 1px solid var(--border); color: var(--text-primary); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-family: 'DM Mono'; }
 
-        /* Gantt */
         .gantt-container { overflow-x: auto; }
         .gantt-row { display: flex; align-items: center; margin-bottom: 8px; min-width: 600px; }
         .gantt-label { width: 120px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; flex-shrink: 0; }
-        .gantt-bar-bg { flex: 1; height: 24px; background: rgba(250, 250, 250, 0.05); border-radius: 4px; position: relative; }
+        .gantt-bar-bg { flex: 1; height: 24px; background: rgba(250,250,250,0.05); border-radius: 4px; position: relative; }
         .gantt-bar { position: absolute; height: 100%; border-radius: 4px; top: 0; transition: width 0.5s ease; min-width: 4px; }
         .gantt-status-executing { background: var(--warning); }
         .gantt-status-completed { background: var(--accent); }
@@ -225,39 +109,13 @@
         .legend-item { display: flex; align-items: center; gap: 4px; }
         .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
 
-        /* Bottom Nav */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(17, 41, 29, 0.98); backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around;
-            padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-            z-index: 1000;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-            padding: 6px 8px; color: var(--text-secondary);
-            font-size: 0.65rem; cursor: pointer; transition: color 0.2s;
-            border: none; background: transparent; font-family: 'DM Sans', sans-serif;
-            flex: 1;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17,41,29,0.98); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px; color: var(--text-secondary); font-size: 0.65rem; cursor: pointer; transition: color 0.2s; border: none; background: transparent; font-family: 'DM Sans'; flex: 1; }
         .nav-item.active { color: var(--accent); }
         .nav-item svg { width: 22px; height: 22px; }
 
-        /* Toasts */
-        .toast-container {
-            position: fixed; top: 70px; right: 16px; z-index: 2000;
-            display: flex; flex-direction: column; gap: 8px;
-            pointer-events: none;
-        }
-        .toast {
-            background: var(--bg-secondary); border: 1px solid var(--border);
-            border-left: 4px solid var(--accent); color: var(--text-primary);
-            padding: 12px 16px; border-radius: 8px; font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transform: translateX(120%); transition: transform 0.3s ease;
-            pointer-events: auto; max-width: 300px;
-        }
+        .toast-container { position: fixed; top: 70px; right: 16px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .toast { background: var(--bg-secondary); border: 1px solid var(--border); border-left: 4px solid var(--accent); color: var(--text-primary); padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateX(120%); transition: transform 0.3s ease; pointer-events: auto; max-width: 300px; }
         .toast.show { transform: translateX(0); }
         .toast.error { border-left-color: var(--danger); }
         .toast.warning { border-left-color: var(--warning); }
@@ -267,43 +125,27 @@
         .section.active { display: block; }
 
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .summary-item { background: rgba(250, 250, 250, 0.03); padding: 12px; border-radius: 8px; text-align: center; }
-        .summary-value { font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: 500; color: var(--accent); }
+        .summary-item { background: rgba(250,250,250,0.03); padding: 12px; border-radius: 8px; text-align: center; }
+        .summary-value { font-family: 'DM Mono'; font-size: 1.5rem; font-weight: 500; color: var(--accent); }
         .summary-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
         .export-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-        .public-banner {
-            background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #93c5fd; padding: 10px 16px; border-radius: 8px;
-            font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-        }
+        .public-banner { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; padding: 10px 16px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
         .empty-state { text-align: center; color: var(--text-secondary); padding: 24px; font-size: 0.9rem; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
-        .badge-executing { background: rgba(234, 179, 8, 0.2); color: var(--warning); }
-        .badge-completed { background: rgba(74, 222, 128, 0.2); color: var(--accent); }
-        .badge-delayed { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .badge-pending { background: rgba(250, 250, 250, 0.1); color: var(--text-secondary); }
+        .badge-executing { background: rgba(234,179,8,0.2); color: var(--warning); }
+        .badge-completed { background: rgba(74,222,128,0.2); color: var(--accent); }
+        .badge-delayed { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .badge-pending { background: rgba(250,250,250,0.1); color: var(--text-secondary); }
 
-        @media (min-width: 768px) {
-            #map { height: 400px; }
-            .bottom-nav { display: none; }
-            body { padding-bottom: 16px; }
-            .nav-desktop { display: flex; gap: 8px; margin-bottom: 16px; }
-            .photo-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-        @media (max-width: 767px) {
-            .nav-desktop { display: none; }
-        }
+        .detected-banner { background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.9rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
 
-        .nav-desktop button {
-            background: var(--bg-secondary); border: 1px solid var(--border);
-            color: var(--text-primary); padding: 8px 16px; border-radius: 8px;
-            cursor: pointer; font-family: 'DM Sans', sans-serif;
-        }
-        .nav-desktop button.active {
-            background: var(--accent); color: #064e3b; border-color: var(--accent); font-weight: 700;
-        }
+        @media (min-width: 768px) { #map { height: 400px; } .bottom-nav { display: none; } body { padding-bottom: 16px; } .nav-desktop { display: flex; gap: 8px; margin-bottom: 16px; } .photo-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 767px) { .nav-desktop { display: none; } }
+
+        .nav-desktop button { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: 'DM Sans'; }
+        .nav-desktop button.active { background: var(--accent); color: #064e3b; border-color: var(--accent); font-weight: 700; }
     </style>
 </head>
 <body>
@@ -354,34 +196,14 @@
             <div class="card">
                 <div class="card-title" id="rodalsTitle">Rodals i actuacions</div>
                 
-                <!-- Llista de rodals -->
+                <div id="detectedBanner" class="detected-banner" style="display:none;">
+                    <span id="detectedText"></span>
+                </div>
+
                 <div id="rodalsList" class="rodals-list">
                     <div class="empty-state">No hi ha rodals creats</div>
                 </div>
 
-                <!-- Form nou rodal -->
-                <div id="rodalForm" style="display:none; margin-bottom:12px;">
-                    <div class="form-row">
-                        <div class="form-group" style="flex:2;">
-                            <label id="lblRodalName">Nom del rodal</label>
-                            <input type="text" id="inputRodalName" placeholder="ex: Rodal Nord">
-                        </div>
-                        <div class="form-group">
-                            <label id="lblRodalArea">Superfície (ha)</label>
-                            <input type="number" id="inputRodalArea" step="0.1" placeholder="0.0" class="font-mono">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <button class="btn btn-primary btn-small" id="btnSaveRodal" style="flex:1;">Desa</button>
-                        <button class="btn btn-secondary btn-small" id="btnCancelRodal" style="flex:1;">Cancel·la</button>
-                    </div>
-                </div>
-
-                <button class="btn btn-secondary" id="btnAddRodal" style="display:none;">
-                    <span>➕ <span id="txtAddRodal">Afegir rodal</span></span>
-                </button>
-
-                <!-- Detall rodal seleccionat -->
                 <div id="rodalDetail" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <div>
@@ -395,7 +217,6 @@
                     
                     <div id="actuacionsList" class="actuacions-list"></div>
 
-                    <!-- Form nova actuació -->
                     <div id="actuacioForm" style="display:none; margin-top:12px; padding:12px; background:var(--bg-primary); border-radius:8px;">
                         <div class="form-row">
                             <div class="form-group" style="flex:2;">
@@ -551,23 +372,26 @@
             selectedRodalId: null,
             currentMonth: new Date(),
             map: null,
-            mapLayer: null,
+            mapLayers: {}, // rodalId -> layer
             user: null,
             supabase: null,
             db: null
         };
 
+        // ==================== PROJ4 DEFINITIONS ====================
+        proj4.defs('EPSG:25831', '+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+        proj4.defs('EPSG:32631', '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs');
+        proj4.defs('EPSG:23031', '+proj=utm +zone=31 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs');
+
         // ==================== I18N ====================
         const i18n = {
             ca: {
                 appTitle:'Gestió Forestal', backHub:'Tornar al Hub', mapTitle:'Mapa de la finca',
-                uploadGeo:'Penjar GeoJSON', rodalsTitle:'Rodals i actuacions', addRodal:'Afegir rodal',
-                rodalName:'Nom del rodal', rodalArea:'Superfície (ha)', save:'Desa', cancel:'Cancel·la',
-                actuacionsTitle:'Actuacions programades', addActuacio:'Nova actuació', actType:'Tipus d\'actuació',
-                actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi', actDesc:'Descripció / observacions',
-                schedule:'Programar actuació', calendar:'Calendari d\'actuacions', timeline:'Línia de temps forestal',
-                reports:'Resum i exportació', rodals:'Rodals', area:'Superfície', actuacions:'Actuacions',
-                avgProgress:'Progrés mig', pdf:'Descarregar PDF', excel:'Descarregar Excel',
+                uploadGeo:'Penjar GeoJSON', rodalsTitle:'Rodals i actuacions', addActuacio:'Nova actuació',
+                actType:'Tipus d\'actuació', actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi',
+                actDesc:'Descripció / observacions', schedule:'Programar actuació', calendar:'Calendari d\'actuacions',
+                timeline:'Línia de temps forestal', reports:'Resum i exportació', rodals:'Rodals', area:'Superfície',
+                actuacions:'Actuacions', avgProgress:'Progrés mig', pdf:'Descarregar PDF', excel:'Descarregar Excel',
                 executing:'En execució', completed:'Completat', delayed:'Retardat', pending:'Pendent',
                 publicMode:'Mode Visor Públic — Només lectura', syncOnline:'Sincronitzat', syncOffline:'Mode local',
                 toastOffline:'Treballant en mode local (Offline)', toastSync:'Sincronitzat amb el servidor',
@@ -575,17 +399,16 @@
                 toastGeoJSON:'GeoJSON carregat', noGeoJSON:'Arxiu no vàlid', navMap:'Mapa', navRodals:'Rodals',
                 navCal:'Calendari', navTime:'Temps', navRep:'Informes', emptyRodals:'No hi ha rodals creats',
                 emptyActs:'Cap actuació programada', progress:'Progrés', before:'Abans', after:'Després',
-                addPhoto:'Afegir foto', delete:'Eliminar', treatmentLoaded:'Tractament carregat'
+                addPhoto:'Afegir foto', delete:'Eliminar', treatmentLoaded:'Tractament carregat',
+                detectedRodals:'rodals detectats del GeoJSON', reprojected:'Reprojectat des de'
             },
             es: {
                 appTitle:'Gestión Forestal', backHub:'Volver al Hub', mapTitle:'Mapa de la finca',
-                uploadGeo:'Subir GeoJSON', rodalsTitle:'Rodales y actuaciones', addRodal:'Añadir rodal',
-                rodalName:'Nombre del rodal', rodalArea:'Superficie (ha)', save:'Guardar', cancel:'Cancelar',
-                actuacionsTitle:'Actuaciones programadas', addActuacio:'Nueva actuación', actType:'Tipo de actuación',
-                actStatus:'Estado', actStart:'Fecha inicio', actEnd:'Fecha fin', actDesc:'Descripción / observaciones',
-                schedule:'Programar actuación', calendar:'Calendario de actuaciones', timeline:'Línea de tiempo forestal',
-                reports:'Resumen y exportación', rodals:'Rodales', area:'Superficie', actuaciones:'Actuaciones',
-                avgProgress:'Progreso medio', pdf:'Descargar PDF', excel:'Descargar Excel',
+                uploadGeo:'Subir GeoJSON', rodalsTitle:'Rodales y actuaciones', addActuacio:'Nueva actuación',
+                actType:'Tipo de actuación', actStatus:'Estado', actStart:'Fecha inicio', actEnd:'Fecha fin',
+                actDesc:'Descripción / observaciones', schedule:'Programar actuación', calendar:'Calendario de actuaciones',
+                timeline:'Línea de tiempo forestal', reports:'Resumen y exportación', rodals:'Rodales', area:'Superficie',
+                actuaciones:'Actuaciones', avgProgress:'Progreso medio', pdf:'Descargar PDF', excel:'Descargar Excel',
                 executing:'En ejecución', completed:'Completado', delayed:'Retrasado', pending:'Pendiente',
                 publicMode:'Modo Visor Público — Solo lectura', syncOnline:'Sincronizado', syncOffline:'Modo local',
                 toastOffline:'Trabajando en modo local', toastSync:'Sincronizado con el servidor',
@@ -593,17 +416,16 @@
                 toastGeoJSON:'GeoJSON cargado', noGeoJSON:'Archivo no válido', navMap:'Mapa', navRodals:'Rodales',
                 navCal:'Calendario', navTime:'Tiempo', navRep:'Informes', emptyRodals:'No hay rodales creados',
                 emptyActs:'Ninguna actuación programada', progress:'Progreso', before:'Antes', after:'Después',
-                addPhoto:'Añadir foto', delete:'Eliminar', treatmentLoaded:'Tratamiento cargado'
+                addPhoto:'Añadir foto', delete:'Eliminar', treatmentLoaded:'Tratamiento cargado',
+                detectedRodals:'rodales detectados del GeoJSON', reprojected:'Reproyectado desde'
             },
             en: {
                 appTitle:'Forest Management', backHub:'Back to Hub', mapTitle:'Property Map',
-                uploadGeo:'Upload GeoJSON', rodalsTitle:'Stands & Operations', addRodal:'Add Stand',
-                rodalName:'Stand name', rodalArea:'Area (ha)', save:'Save', cancel:'Cancel',
-                actuacionsTitle:'Scheduled operations', addActuacio:'New operation', actType:'Operation type',
-                actStatus:'Status', actStart:'Start date', actEnd:'End date', actDesc:'Description / notes',
-                schedule:'Schedule operation', calendar:'Operations Calendar', timeline:'Forest Timeline',
-                reports:'Summary & Export', rodals:'Stands', area:'Surface area', actuacions:'Operations',
-                avgProgress:'Avg progress', pdf:'Download PDF', excel:'Download Excel',
+                uploadGeo:'Upload GeoJSON', rodalsTitle:'Stands & Operations', addActuacio:'New operation',
+                actType:'Operation type', actStatus:'Status', actStart:'Start date', actEnd:'End date',
+                actDesc:'Description / notes', schedule:'Schedule operation', calendar:'Operations Calendar',
+                timeline:'Forest Timeline', reports:'Summary & Export', rodals:'Stands', area:'Surface area',
+                actuacions:'Operations', avgProgress:'Avg progress', pdf:'Download PDF', excel:'Download Excel',
                 executing:'In progress', completed:'Completed', delayed:'Delayed', pending:'Pending',
                 publicMode:'Public Viewer — Read only', syncOnline:'Synced', syncOffline:'Local mode',
                 toastOffline:'Working offline', toastSync:'Synced with server',
@@ -611,7 +433,8 @@
                 toastGeoJSON:'GeoJSON loaded', noGeoJSON:'Invalid file', navMap:'Map', navRodals:'Stands',
                 navCal:'Calendar', navTime:'Timeline', navRep:'Reports', emptyRodals:'No stands created',
                 emptyActs:'No operations scheduled', progress:'Progress', before:'Before', after:'After',
-                addPhoto:'Add photo', delete:'Delete', treatmentLoaded:'Treatment loaded'
+                addPhoto:'Add photo', delete:'Delete', treatmentLoaded:'Treatment loaded',
+                detectedRodals:'stands detected from GeoJSON', reprojected:'Reprojected from'
             }
         };
 
@@ -626,9 +449,7 @@
         function applyTranslations(){
             const ids = {
                 appTitle:'appTitle', btnHub:'backHub', mapTitle:'mapTitle', txtUploadGeo:'uploadGeo',
-                rodalsTitle:'rodalsTitle', txtAddRodal:'addRodal', lblRodalName:'rodalName', lblRodalArea:'rodalArea',
-                btnSaveRodal:'save', btnCancelRodal:'cancel', actuacionsTitle:'actuacionsTitle',
-                txtAddActuacio:'addActuacio', lblActType:'actType', lblActStatus:'actStatus',
+                rodalsTitle:'rodalsTitle', txtAddActuacio:'addActuacio', lblActType:'actType', lblActStatus:'actStatus',
                 lblActStart:'actStart', lblActEnd:'actEnd', lblActDesc:'actDesc', btnSaveActuacio:'schedule',
                 btnCancelActuacio:'cancel', calendarTitle:'calendar', timelineTitle:'timeline', reportsTitle:'reports',
                 lblRodals:'rodals', lblArea:'area', lblActuacions:'actuacions', lblAvgProgress:'avgProgress',
@@ -648,7 +469,7 @@
             setTimeout(()=>{ d.classList.remove('show'); setTimeout(()=>d.remove(),300); }, dur);
         }
 
-        // ==================== INDEXEDDB ====================
+        // ==================== INDEXEDDB & LOCALSTORAGE ====================
         function initIndexedDB(){
             return new Promise((res,rej)=>{
                 const r = indexedDB.open(CONFIG.DB_NAME, 1);
@@ -661,11 +482,6 @@
                     if(!db.objectStoreNames.contains('actuacions')) db.createObjectStore('actuacions', {keyPath:'id'});
                 };
             });
-        }
-        function saveOffline(table, data){
-            if(!state.db) return;
-            const tx=state.db.transaction([CONFIG.STORE_NAME],'readwrite');
-            tx.objectStore(CONFIG.STORE_NAME).add({table,data,timestamp:Date.now(),synced:false});
         }
         function persistLocal(){
             localStorage.setItem('forest_rodals', JSON.stringify(state.rodals));
@@ -707,12 +523,8 @@
             d.classList.toggle('online', state.isOnline);
             d.title=state.isOnline?t('syncOnline'):t('syncOffline');
         }
-        window.addEventListener('online',()=>{ state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info'); syncOfflineData(); });
+        window.addEventListener('online',()=>{ state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info'); });
         window.addEventListener('offline',()=>{ state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000); });
-        async function syncOfflineData(){
-            if(!state.supabase||!state.isOnline) return;
-            // simplified: in real app, iterate IndexedDB queue
-        }
 
         // ==================== MAP ====================
         function initMap(){
@@ -728,12 +540,141 @@
                 },()=>{});
             }
         }
-        function addGeoJSONToMap(geojson){
-            if(state.mapLayer) state.map.removeLayer(state.mapLayer);
-            state.mapLayer=L.geoJSON(geojson,{
-                style:{color:'#4ade80',weight:3,opacity:0.8,fillColor:'#4ade80',fillOpacity:0.15}
+
+        function clearMapLayers(){
+            Object.values(state.mapLayers).forEach(l=>state.map.removeLayer(l));
+            state.mapLayers={};
+        }
+
+        function highlightRodal(rodalId){
+            // Reset all styles
+            Object.entries(state.mapLayers).forEach(([id, layer])=>{
+                layer.setStyle({ color: '#4ade80', weight: 2, opacity: 0.6, fillOpacity: 0.1 });
+            });
+            // Highlight selected
+            if(state.mapLayers[rodalId]){
+                state.mapLayers[rodalId].setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillOpacity: 0.25 });
+                state.map.fitBounds(state.mapLayers[rodalId].getBounds(),{padding:[40,40], maxZoom:18});
+            }
+        }
+
+        function addRodalToMap(rodal, geojson){
+            if(!geojson) return;
+            const layer=L.geoJSON(geojson,{
+                style:{ color:'#4ade80', weight:2, opacity:0.6, fillColor:'#4ade80', fillOpacity:0.1 }
             }).addTo(state.map);
-            state.map.fitBounds(state.mapLayer.getBounds(),{padding:[20,20]});
+            layer.bindPopup(`<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
+            state.mapLayers[rodal.id]=layer;
+        }
+
+        // ==================== CRS DETECTION & TRANSFORMATION ====================
+        function getFirstCoordinate(geojson){
+            if(!geojson.features||!geojson.features.length) return null;
+            const geom=geojson.features[0].geometry;
+            if(!geom) return null;
+            let coords=geom.coordinates;
+            while(Array.isArray(coords[0])) coords=coords[0];
+            return coords;
+        }
+
+        function detectCRS(geojson){
+            // 1. Explicit CRS property (GeoJSON 2008)
+            if(geojson.crs?.properties?.name){
+                const name=geojson.crs.properties.name.toLowerCase();
+                if(name.includes('25831')) return 'EPSG:25831';
+                if(name.includes('32631')) return 'EPSG:32631';
+                if(name.includes('23031')) return 'EPSG:23031';
+                if(name.includes('4326')) return 'EPSG:4326';
+            }
+            // 2. Heuristic by coordinate magnitude
+            const first=getFirstCoordinate(geojson);
+            if(first){
+                const [x,y]=first;
+                if(Math.abs(x)>1000 && Math.abs(y)>1000){
+                    // Likely UTM zone 31N in Catalonia/Spain
+                    if(y>4000000 && y<5000000 && x>200000 && x<600000) return 'EPSG:25831'; // Default ETRS89
+                }
+            }
+            return 'EPSG:4326';
+        }
+
+        function transformCoordinates(coords, fromCRS){
+            if(fromCRS==='EPSG:4326') return coords;
+            if(Array.isArray(coords[0])){
+                return coords.map(c=>transformCoordinates(c, fromCRS));
+            }
+            // Single point [x, y] -> [lon, lat] -> Leaflet wants [lat, lon]
+            const [lon, lat]=proj4(fromCRS, 'WGS84', coords);
+            return [lat, lon];
+        }
+
+        function transformGeometry(geom, fromCRS){
+            const g=JSON.parse(JSON.stringify(geom));
+            if(g.type==='Point') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
+            else if(g.type==='Polygon') g.coordinates=g.coordinates.map(ring=>transformCoordinates(ring, fromCRS));
+            else if(g.type==='MultiPolygon') g.coordinates=g.coordinates.map(poly=>poly.map(ring=>transformCoordinates(ring, fromCRS)));
+            else if(g.type==='LineString') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
+            else if(g.type==='MultiLineString') g.coordinates=g.coordinates.map(line=>transformCoordinates(line, fromCRS));
+            return g;
+        }
+
+        function shoelaceArea(ring){
+            // ring is array of [x,y] in projected coordinates (meters)
+            let area=0;
+            for(let i=0;i<ring.length-1;i++){
+                area+=ring[i][0]*ring[i+1][1]-ring[i+1][0]*ring[i][1];
+            }
+            return Math.abs(area)/2;
+        }
+
+        function polygonAreaHa(geometry, originalCRS){
+            // Calculate area from original coordinates if projected, else approximate
+            if(originalCRS==='EPSG:4326'){
+                // For WGS84, use rough approximation or return 0 to let user input
+                return 0;
+            }
+            let areaM2=0;
+            const coords=geometry.coordinates;
+            if(geometry.type==='Polygon'){
+                areaM2+=shoelaceArea(coords[0]);
+                // Subtract holes if any
+                for(let i=1;i<coords.length;i++) areaM2-=shoelaceArea(coords[i]);
+            }else if(geometry.type==='MultiPolygon'){
+                coords.forEach(poly=>{
+                    areaM2+=shoelaceArea(poly[0]);
+                    for(let i=1;i<poly.length;i++) areaM2-=shoelaceArea(poly[i]);
+                });
+            }
+            return areaM2/10000; // m2 -> ha
+        }
+
+        function extractRodalsFromGeoJSON(geojson, originalCRS){
+            const rodals=[];
+            if(!geojson.features) return rodals;
+            
+            geojson.features.forEach((feat, idx)=>{
+                const geom=feat.geometry;
+                if(!geom||!(geom.type==='Polygon'||geom.type==='MultiPolygon')) return;
+                
+                // Transform to WGS84 for map
+                const wgs84Geom=transformGeometry(geom, originalCRS);
+                
+                // Calculate area from original coords
+                const areaHa=polygonAreaHa(geom, originalCRS);
+                
+                // Extract name from properties
+                const p=feat.properties||{};
+                const name=p.Nom||p.nom||p.Name||p.name||p.rodal||p.Rodal||p.id||p.ID||(`${t('rodals')} ${idx+1}`);
+                const id=feat.id||`rodal-${idx}-${Date.now()}`;
+                
+                rodals.push({
+                    id: String(id),
+                    name: String(name),
+                    area_ha: areaHa>0?areaHa:0,
+                    geojson_data: {type:'Feature', properties:p, geometry:wgs84Geom}
+                });
+            });
+            return rodals;
         }
 
         // ==================== GEOJSON UPLOAD ====================
@@ -741,20 +682,51 @@
             const file=e.target.files[0]; if(!file) return;
             try{
                 const geojson=JSON.parse(await file.text());
-                if(!geojson.type||!geojson.features) throw new Error('Invalid');
-                addGeoJSONToMap(geojson); showToast(t('toastGeoJSON'),'info');
-                // If a rodal is selected, attach geojson to it
-                if(state.selectedRodalId){
-                    const rodal=state.rodals.find(r=>r.id===state.selectedRodalId);
-                    if(rodal){ rodal.geojson_data=geojson; persistLocal(); renderRodals(); }
+                if(!geojson.type) throw new Error('Invalid');
+                
+                const crs=detectCRS(geojson);
+                const newRodals=extractRodalsFromGeoJSON(geojson, crs);
+                
+                if(newRodals.length===0){ showToast(t('noGeoJSON'),'error'); return; }
+                
+                // Ask to replace or append? For now, replace all rodals and clear acts
+                if(state.rodals.length>0 && !state.isPublicMode){
+                    if(!confirm(`${newRodals.length} ${t('detectedRodals')}. ${state.lang==='ca'?'Reemplaçar els rodals actuals?':state.lang==='es'?'¿Reemplazar los rodales actuales?':'Replace current stands?'})) return;
                 }
-            }catch(err){ showToast(t('noGeoJSON'),'error'); }
+                
+                clearMapLayers();
+                state.rodals=newRodals;
+                state.actuacions=[]; // clear operations on new rodals
+                state.selectedRodalId=null;
+                persistLocal();
+                
+                // Add to map
+                state.rodals.forEach(r=>addRodalToMap(r, r.geojson_data));
+                
+                // Fit map to all
+                const allLayers=L.featureGroup(Object.values(state.mapLayers));
+                if(Object.values(state.mapLayers).length>0) state.map.fitBounds(allLayers.getBounds(),{padding:[30,30]});
+                
+                // Show banner
+                const banner=document.getElementById('detectedBanner');
+                banner.style.display='flex';
+                document.getElementById('detectedText').textContent=`${newRodals.length} ${t('detectedRodals')}${crs!=='EPSG:4326'?' · '+t('reprojected')+' '+crs:''}`;
+                
+                showToast(t('toastGeoJSON'),'info');
+                renderRodals();
+                
+                // Switch to rodals view
+                showSection('rodals');
+                
+            }catch(err){ console.error(err); showToast(t('noGeoJSON'),'error'); }
             e.target.value='';
         });
 
         // ==================== RODALS ====================
         function renderRodals(){
             const list=document.getElementById('rodalsList');
+            document.getElementById('detectedBanner').style.display='none';
+            
             if(state.rodals.length===0){
                 list.innerHTML=`<div class="empty-state">${t('emptyRodals')}</div>`;
                 document.getElementById('rodalDetail').style.display='none';
@@ -770,7 +742,7 @@
                         <div class="rodal-name">${r.name}</div>
                         <div class="rodal-meta">${acts} ${t('actuacions').toLowerCase()}</div>
                     </div>
-                    <div class="rodal-area font-mono">${parseFloat(r.area_ha||0).toFixed(1)} ha</div>
+                    <div class="rodal-area font-mono">${parseFloat(r.area_ha||0).toFixed(2)} ha</div>
                 `;
                 div.onclick=()=>selectRodal(r.id);
                 list.appendChild(div);
@@ -784,9 +756,7 @@
             document.getElementById('rodalDetail').style.display='block';
             document.getElementById('btnAddActuacio').style.display=state.isPublicMode?'none':'block';
             renderRodalDetail();
-            // If rodal has geojson, show it
-            const r=state.rodals.find(x=>x.id===id);
-            if(r&&r.geojson_data){ addGeoJSONToMap(r.geojson_data); }
+            highlightRodal(id);
         }
 
         function renderRodalDetail(){
@@ -801,30 +771,40 @@
         // ==================== ACTUACIONS ====================
         function renderActuacions(){
             const container=document.getElementById('actuacionsList');
-            const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId);
+            const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
             if(acts.length===0){
                 container.innerHTML=`<div class="empty-state">${t('emptyActs')}</div>`; return;
             }
             container.innerHTML='';
             const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
             const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
+            const readOnly=state.isPublicMode;
 
             acts.forEach(a=>{
                 const card=document.createElement('div'); card.className='actuacio-card';
-                const readOnly=state.isPublicMode;
                 card.innerHTML=`
                     <div class="actuacio-header">
                         <div style="flex:1;">
-                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
                                 <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
                             </div>
-                            <div style="font-size:0.8rem; color:var(--text-secondary);">${a.start_date||''} → ${a.end_date||''}</div>
                         </div>
                         ${readOnly?'':`<button class="btn btn-danger btn-icon" onclick="deleteActuacio('${a.id}')" title="${t('delete')}">🗑️</button>`}
                     </div>
                     ${a.description?`<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">${a.description}</div>`:''}
                     
+                    <div class="form-row" style="margin-bottom:8px;">
+                        <div class="form-group" style="min-width:100px;">
+                            <label style="font-size:0.7rem;">${t('actStart')}</label>
+                            <input type="date" value="${a.start_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','start_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
+                        </div>
+                        <div class="form-group" style="min-width:100px;">
+                            <label style="font-size:0.7rem;">${t('actEnd')}</label>
+                            <input type="date" value="${a.end_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','end_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
+                        </div>
+                    </div>
+
                     <div class="progress-wrap">
                         <input type="range" min="0" max="100" value="${a.progress||0}" class="progress-slider" 
                             oninput="updateProgress('${a.id}', this.value)" ${readOnly?'disabled':''}>
@@ -871,18 +851,25 @@
                 `;
                 grid.appendChild(div);
             });
+            if(!readOnly){
+                const add=document.createElement('label'); add.className='photo-add';
+                add.innerHTML=`<span style="font-size:1.2rem;">+</span><span style="font-size:0.65rem;">${t('addPhoto')}</span>`;
+                add.innerHTML+=`<input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${actId}','${type}',this)">`;
+                grid.appendChild(add);
+            }
         }
 
         function updateActField(id, field, value){
             const a=state.actuacions.find(x=>x.id===id);
-            if(a){ a[field]=value; persistLocal(); }
+            if(a){ a[field]=value; persistLocal(); if(field.includes('date')){ renderCalendar(); renderGantt(); } }
         }
         function updateProgress(id, val){
             const a=state.actuacions.find(x=>x.id===id);
-            if(a){ a.progress=parseInt(val); document.getElementById(`prog-${id}`).textContent=val+'%'; persistLocal(); }
+            if(a){ a.progress=parseInt(val); const el=document.getElementById(`prog-${id}`); if(el) el.textContent=val+'%'; persistLocal(); }
         }
         function deleteActuacio(id){
-            if(!confirm('Eliminar aquesta actuació?')) return;
+            const msg=state.lang==='ca'?'Eliminar aquesta actuació?':state.lang==='es'?'¿Eliminar esta actuación?':'Delete this operation?';
+            if(!confirm(msg)) return;
             state.actuacions=state.actuacions.filter(a=>a.id!==id);
             persistLocal(); renderActuacions(); renderRodals();
         }
@@ -907,35 +894,6 @@
         }
 
         // ==================== FORMS ====================
-        document.getElementById('btnAddRodal').addEventListener('click', ()=>{
-            document.getElementById('rodalForm').style.display='block';
-            document.getElementById('btnAddRodal').style.display='none';
-            document.getElementById('rodalDetail').style.display='none';
-        });
-        document.getElementById('btnCancelRodal').addEventListener('click', ()=>{
-            document.getElementById('rodalForm').style.display='none';
-            document.getElementById('btnAddRodal').style.display='block';
-            document.getElementById('inputRodalName').value='';
-            document.getElementById('inputRodalArea').value='';
-        });
-        document.getElementById('btnSaveRodal').addEventListener('click', ()=>{
-            const name=document.getElementById('inputRodalName').value.trim();
-            const area=parseFloat(document.getElementById('inputRodalArea').value)||0;
-            if(!name){ showToast('Nom obligatori','error'); return; }
-            const rodal={id:crypto.randomUUID(), name, area_ha:area, geojson_data:null, created_at:new Date().toISOString()};
-            state.rodals.push(rodal); persistLocal(); renderRodals();
-            document.getElementById('btnCancelRodal').click();
-            selectRodal(rodal.id);
-            showToast(t('toastSaved'),'info');
-        });
-        document.getElementById('btnDeleteRodal').addEventListener('click', ()=>{
-            if(!confirm('Eliminar aquest rodal i totes les seves actuacions?')) return;
-            state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
-            state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
-            state.selectedRodalId=null; persistLocal(); renderRodals();
-            document.getElementById('rodalDetail').style.display='none';
-        });
-
         document.getElementById('btnAddActuacio').addEventListener('click', ()=>{
             document.getElementById('actuacioForm').style.display='block';
             document.getElementById('btnAddActuacio').style.display='none';
@@ -951,7 +909,7 @@
             const start=document.getElementById('inputActStart').value;
             const end=document.getElementById('inputActEnd').value;
             const desc=document.getElementById('inputActDesc').value.trim();
-            const customTitle=type==='Altres'?prompt('Especifica el nom de l\'actuació:')||'Altres':type;
+            const customTitle=type==='Altres'?prompt(state.lang==='ca'?'Nom de l\'actuació:':state.lang==='es'?'Nombre de la actuación:':'Operation name:')||'Altres':type;
             
             const act={
                 id:crypto.randomUUID(),
@@ -970,6 +928,15 @@
             document.getElementById('btnCancelActuacio').click();
             showToast(t('toastSaved'),'info');
         });
+        document.getElementById('btnDeleteRodal').addEventListener('click', ()=>{
+            const msg=state.lang==='ca'?'Eliminar aquest rodal i totes les seves actuacions?':state.lang==='es'?'¿Eliminar este rodal y todas sus actuaciones?':'Delete this stand and all its operations?';
+            if(!confirm(msg)) return;
+            if(state.mapLayers[state.selectedRodalId]){ state.map.removeLayer(state.mapLayers[state.selectedRodalId]); delete state.mapLayers[state.selectedRodalId]; }
+            state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
+            state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
+            state.selectedRodalId=null; persistLocal(); renderRodals();
+            document.getElementById('rodalDetail').style.display='none';
+        });
 
         // ==================== CALENDAR ====================
         function renderCalendar(){
@@ -987,15 +954,16 @@
                              ['Mo','Tu','We','Th','Fr','Sa','Su'];
             weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
             let startOffset=firstDay===0?6:firstDay-1;
-            for(let i=0;i<<startOffset;i++) grid.appendChild(document.createElement('div'));
+            for(let i=0;i<startOffset;i++) grid.appendChild(document.createElement('div'));
             const today=new Date();
             state.actuacions.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
             for(let d=1; d<=daysInMonth; d++){
                 const date=new Date(year,month,d);
                 const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
                 if(date.toDateString()===today.toDateString()) el.classList.add('today');
-                const has=state.actuacions.some(a=> date>=a._start&&date<=a._end);
-                if(has) el.classList.add('has-event');
+                const has=state.actuacions.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
+                if(!has && state.actuacions.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5'; // other rodals faint
+                if(state.actuacions.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
                 grid.appendChild(el);
             }
         }
@@ -1006,14 +974,15 @@
         function renderGantt(){
             const container=document.getElementById('ganttChart');
             container.innerHTML='';
-            if(state.actuacions.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
-            const allDates=state.actuacions.flatMap(a=>[new Date(a.start_date),new Date(a.end_date)]);
+            const acts=state.actuacions.slice().sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+            if(acts.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
+            const allDates=acts.flatMap(a=>[new Date(a.start_date||'2026-01-01'),new Date(a.end_date||'2026-01-01')]);
             const minDate=new Date(Math.min(...allDates));
             const maxDate=new Date(Math.max(...allDates));
-            const totalDays=Math.max(1,(maxDate-minDate)/(86400000));
+            const totalDays=Math.max(1,(maxDate-minDate)/86400000);
             const sMap={executing:'gantt-status-executing',completed:'gantt-status-completed',delayed:'gantt-status-delayed',pending:'gantt-status-pending'};
-            state.actuacions.forEach(a=>{
-                const start=new Date(a.start_date), end=new Date(a.end_date);
+            acts.forEach(a=>{
+                const start=new Date(a.start_date||minDate), end=new Date(a.end_date||maxDate);
                 const so=((start-minDate)/86400000)/totalDays*100;
                 const du=((end-start)/86400000)/totalDays*100;
                 const row=document.createElement('div'); row.className='gantt-row';
@@ -1048,14 +1017,13 @@
             doc.setTextColor(50,50,50); doc.setFontSize(12); let y=50;
             state.rodals.forEach((r,ri)=>{
                 if(y>250){ doc.addPage(); y=20; }
-                doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${r.area_ha} ha)`,14,y);
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id);
+                doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${parseFloat(r.area_ha).toFixed(2)} ha)`,14,y);
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
                 acts.forEach((a,ai)=>{
                     if(y>270){ doc.addPage(); y=20; }
                     doc.setFontSize(10); doc.setTextColor(80,80,80);
-                    doc.text(`  ${ai+1}. ${a.title} — ${a.status} — ${a.progress||0}%`,14,y+6);
-                    doc.text(`     ${a.start_date||'-'} → ${a.end_date||'-'}`,14,y+11);
-                    y+=16;
+                    doc.text(`  ${ai+1}. ${a.title} — ${a.progress||0}% — ${a.start_date||'-'} → ${a.end_date||'-'}`,14,y+6);
+                    y+=14;
                 });
                 y+=10;
             });
@@ -1066,10 +1034,10 @@
         document.getElementById('btnExcel').addEventListener('click',()=>{
             const data=[];
             state.rodals.forEach(r=>{
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id);
-                if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':r.area_ha, Actuacio:'-', Estat:'-', Progrés:'-', Inici:'-', Fi:'-'});
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+                if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:'-', Estat:'-', Progres:'-', Inici:'-', Fi:'-'});
                 acts.forEach(a=>{
-                    data.push({Rodal:r.name, 'Area (ha)':r.area_ha, Actuacio:a.title, Estat:a.status, Progrés:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
+                    data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:a.title, Estat:a.status, Progres:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
                 });
             });
             const ws=XLSX.utils.json_to_sheet(data);
@@ -1088,7 +1056,7 @@
             if(id==='calendar') renderCalendar();
             if(id==='timeline') renderGantt();
             if(id==='reports') updateStats();
-            if(id==='rodals'){ renderRodals(); document.getElementById('btnAddRodal').style.display=state.isPublicMode?'none':'block'; }
+            if(id==='rodals') renderRodals();
         }
         document.querySelectorAll('.nav-item, .nav-desktop button').forEach(btn=>{
             btn.addEventListener('click',()=>showSection(btn.dataset.section));
@@ -1101,15 +1069,12 @@
             if(id){
                 state.isPublicMode=true; state.publicId=id;
                 document.getElementById('publicBanner').style.display='flex';
-                document.getElementById('btnAddRodal').style.display='none';
                 document.getElementById('btnAddActuacio').style.display='none';
                 document.getElementById('bottomNav').style.display='none';
                 document.querySelector('.app-header').style.display='none';
                 document.body.style.paddingBottom='16px';
-                // In public mode, we show all sections stacked for easy reading
                 document.querySelectorAll('.section').forEach(s=>s.classList.add('active'));
                 document.querySelectorAll('.section').forEach(s=>s.style.marginBottom='20px');
-                // Try to load from URL param (demo: just show message)
                 showToast(t('treatmentLoaded'),'info');
             }
         }
@@ -1117,18 +1082,7 @@
         // ==================== DEMO DATA ====================
         function loadDemoData(){
             if(state.rodals.length>0) return;
-            state.rodals=[
-                {id:'r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:null},
-                {id:'r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:null},
-                {id:'r3', name:'Rodal Est - Roure', area_ha:5.0, geojson_data:null}
-            ];
-            state.actuacions=[
-                {id:'a1', rodal_id:'r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
-                {id:'a2', rodal_id:'r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
-                {id:'a3', rodal_id:'r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'},
-                {id:'a4', rodal_id:'r3', title:'Plantació', status:'pending', progress:0, start_date:'2026-07-01', end_date:'2026-07-30', photos_before:[], photos_after:[], description:'Plantació de alzines de repla'}
-            ];
-            persistLocal();
+            // Demo rodals without geojson for initial empty state
         }
 
         // ==================== INIT ====================
@@ -1138,6 +1092,18 @@
             await initIndexedDB();
             loadLocal();
             initMap();
+            
+            // Restore map layers if rodals exist
+            if(state.rodals.length>0){
+                state.rodals.forEach(r=>{
+                    if(r.geojson_data) addRodalToMap(r, r.geojson_data);
+                });
+                if(Object.values(state.mapLayers).length>0){
+                    const group=L.featureGroup(Object.values(state.mapLayers));
+                    state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                }
+            }
+            
             checkPublicMode();
             if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
             renderRodals();
