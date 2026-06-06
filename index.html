@@ -190,6 +190,13 @@ button { cursor: pointer; border: none; }
 .app-card.despatx .app-card-icon { background: #d6eaf8; }
 .app-card.despatx .app-card-badge { background: #d6eaf8; color: #1a5276; }
 
+/* app d'execució: accent taronja */
+.app-card.execucio::before {
+  background: linear-gradient(90deg, #d35400, #e67e22);
+}
+.app-card.execucio .app-card-icon { background: #fdebd0; }
+.app-card.execucio .app-card-badge { background: #fdebd0; color: #d35400; }
+
 .hub-sync-bar {
   background: var(--card); border: 1px solid var(--borde); border-radius: 12px;
   padding: 11px 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
@@ -269,6 +276,7 @@ button { cursor: pointer; border: none; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -385,6 +393,11 @@ const T = {
     appPreInvName:'Pre-Inventari', appPreInvDesc:'Planifica inventaris i separació de parcel·les',
     appAnalisiName:'Eina d\'Anàlisi', appAnalisiDesc:'Anàlisi de dades i resultats del M.S.i.X',
     appSylvaName:'SylvaMind AI', appSylvaDesc:'Intel·ligència artificial per a gestió forestal',
+    appSimboscmedName:'SimBoscMed', appSimboscmedDesc:'Simulació forestal amb medfate',
+    appInputsName:'Inputs Simulació', appInputsDesc:'Genera inputs per a simulacions forestals',
+    appPlanificaName:'Planifica', appPlanificaDesc:'Planifica i controla l\'execució de prescripcions forestals',
+    hubSectionPreBosc:'Abans d\'anar a bosc', hubSectionBosc:'A bosc',
+    hubSectionDespatx:'Feina de despatx', hubSectionExecucio:'Execució de treballs',
     errEmailPass:'Introdueix correu i contrasenya.', errPassMatch:'Les contrasenyes no coincideixen.',
     errPassLen:'La contrasenya ha de tenir mínim 6 caràcters.',
     accountCreated:'✅ Compte creat! Ara pots iniciar sessió.',
@@ -414,6 +427,11 @@ const T = {
     appPreInvName:'Pre-Inventario', appPreInvDesc:'Planifica inventarios y separación de parcelas',
     appAnalisiName:'Herramienta de Análisis', appAnalisiDesc:'Análisis de datos y resultados del M.S.i.X',
     appSylvaName:'SylvaMind AI', appSylvaDesc:'Inteligencia artificial para gestión forestal',
+    appSimboscmedName:'SimBoscMed', appSimboscmedDesc:'Simulación forestal con medfate',
+    appInputsName:'Inputs Simulación', appInputsDesc:'Genera inputs para simulaciones forestales',
+    appPlanificaName:'Planifica', appPlanificaDesc:'Planifica y controla la ejecución de prescripciones forestales',
+    hubSectionPreBosc:'Antes de ir al bosque', hubSectionBosc:'En el bosque',
+    hubSectionDespatx:'Trabajo de despacho', hubSectionExecucio:'Ejecución de trabajos',
     errEmailPass:'Introduce correo y contraseña.', errPassMatch:'Las contraseñas no coinciden.',
     errPassLen:'La contraseña debe tener mínimo 6 caracteres.',
     accountCreated:'✅ ¡Cuenta creada! Ahora puedes iniciar sesión.',
@@ -443,6 +461,11 @@ const T = {
     appPreInvName:'Pre-Inventory', appPreInvDesc:'Plan inventories and plot separation',
     appAnalisiName:'Analysis Tool', appAnalisiDesc:'Data analysis and M.S.i.X results',
     appSylvaName:'SylvaMind AI', appSylvaDesc:'Artificial intelligence for forest management',
+    appSimboscmedName:'SimBoscMed', appSimboscmedDesc:'Forest simulation with medfate',
+    appInputsName:'Simulation Inputs', appInputsDesc:'Generate inputs for forest simulations',
+    appPlanificaName:'Planifica', appPlanificaDesc:'Plan and control the execution of forest prescriptions',
+    hubSectionPreBosc:'Before going to the field', hubSectionBosc:'In the field',
+    hubSectionDespatx:'Office work', hubSectionExecucio:'Work execution',
     errEmailPass:'Enter your email and password.', errPassMatch:'Passwords do not match.',
     errPassLen:'Password must be at least 6 characters.',
     accountCreated:'✅ Account created! You can now sign in.',
@@ -453,14 +476,15 @@ const T = {
 };
 
 const APPS = [
-  { nameKey:'appInventariName',  descKey:'appInventariDesc',  icon:'🌲', url:'Inventari.html',  badge:'v10',   active:true, categoria:'camp' },
-  { nameKey:'appRelascopiName',  descKey:'appRelascopiDesc',  icon:'🎯', url:'Relascopi.html',  badge:'v1',    active:true, categoria:'camp' },
-  { nameKey:'appAltimetreName',  descKey:'appAltimetreDesc',  icon:'⚡', url:'altimetre.html',  badge:'v1',    active:true, categoria:'camp' },
-  { nameKey:'appPreInvName',     descKey:'appPreInvDesc',     icon:'📋', url:'Pre_Inv.html',    badge:'v1',    active:true, categoria:'camp' },
+  { nameKey:'appPreInvName',     descKey:'appPreInvDesc',     icon:'📋', url:'Pre_Inv.html',    badge:'v1',    active:true, categoria:'prebosc' },
+  { nameKey:'appInputsName',     descKey:'appInputsDesc',     icon:'📥', url:'inputs.html',     badge:'Shiny', active:true, categoria:'prebosc' },
+  { nameKey:'appInventariName',  descKey:'appInventariDesc',  icon:'🌲', url:'Inventari.html',  badge:'v10',   active:true, categoria:'bosc' },
+  { nameKey:'appRelascopiName',  descKey:'appRelascopiDesc',  icon:'🎯', url:'Relascopi.html',  badge:'v1',    active:true, categoria:'bosc' },
+  { nameKey:'appAltimetreName',  descKey:'appAltimetreDesc',  icon:'⚡', url:'altimetre.html',  badge:'v1',    active:true, categoria:'bosc' },
   { nameKey:'appSimboscmedName', descKey:'appSimboscmedDesc', icon:'🌳', url:'simboscmed.html', badge:'Shiny', active:true, categoria:'despatx' },
-  { nameKey:'appInputsName',     descKey:'appInputsDesc',     icon:'📥', url:'inputs.html',     badge:'Shiny', active:true, categoria:'despatx' },
   { nameKey:'appAnalisiName',    descKey:'appAnalisiDesc',    icon:'📊', url:'analisi.html',    badge:'v4',    active:true, categoria:'despatx' },
-  { nameKey:'appSylvaName',      descKey:'appSylvaDesc',      icon:'🧠', url:'sylvamind.html',  badge:'IA',    active:true, categoria:'despatx' }
+  { nameKey:'appSylvaName',      descKey:'appSylvaDesc',      icon:'🧠', url:'sylvamind.html',  badge:'IA',    active:true, categoria:'despatx' },
+  { nameKey:'appPlanificaName',  descKey:'appPlanificaDesc',  icon:'🗓️', url:'planifica.html',  badge:'v1',    active:true, categoria:'execucio' }
 ];
 
 function getLang() { return localStorage.getItem('M.S.i.X_lang') || 'ca'; }
@@ -504,13 +528,17 @@ function buildAppGrid() {
   const container = document.getElementById('app-grid-container');
   if (!container) return;
 
-  const camp    = APPS.filter(a => a.categoria === 'camp');
-  const despatx = APPS.filter(a => a.categoria === 'despatx');
+  const prebosc  = APPS.filter(a => a.categoria === 'prebosc');
+  const bosc     = APPS.filter(a => a.categoria === 'bosc');
+  const despatx  = APPS.filter(a => a.categoria === 'despatx');
+  const execucio = APPS.filter(a => a.categoria === 'execucio');
 
   function renderCard(app) {
     const name = t[app.nameKey] || app.nameKey;
     const desc = t[app.descKey] || app.descKey;
-    const extraClass = app.categoria === 'despatx' ? ' despatx' : '';
+    let extraClass = '';
+    if (app.categoria === 'despatx') extraClass = ' despatx';
+    if (app.categoria === 'execucio') extraClass = ' execucio';
     if (app.active) {
       return `<a class="app-card${extraClass}" href="${app.url}" onclick="navigateToApp(event,'${app.url}')">
         <div class="app-card-icon">${app.icon}</div>
@@ -527,17 +555,20 @@ function buildAppGrid() {
   }
 
   let html = '';
+  const sections = [
+    { key: 'hubSectionPreBosc',  apps: prebosc },
+    { key: 'hubSectionBosc',     apps: bosc },
+    { key: 'hubSectionDespatx',  apps: despatx },
+    { key: 'hubSectionExecucio', apps: execucio }
+  ];
 
-  if (camp.length) {
-    html += `<div class="hub-section-title" data-i18n="hubSectionApps">${t.hubSectionApps}</div>`;
-    html += `<div class="app-grid">${camp.map(renderCard).join('')}</div>`;
-  }
-
-  if (despatx.length) {
-    html += `<hr class="hub-section-divider">`;
-    html += `<div class="hub-section-title" data-i18n="hubSectionDespatx">${t.hubSectionDespatx}</div>`;
-    html += `<div class="app-grid">${despatx.map(renderCard).join('')}</div>`;
-  }
+  sections.forEach((sec, idx) => {
+    if (sec.apps.length) {
+      if (idx > 0) html += `<hr class="hub-section-divider">`;
+      html += `<div class="hub-section-title" data-i18n="${sec.key}">${t[sec.key]}</div>`;
+      html += `<div class="app-grid">${sec.apps.map(renderCard).join('')}</div>`;
+    }
+  });
 
   container.innerHTML = html;
 }
