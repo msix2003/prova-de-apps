@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SPA Forestal — M.S.i.X Hub</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #11291d;
+            --bg-secondary: #1a3d2b;
+            --accent: #4ade80;
+            --accent-hover: #22c55e;
+            --text-primary: #fafafa;
+            --text-secondary: #a3a3a3;
+            --danger: #ef4444;
+            --warning: #eab308;
+            --info: #3b82f6;
+            --border: rgba(250, 250, 250, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: 90px;
+        }
+
+        .font-mono {
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Header */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(17, 41, 29, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sync-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .sync-dot.online {
+            background-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .app-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .btn-hub {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-hub:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent);
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Map */
+        #map {
+            height: 320px;
+            width: 100%;
+            border-radius: 8px;
+            z-index: 1;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #064e3b;
+        }
+
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-secondary {
+            background: rgba(250, 250, 250, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: rgba(250, 250, 250, 0.1); }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .calendar-header {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            padding: 8px 0;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'DM Mono', monospace;
+            background: rgba(250, 250, 250, 0.03);
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-day:hover { background: rgba(250, 250, 250, 0.08); }
+        .calendar-day.today { border: 1px solid var(--accent); }
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .calendar-nav button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Gantt */
+        .gantt-container {
+            overflow-x: auto;
+        }
+
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            min-width: 600px;
+        }
+
+        .gantt-label {
+            width: 120px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .gantt-bar-bg {
+            flex: 1;
+            height: 24px;
+            background: rgba(250, 250, 250, 0.05);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .gantt-bar {
+            position: absolute;
+            height: 100%;
+            border-radius: 4px;
+            top: 0;
+            transition: width 0.5s ease;
+            min-width: 4px;
+        }
+
+        .gantt-status-executing { background: var(--warning); }
+        .gantt-status-completed { background: var(--accent); }
+        .gantt-status-delayed { background: var(--danger); }
+        .gantt-status-pending { background: var(--text-secondary); }
+
+        .gantt-legend {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 41, 29, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 12px;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            border: none;
+            background: transparent;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .nav-item.active { color: var(--accent); }
+        .nav-item svg { width: 24px; height: 24px; }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            top: 70px;
+            right: 16px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            pointer-events: auto;
+            max-width: 300px;
+        }
+
+        .toast.show { transform: translateX(0); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.info { border-left-color: var(--info); }
+
+        /* Sections */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Summary Card */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .summary-item {
+            background: rgba(250, 250, 250, 0.03);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-family: 'DM Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* Public Mode Banner */
+        .public-banner {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            #map { height: 450px; }
+            .bottom-nav { display: none; }
+            body { padding-bottom: 16px; }
+            .nav-desktop { display: flex; gap: 8px; margin-bottom: 16px; }
+        }
+        @media (max-width: 767px) {
+            .nav-desktop { display: none; }
+        }
+
+        .nav-desktop button {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .nav-desktop button.active {
+            background: var(--accent);
+            color: #064e3b;
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Loading */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(250,250,250,0.03) 25%, rgba(250,250,250,0.08) 50%, rgba(250,250,250,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .photo-item {
+            aspect-ratio: 4/3;
+            background: rgba(250,250,250,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="sync-dot" id="syncDot" title="Estat de connexió"></div>
+            <div class="app-title" id="appTitle">Gestió Forestal</div>
+        </div>
+        <a href="https://msix2003.github.io/prova-de-apps/" class="btn-hub" id="btnHub">Tornar al Hub</a>
+    </header>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Public Mode Banner -->
+    <div class="container">
+        <div id="publicBanner" class="public-banner" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span id="publicText">Mode Visor Públic — Només lectura</span>
+        </div>
+
+        <!-- Desktop Nav -->
+        <div class="nav-desktop" id="navDesktop">
+            <button data-section="map" class="active" id="navMap">Mapa</button>
+            <button data-section="calendar" id="navCalendar">Calendari</button>
+            <button data-section="timeline" id="navTimeline">Línia de temps</button>
+            <button data-section="reports" id="navReports">Informes</button>
+        </div>
+
+        <!-- Map Section -->
+        <section id="section-map" class="section active">
+            <div class="card">
+                <div class="card-title">
+                    <span id="mapTitle">Mapa de la finca</span>
+                    <span class="font-mono" style="font-size:0.8rem;color:var(--text-secondary);" id="coordsDisplay">--</span>
+                </div>
+                <div id="map"></div>
+                <div style="margin-top:12px;">
+                    <label class="btn btn-secondary" id="btnGeoJSON">
+                        <span>📁 <span id="txtUploadGeo">Penjar GeoJSON</span></span>
+                        <input type="file" id="fileGeoJSON" accept=".geojson,.json">
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section id="section-calendar" class="section">
+            <div class="card">
+                <div class="card-title" id="calendarTitle">Calendari d'actuacions</div>
+                <div class="calendar-nav">
+                    <button id="calPrev">‹</button>
+                    <span id="calMonth" class="font-mono" style="font-weight:500;"></span>
+                    <button id="calNext">›</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section id="section-timeline" class="section">
+            <div class="card">
+                <div class="card-title" id="timelineTitle">Línia de temps forestal</div>
+                <div class="gantt-container">
+                    <div id="ganttChart">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+                <div class="gantt-legend">
+                    <div class="legend-item"><div class="legend-dot gantt-status-executing"></div><span id="legExecuting">En execució</span></div>
+                    <div class="legend-item"><div class="legend-dot gantt-status-completed"></div><span id="legCompleted">Completat</span></div>
+                    <div class="legend-item"><div class="legend-dot gantt-status-delayed"></div><span id="legDelayed">Retardat</span></div>
+                    <div class="legend-item"><div class="legend-dot gantt-status-pending"></div><span id="legPending">Pendent</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="section-reports" class="section">
+            <div class="card">
+                <div class="card-title" id="reportsTitle">Resum i exportació</div>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-value font-mono" id="statTotal">0</div>
+                        <div class="summary-label" id="lblTotal">Total actuacions</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value font-mono" id="statArea">0 ha</div>
+                        <div class="summary-label" id="lblArea">Superfície</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value font-mono" id="statCompleted">0</div>
+                        <div class="summary-label" id="lblCompleted">Completades</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value font-mono" id="statPending">0</div>
+                        <div class="summary-label" id="lblPending">Pendents</div>
+                    </div>
+                </div>
+                <div class="export-buttons">
+                    <button class="btn btn-primary" id="btnPdf">
+                        <span>📄 <span id="txtPdf">Descarregar PDF</span></span>
+                    </button>
+                    <button class="btn btn-secondary" id="btnExcel">
+                        <span>📊 <span id="txtExcel">Descarregar Excel</span></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" id="photosCard" style="display:none;">
+                <div class="card-title" id="photosTitle">Fotografies de seguiment</div>
+                <div class="photo-grid" id="photoGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-section="map">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="navMapM">Mapa</span>
+        </button>
+        <button class="nav-item" data-section="calendar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span id="navCalM">Calendari</span>
+        </button>
+        <button class="nav-item" data-section="timeline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+            <span id="navTimeM">Temps</span>
+        </button>
+        <button class="nav-item" data-section="reports">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            <span id="navRepM">Informes</span>
+        </button>
+    </nav>
+
+    <script>
+        // ==================== CONFIG & STATE ====================
+        const CONFIG = {
+            SUPABASE_URL: 'https://your-project.supabase.co', // <-- REEMPLAÇAR
+            SUPABASE_KEY: 'your-anon-key', // <-- REEMPLAÇAR
+            TIMEOUT_MS: 8000,
+            DB_NAME: 'ForestSPA_DB',
+            STORE_NAME: 'offline_queue'
+        };
+
+        const state = {
+            lang: 'ca',
+            isOnline: navigator.onLine,
+            isPublicMode: false,
+            publicId: null,
+            treatments: [],
+            currentMonth: new Date(),
+            map: null,
+            mapLayer: null,
+            user: null,
+            supabase: null,
+            offlineQueue: [],
+            db: null
+        };
+
+        // ==================== TRANSLATIONS ====================
+        const i18n = {
+            ca: {
+                appTitle: 'Gestió Forestal', backHub: 'Tornar al Hub', mapTitle: 'Mapa de la finca',
+                uploadGeo: 'Penjar GeoJSON', calendar: 'Calendari d\'actuacions', timeline: 'Línia de temps forestal',
+                reports: 'Resum i exportació', total: 'Total actuacions', area: 'Superfície',
+                completed: 'Completades', pending: 'Pendents', pdf: 'Descarregar PDF', excel: 'Descarregar Excel',
+                executing: 'En execució', completed2: 'Completat', delayed: 'Retardat', pending2: 'Pendent',
+                photos: 'Fotografies de seguiment', publicMode: 'Mode Visor Públic — Només lectura',
+                syncOnline: 'Sincronitzat', syncOffline: 'Mode local (Offline)', saved: 'Desat correctament',
+                error: 'Error de connexió', noGeoJSON: 'Arxiu GeoJSON no vàlid', treatmentLoaded: 'Tractament carregat',
+                navMap: 'Mapa', navCal: 'Calendari', navTime: 'Temps', navRep: 'Informes',
+                toastOffline: 'Treballant en mode local (Offline)', toastSync: 'Sincronitzat amb el servidor',
+                toastError: 'Error de xarxa. Dades desades localment.', toastSaved: 'Desat correctament',
+                toastGeoJSON: 'GeoJSON carregat i desat'
+            },
+            es: {
+                appTitle: 'Gestión Forestal', backHub: 'Volver al Hub', mapTitle: 'Mapa de la finca',
+                uploadGeo: 'Subir GeoJSON', calendar: 'Calendario de actuaciones', timeline: 'Línea de tiempo forestal',
+                reports: 'Resumen y exportación', total: 'Total actuaciones', area: 'Superficie',
+                completed: 'Completadas', pending: 'Pendientes', pdf: 'Descargar PDF', excel: 'Descargar Excel',
+                executing: 'En ejecución', completed2: 'Completado', delayed: 'Retrasado', pending2: 'Pendiente',
+                photos: 'Fotografías de seguimiento', publicMode: 'Modo Visor Público — Solo lectura',
+                syncOnline: 'Sincronizado', syncOffline: 'Modo local (Offline)', saved: 'Guardado correctamente',
+                error: 'Error de conexión', noGeoJSON: 'Archivo GeoJSON no válido', treatmentLoaded: 'Tratamiento cargado',
+                navMap: 'Mapa', navCal: 'Calendario', navTime: 'Tiempo', navRep: 'Informes',
+                toastOffline: 'Trabajando en modo local (Offline)', toastSync: 'Sincronizado con el servidor',
+                toastError: 'Error de red. Datos guardados localmente.', toastSaved: 'Guardado correctamente',
+                toastGeoJSON: 'GeoJSON cargado y guardado'
+            },
+            en: {
+                appTitle: 'Forest Management', backHub: 'Back to Hub', mapTitle: 'Property Map',
+                uploadGeo: 'Upload GeoJSON', calendar: 'Operations Calendar', timeline: 'Forest Timeline',
+                reports: 'Summary & Export', total: 'Total operations', area: 'Surface area',
+                completed: 'Completed', pending: 'Pending', pdf: 'Download PDF', excel: 'Download Excel',
+                executing: 'In progress', completed2: 'Completed', delayed: 'Delayed', pending2: 'Pending',
+                photos: 'Monitoring Photos', publicMode: 'Public Viewer Mode — Read only',
+                syncOnline: 'Synced', syncOffline: 'Local mode (Offline)', saved: 'Saved successfully',
+                error: 'Connection error', noGeoJSON: 'Invalid GeoJSON file', treatmentLoaded: 'Treatment loaded',
+                navMap: 'Map', navCal: 'Calendar', navTime: 'Timeline', navRep: 'Reports',
+                toastOffline: 'Working in offline mode', toastSync: 'Synced with server',
+                toastError: 'Network error. Data saved locally.', toastSaved: 'Saved successfully',
+                toastGeoJSON: 'GeoJSON loaded and saved'
+            }
+        };
+
+        function t(key) {
+            return i18n[state.lang]?.[key] || i18n.ca[key] || key;
+        }
+
+        // ==================== LANGUAGE DETECTION ====================
+        function detectLanguage() {
+            const lang = localStorage.getItem('M.S.X._lang');
+            if (lang === 'es') state.lang = 'es';
+            else if (lang === 'en') state.lang = 'en';
+            else state.lang = 'ca';
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            const ids = {
+                appTitle: 'appTitle', btnHub: 'backHub', mapTitle: 'mapTitle', txtUploadGeo: 'uploadGeo',
+                calendarTitle: 'calendar', timelineTitle: 'timeline', reportsTitle: 'reports',
+                lblTotal: 'total', lblArea: 'area', lblCompleted: 'completed', lblPending: 'pending',
+                txtPdf: 'pdf', txtExcel: 'excel', legExecuting: 'executing', legCompleted: 'completed2',
+                legDelayed: 'delayed', legPending: 'pending2', photosTitle: 'photos', publicText: 'publicMode',
+                navMap: 'navMap', navCalendar: 'navCal', navTimeline: 'navTime', navReports: 'navRep',
+                navMapM: 'navMap', navCalM: 'navCal', navTimeM: 'navTime', navRepM: 'navRep'
+            };
+            Object.entries(ids).forEach(([id, key]) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = t(key);
+            });
+        }
+
+        // ==================== TOAST SYSTEM ====================
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ==================== INDEXEDDB ====================
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(CONFIG.DB_NAME, 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => { state.db = request.result; resolve(request.result); };
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(CONFIG.STORE_NAME)) {
+                        db.createObjectStore(CONFIG.STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains('treatments')) {
+                        db.createObjectStore('treatments', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+
+        function saveOffline(table, data) {
+            if (!state.db) return;
+            const tx = state.db.transaction([CONFIG.STORE_NAME], 'readwrite');
+            const store = tx.objectStore(CONFIG.STORE_NAME);
+            store.add({ table, data, timestamp: Date.now(), synced: false });
+        }
+
+        function getOfflineQueue() {
+            return new Promise((resolve) => {
+                if (!state.db) return resolve([]);
+                const tx = state.db.transaction([CONFIG.STORE_NAME], 'readonly');
+                const store = tx.objectStore(CONFIG.STORE_NAME);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result.filter(r => !r.synced));
+            });
+        }
+
+        // ==================== SUPABASE WITH TIMEOUT ====================
+        function createSupabaseClient() {
+            // Try to get credentials from parent Hub localStorage if available
+            const hubUrl = localStorage.getItem('M.S.X._supabase_url') || CONFIG.SUPABASE_URL;
+            const hubKey = localStorage.getItem('M.S.X._supabase_key') || CONFIG.SUPABASE_KEY;
+            
+            if (!hubUrl || hubUrl.includes('your-project')) {
+                console.warn('Supabase credentials not configured. Using demo mode.');
+                return null;
+            }
+            
+            return supabase.createClient(hubUrl, hubKey, {
+                auth: { persistSession: true, autoRefreshToken: true }
+            });
+        }
+
+        async function supabaseCall(promise) {
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('TIMEOUT')), CONFIG.TIMEOUT_MS)
+            );
+            try {
+                const result = await Promise.race([promise, timeout]);
+                if (result.error) throw result.error;
+                return result;
+            } catch (err) {
+                if (err.message === 'TIMEOUT' || !navigator.onLine) {
+                    state.isOnline = false;
+                    updateSyncDot();
+                    showToast(t('toastOffline'), 'warning', 4000);
+                }
+                throw err;
+            }
+        }
+
+        // ==================== NETWORK & SYNC ====================
+        function updateSyncDot() {
+            const dot = document.getElementById('syncDot');
+            if (state.isOnline) {
+                dot.classList.add('online');
+                dot.title = t('syncOnline');
+            } else {
+                dot.classList.remove('online');
+                dot.title = t('syncOffline');
+            }
+        }
+
+        window.addEventListener('online', () => {
+            state.isOnline = true;
+            updateSyncDot();
+            showToast(t('toastSync'), 'info', 3000);
+            syncOfflineData();
+        });
+
+        window.addEventListener('offline', () => {
+            state.isOnline = false;
+            updateSyncDot();
+            showToast(t('toastOffline'), 'warning', 4000);
+        });
+
+        async function syncOfflineData() {
+            if (!state.supabase || !state.isOnline) return;
+            const queue = await getOfflineQueue();
+            for (const item of queue) {
+                try {
+                    // Attempt to sync based on table type
+                    if (item.table === 'treatments') {
+                        await supabaseCall(state.supabase.from('treatments').upsert(item.data));
+                    }
+                    // Mark as synced in IndexedDB
+                    const tx = state.db.transaction([CONFIG.STORE_NAME], 'readwrite');
+                    const store = tx.objectStore(CONFIG.STORE_NAME);
+                    item.synced = true;
+                    store.put(item);
+                } catch (e) {
+                    console.error('Sync failed for item', item.id);
+                }
+            }
+            if (queue.length > 0) showToast(t('toastSync'), 'info');
+        }
+
+        // ==================== MAP ====================
+        function initMap() {
+            state.map = L.map('map').setView([41.7, 2.1], 8); // Catalonia default
+            
+            // Dark forest styled tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(state.map);
+
+            // Try geolocation
+            if (navigator.geolocation && !state.isPublicMode) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const { latitude, longitude } = pos.coords;
+                        state.map.setView([latitude, longitude], 14);
+                        document.getElementById('coordsDisplay').textContent = 
+                            `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                    },
+                    () => { /* silent fail */ }
+                );
+            }
+        }
+
+        function addGeoJSONToMap(geojson) {
+            if (state.mapLayer) state.map.removeLayer(state.mapLayer);
+            state.mapLayer = L.geoJSON(geojson, {
+                style: {
+                    color: '#4ade80',
+                    weight: 3,
+                    opacity: 0.8,
+                    fillColor: '#4ade80',
+                    fillOpacity: 0.15
+                }
+            }).addTo(state.map);
+            state.map.fitBounds(state.mapLayer.getBounds(), { padding: [20, 20] });
+        }
+
+        // ==================== GEOJSON UPLOAD ====================
+        document.getElementById('fileGeoJSON').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const geojson = JSON.parse(text);
+                if (!geojson.type || !geojson.features) throw new Error('Invalid GeoJSON');
+                
+                addGeoJSONToMap(geojson);
+                showToast(t('toastGeoJSON'), 'info');
+                
+                // Save to Supabase or offline
+                const payload = {
+                    id: crypto.randomUUID(),
+                    geojson_data: geojson,
+                    created_at: new Date().toISOString()
+                };
+                
+                if (state.supabase && state.isOnline && !state.isPublicMode) {
+                    try {
+                        await supabaseCall(state.supabase.from('treatments').upsert(payload));
+                        showToast(t('toastSaved'), 'info');
+                    } catch (err) {
+                        saveOffline('treatments', payload);
+                        showToast(t('toastError'), 'error');
+                    }
+                } else {
+                    saveOffline('treatments', payload);
+                    localStorage.setItem('forest_geojson_' + payload.id, JSON.stringify(geojson));
+                }
+            } catch (err) {
+                showToast(t('noGeoJSON'), 'error');
+            }
+            
+            e.target.value = '';
+        });
+
+        // ==================== CALENDAR ====================
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            const year = state.currentMonth.getFullYear();
+            const month = state.currentMonth.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const monthNames = state.lang === 'ca' ? 
+                ['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'] :
+                state.lang === 'es' ?
+                ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] :
+                ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            
+            document.getElementById('calMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            const weekDays = state.lang === 'ca' ? ['Dl','Dt','Dc','Dj','Dv','Ds','Dg'] :
+                             state.lang === 'es' ? ['Lu','Ma','Mi','Ju','Vi','Sa','Do'] :
+                             ['Mo','Tu','We','Th','Fr','Sa','Su'];
+            
+            weekDays.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'calendar-header';
+                el.textContent = d;
+                grid.appendChild(el);
+            });
+            
+            // Adjust for Monday start
+            let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < startOffset; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+            
+            const today = new Date();
+            state.treatments.forEach(tr => {
+                tr.calendarStart = new Date(tr.start_date);
+                tr.calendarEnd = new Date(tr.end_date);
+            });
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, month, d);
+                const el = document.createElement('div');
+                el.className = 'calendar-day';
+                el.innerHTML = `<span>${d}</span>`;
+                
+                if (date.toDateString() === today.toDateString()) el.classList.add('today');
+                
+                const hasEvent = state.treatments.some(tr => 
+                    date >= tr.calendarStart && date <= tr.calendarEnd
+                );
+                if (hasEvent) el.classList.add('has-event');
+                
+                grid.appendChild(el);
+            }
+        }
+
+        document.getElementById('calPrev').addEventListener('click', () => {
+            state.currentMonth.setMonth(state.currentMonth.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('calNext').addEventListener('click', () => {
+            state.currentMonth.setMonth(state.currentMonth.getMonth() + 1);
+            renderCalendar();
+        });
+
+        // ==================== GANTT TIMELINE ====================
+        function renderGantt() {
+            const container = document.getElementById('ganttChart');
+            container.innerHTML = '';
+            
+            if (state.treatments.length === 0) {
+                container.innerHTML = `<div style="text-align:center;color:var(--text-secondary);padding:20px;">${state.lang === 'ca' ? 'Sense dades' : state.lang === 'es' ? 'Sin datos' : 'No data'}</div>`;
+                return;
+            }
+            
+            // Find global date range
+            const allDates = state.treatments.flatMap(t => [new Date(t.start_date), new Date(t.end_date)]);
+            const minDate = new Date(Math.min(...allDates));
+            const maxDate = new Date(Math.max(...allDates));
+            const totalDays = Math.max(1, (maxDate - minDate) / (1000 * 60 * 60 * 24));
+            
+            const statusClass = {
+                'executing': 'gantt-status-executing',
+                'completed': 'gantt-status-completed',
+                'delayed': 'gantt-status-delayed',
+                'pending': 'gantt-status-pending'
+            };
+            
+            state.treatments.forEach(tr => {
+                const start = new Date(tr.start_date);
+                const end = new Date(tr.end_date);
+                const startOffset = ((start - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
+                const duration = ((end - start) / (1000 * 60 * 60 * 24)) / totalDays * 100;
+                
+                const row = document.createElement('div');
+                row.className = 'gantt-row';
+                row.innerHTML = `
+                    <div class="gantt-label" title="${tr.title}">${tr.title}</div>
+                    <div class="gantt-bar-bg">
+                        <div class="gantt-bar ${statusClass[tr.status] || 'gantt-status-pending'}" 
+                             style="left:${startOffset}%; width:${Math.max(2, duration)}%;"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // ==================== REPORTS & EXPORT ====================
+        function updateStats() {
+            const total = state.treatments.length;
+            const completed = state.treatments.filter(t => t.status === 'completed').length;
+            const pending = state.treatments.filter(t => t.status === 'pending').length;
+            const area = state.treatments.reduce((sum, t) => sum + (parseFloat(t.area_ha) || 0), 0);
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statArea').textContent = area.toFixed(2) + ' ha';
+        }
+
+        document.getElementById('btnPdf').addEventListener('click', async () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFillColor(17, 41, 29);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(250, 250, 250);
+            doc.setFontSize(20);
+            doc.text(t('appTitle'), 14, 20);
+            doc.setFontSize(10);
+            doc.text(new Date().toLocaleDateString(), 14, 30);
+            
+            // Content
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(12);
+            let y = 50;
+            
+            state.treatments.forEach((tr, i) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.setFontSize(11);
+                doc.setTextColor(17, 41, 29);
+                doc.text(`${i+1}. ${tr.title}`, 14, y);
+                doc.setFontSize(9);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Status: ${tr.status} | ${tr.start_date} → ${tr.end_date}`, 14, y + 5);
+                y += 15;
+            });
+            
+            doc.save('informe-forestal.pdf');
+            showToast(t('toastSaved'), 'info');
+        });
+
+        document.getElementById('btnExcel').addEventListener('click', () => {
+            const data = state.treatments.map(tr => ({
+                ID: tr.id,
+                Title: tr.title,
+                Status: tr.status,
+                'Start Date': tr.start_date,
+                'End Date': tr.end_date,
+                'Area (ha)': tr.area_ha || 0,
+                Description: tr.description || ''
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Treatments');
+            XLSX.writeFile(wb, 'programacio-forestal.xlsx');
+            showToast(t('toastSaved'), 'info');
+        });
+
+        // ==================== NAVIGATION ====================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section-' + sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item, .nav-desktop button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll(`[data-section="${sectionId}"]`).forEach(b => b.classList.add('active'));
+            
+            if (sectionId === 'calendar') renderCalendar();
+            if (sectionId === 'timeline') renderGantt();
+            if (sectionId === 'reports') updateStats();
+        }
+
+        document.querySelectorAll('.nav-item, .nav-desktop button').forEach(btn => {
+            btn.addEventListener('click', () => showSection(btn.dataset.section));
+        });
+
+        // ==================== PUBLIC VIEWER MODE ====================
+        function checkPublicMode() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('tractament_id');
+            if (id) {
+                state.isPublicMode = true;
+                state.publicId = id;
+                document.getElementById('publicBanner').style.display = 'flex';
+                document.getElementById('bottomNav').style.display = 'none';
+                document.querySelector('.app-header').style.display = 'none'; // Hide header in public mode for cleaner view
+                document.body.style.paddingBottom = '16px';
+                loadPublicTreatment(id);
+            }
+        }
+
+        async function loadPublicTreatment(id) {
+            if (!state.supabase) {
+                showToast('Supabase not configured', 'error', 5000);
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseCall(
+                    state.supabase.from('treatments').select('*').eq('id', id).single()
+                );
+                
+                if (error || !data) throw new Error('Not found');
+                
+                state.treatments = [data];
+                if (data.geojson_data) addGeoJSONToMap(data.geojson_data);
+                
+                // Show photos if available
+                if (data.photos && Array.isArray(data.photos) && data.photos.length > 0) {
+                    document.getElementById('photosCard').style.display = 'block';
+                    const grid = document.getElementById('photoGrid');
+                    grid.innerHTML = '';
+                    data.photos.forEach(url => {
+                        const div = document.createElement('div');
+                        div.className = 'photo-item';
+                        div.innerHTML = `<img src="${url}" alt="photo" onerror="this.parentElement.textContent='?'">`;
+                        grid.appendChild(div);
+                    });
+                }
+                
+                renderCalendar();
+                renderGantt();
+                updateStats();
+                showToast(t('treatmentLoaded'), 'info');
+            } catch (err) {
+                showToast('Error carregant tractament', 'error', 5000);
+            }
+        }
+
+        // ==================== AUTH & DATA LOADING ====================
+        async function initAuth() {
+            if (state.isPublicMode) return; // Skip auth in public mode
+            
+            state.supabase = createSupabaseClient();
+            if (!state.supabase) {
+                // Demo mode with sample data
+                state.treatments = [
+                    { id: 'demo-1', title: 'Clariana Sector A', status: 'executing', start_date: '2026-06-01', end_date: '2026-06-15', area_ha: 12.5, description: 'Clariana selectiva de pins' },
+                    { id: 'demo-2', title: 'Poda Roures', status: 'completed', start_date: '2026-05-10', end_date: '2026-05-20', area_ha: 8.3, description: 'Poda de manteniment' },
+                    { id: 'demo-3', title: 'Plantació Rebrot', status: 'pending', start_date: '2026-07-01', end_date: '2026-07-30', area_ha: 5.0, description: 'Plantació de alzines' },
+                    { id: 'demo-4', title: 'Defensa Incendis', status: 'delayed', start_date: '2026-04-15', end_date: '2026-05-15', area_ha: 25.0, description: 'Franja perimetral' }
+                ];
+                renderCalendar();
+                renderGantt();
+                updateStats();
+                return;
+            }
+            
+            try {
+                const { data: { session } } = await supabaseCall(state.supabase.auth.getSession());
+                if (session) {
+                    state.user = session.user;
+                    await loadTreatments();
+                } else {
+                    // Try to refresh or wait for auth state change
+                    state.supabase.auth.onAuthStateChange((event, session) => {
+                        if (session) {
+                            state.user = session.user;
+                            loadTreatments();
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Auth error', err);
+                showToast(t('error'), 'error');
+            }
+        }
+
+        async function loadTreatments() {
+            if (!state.supabase) return;
+            try {
+                const { data } = await supabaseCall(
+                    state.supabase.from('treatments').select('*').order('start_date', { ascending: true })
+                );
+                if (data) {
+                    state.treatments = data;
+                    renderCalendar();
+                    renderGantt();
+                    updateStats();
+                }
+            } catch (err) {
+                // Load from local cache if available
+                const cached = localStorage.getItem('forest_treatments_cache');
+                if (cached) {
+                    state.treatments = JSON.parse(cached);
+                    renderCalendar();
+                    renderGantt();
+                    updateStats();
+                }
+            }
+        }
+
+        // ==================== INITIALIZATION ====================
+        async function init() {
+            detectLanguage();
+            updateSyncDot();
+            await initIndexedDB();
+            initMap();
+            checkPublicMode();
+            await initAuth();
+            
+            // If not public mode, show initial section
+            if (!state.isPublicMode) {
+                showSection('map');
+            } else {
+                // In public mode, show all sections at once or just map+reports
+                document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
+            }
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
