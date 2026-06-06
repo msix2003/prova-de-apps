@@ -40,7 +40,7 @@
         .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
         .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
 
-        #map { height: 280px; width: 100%; border-radius: 8px; z-index: 1; }
+        #map { height: 300px; width: 100%; border-radius: 8px; z-index: 1; }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: 8px; border: none; font-family: 'DM Sans'; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
         .btn-primary { background: var(--accent); color: #064e3b; }
         .btn-primary:hover { background: var(--accent-hover); }
@@ -51,7 +51,6 @@
         .btn-icon { width: 36px; height: 36px; padding: 0; }
         input[type="file"].hidden-input { display: none; }
 
-        /* Rodals */
         .rodals-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
         .rodal-item { background: rgba(250,250,250,0.03); border: 2px solid transparent; border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
         .rodal-item:hover { background: rgba(250,250,250,0.06); }
@@ -131,6 +130,7 @@
         .export-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
         .public-banner { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; padding: 10px 16px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .detected-banner { background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.9rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
 
         .empty-state { text-align: center; color: var(--text-secondary); padding: 24px; font-size: 0.9rem; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
@@ -138,8 +138,6 @@
         .badge-completed { background: rgba(74,222,128,0.2); color: var(--accent); }
         .badge-delayed { background: rgba(239,68,68,0.2); color: var(--danger); }
         .badge-pending { background: rgba(250,250,250,0.1); color: var(--text-secondary); }
-
-        .detected-banner { background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.9rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
 
         @media (min-width: 768px) { #map { height: 400px; } .bottom-nav { display: none; } body { padding-bottom: 16px; } .nav-desktop { display: flex; gap: 8px; margin-bottom: 16px; } .photo-grid { grid-template-columns: repeat(4, 1fr); } }
         @media (max-width: 767px) { .nav-desktop { display: none; } }
@@ -372,7 +370,7 @@
             selectedRodalId: null,
             currentMonth: new Date(),
             map: null,
-            mapLayers: {}, // rodalId -> layer
+            mapLayers: {},
             user: null,
             supabase: null,
             db: null
@@ -493,7 +491,7 @@
                 const a=localStorage.getItem('forest_actuacions');
                 if(r) state.rodals=JSON.parse(r);
                 if(a) state.actuacions=JSON.parse(a);
-            }catch(e){}
+            }catch(e){ console.error('loadLocal error', e); }
         }
 
         // ==================== SUPABASE ====================
@@ -547,11 +545,9 @@
         }
 
         function highlightRodal(rodalId){
-            // Reset all styles
             Object.entries(state.mapLayers).forEach(([id, layer])=>{
                 layer.setStyle({ color: '#4ade80', weight: 2, opacity: 0.6, fillOpacity: 0.1 });
             });
-            // Highlight selected
             if(state.mapLayers[rodalId]){
                 state.mapLayers[rodalId].setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillOpacity: 0.25 });
                 state.map.fitBounds(state.mapLayers[rodalId].getBounds(),{padding:[40,40], maxZoom:18});
@@ -563,7 +559,7 @@
             const layer=L.geoJSON(geojson,{
                 style:{ color:'#4ade80', weight:2, opacity:0.6, fillColor:'#4ade80', fillOpacity:0.1 }
             }).addTo(state.map);
-            layer.bindPopup(`<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
+            layer.bindPopup(`<<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
             state.mapLayers[rodal.id]=layer;
         }
 
@@ -578,7 +574,6 @@
         }
 
         function detectCRS(geojson){
-            // 1. Explicit CRS property (GeoJSON 2008)
             if(geojson.crs?.properties?.name){
                 const name=geojson.crs.properties.name.toLowerCase();
                 if(name.includes('25831')) return 'EPSG:25831';
@@ -586,13 +581,11 @@
                 if(name.includes('23031')) return 'EPSG:23031';
                 if(name.includes('4326')) return 'EPSG:4326';
             }
-            // 2. Heuristic by coordinate magnitude
             const first=getFirstCoordinate(geojson);
             if(first){
                 const [x,y]=first;
                 if(Math.abs(x)>1000 && Math.abs(y)>1000){
-                    // Likely UTM zone 31N in Catalonia/Spain
-                    if(y>4000000 && y<5000000 && x>200000 && x<600000) return 'EPSG:25831'; // Default ETRS89
+                    if(y>4000000 && y<<5000000 && x>200000 && x<<600000) return 'EPSG:25831';
                 }
             }
             return 'EPSG:4326';
@@ -603,9 +596,9 @@
             if(Array.isArray(coords[0])){
                 return coords.map(c=>transformCoordinates(c, fromCRS));
             }
-            // Single point [x, y] -> [lon, lat] -> Leaflet wants [lat, lon]
-            const [lon, lat]=proj4(fromCRS, 'WGS84', coords);
-            return [lat, lon];
+            // proj4 returns [x, y] = [longitude, latitude] when converting to WGS84
+            const transformed=proj4(fromCRS, 'WGS84', coords);
+            return transformed; // GeoJSON format: [longitude, latitude]
         }
 
         function transformGeometry(geom, fromCRS){
@@ -619,54 +612,40 @@
         }
 
         function shoelaceArea(ring){
-            // ring is array of [x,y] in projected coordinates (meters)
             let area=0;
-            for(let i=0;i<ring.length-1;i++){
+            for(let i=0;i<<ring.length-1;i++){
                 area+=ring[i][0]*ring[i+1][1]-ring[i+1][0]*ring[i][1];
             }
             return Math.abs(area)/2;
         }
 
         function polygonAreaHa(geometry, originalCRS){
-            // Calculate area from original coordinates if projected, else approximate
-            if(originalCRS==='EPSG:4326'){
-                // For WGS84, use rough approximation or return 0 to let user input
-                return 0;
-            }
+            if(originalCRS==='EPSG:4326') return 0; // Cannot calculate reliably from degrees without complex geodesic formula
             let areaM2=0;
             const coords=geometry.coordinates;
             if(geometry.type==='Polygon'){
                 areaM2+=shoelaceArea(coords[0]);
-                // Subtract holes if any
-                for(let i=1;i<coords.length;i++) areaM2-=shoelaceArea(coords[i]);
+                for(let i=1;i<<coords.length;i++) areaM2-=shoelaceArea(coords[i]);
             }else if(geometry.type==='MultiPolygon'){
                 coords.forEach(poly=>{
                     areaM2+=shoelaceArea(poly[0]);
                     for(let i=1;i<poly.length;i++) areaM2-=shoelaceArea(poly[i]);
                 });
             }
-            return areaM2/10000; // m2 -> ha
+            return areaM2/10000;
         }
 
         function extractRodalsFromGeoJSON(geojson, originalCRS){
             const rodals=[];
             if(!geojson.features) return rodals;
-            
             geojson.features.forEach((feat, idx)=>{
                 const geom=feat.geometry;
                 if(!geom||!(geom.type==='Polygon'||geom.type==='MultiPolygon')) return;
-                
-                // Transform to WGS84 for map
                 const wgs84Geom=transformGeometry(geom, originalCRS);
-                
-                // Calculate area from original coords
                 const areaHa=polygonAreaHa(geom, originalCRS);
-                
-                // Extract name from properties
                 const p=feat.properties||{};
                 const name=p.Nom||p.nom||p.Name||p.name||p.rodal||p.Rodal||p.id||p.ID||(`${t('rodals')} ${idx+1}`);
                 const id=feat.id||`rodal-${idx}-${Date.now()}`;
-                
                 rodals.push({
                     id: String(id),
                     name: String(name),
@@ -683,41 +662,37 @@
             try{
                 const geojson=JSON.parse(await file.text());
                 if(!geojson.type) throw new Error('Invalid');
-                
                 const crs=detectCRS(geojson);
                 const newRodals=extractRodalsFromGeoJSON(geojson, crs);
-                
                 if(newRodals.length===0){ showToast(t('noGeoJSON'),'error'); return; }
                 
-                // Ask to replace or append? For now, replace all rodals and clear acts
                 if(state.rodals.length>0 && !state.isPublicMode){
-                    if(!confirm(`${newRodals.length} ${t('detectedRodals')}. ${state.lang==='ca'?'Reemplaçar els rodals actuals?':state.lang==='es'?'¿Reemplazar los rodales actuales?':'Replace current stands?'})) return;
+                    const msg = state.lang==='ca' ? `Reemplaçar els ${state.rodals.length} rodals actuals pels ${newRodals.length} detectats?` :
+                              state.lang==='es' ? `¿Reemplazar los ${state.rodals.length} rodales actuales por los ${newRodals.length} detectados?` :
+                              `Replace current ${state.rodals.length} stands with ${newRodals.length} detected?`;
+                    if(!confirm(msg)) return;
                 }
                 
                 clearMapLayers();
                 state.rodals=newRodals;
-                state.actuacions=[]; // clear operations on new rodals
+                state.actuacions=[];
                 state.selectedRodalId=null;
                 persistLocal();
                 
-                // Add to map
                 state.rodals.forEach(r=>addRodalToMap(r, r.geojson_data));
+                const allLayers=Object.values(state.mapLayers);
+                if(allLayers.length>0){
+                    const group=L.featureGroup(allLayers);
+                    state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                }
                 
-                // Fit map to all
-                const allLayers=L.featureGroup(Object.values(state.mapLayers));
-                if(Object.values(state.mapLayers).length>0) state.map.fitBounds(allLayers.getBounds(),{padding:[30,30]});
-                
-                // Show banner
                 const banner=document.getElementById('detectedBanner');
                 banner.style.display='flex';
                 document.getElementById('detectedText').textContent=`${newRodals.length} ${t('detectedRodals')}${crs!=='EPSG:4326'?' · '+t('reprojected')+' '+crs:''}`;
                 
                 showToast(t('toastGeoJSON'),'info');
                 renderRodals();
-                
-                // Switch to rodals view
                 showSection('rodals');
-                
             }catch(err){ console.error(err); showToast(t('noGeoJSON'),'error'); }
             e.target.value='';
         });
@@ -726,7 +701,6 @@
         function renderRodals(){
             const list=document.getElementById('rodalsList');
             document.getElementById('detectedBanner').style.display='none';
-            
             if(state.rodals.length===0){
                 list.innerHTML=`<div class="empty-state">${t('emptyRodals')}</div>`;
                 document.getElementById('rodalDetail').style.display='none';
@@ -771,7 +745,7 @@
         // ==================== ACTUACIONS ====================
         function renderActuacions(){
             const container=document.getElementById('actuacionsList');
-            const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+            const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId).sort((a,b)=>new Date(a.start_date||'2099-01-01')-new Date(b.start_date||'2099-01-01'));
             if(acts.length===0){
                 container.innerHTML=`<div class="empty-state">${t('emptyActs')}</div>`; return;
             }
@@ -786,7 +760,7 @@
                     <div class="actuacio-header">
                         <div style="flex:1;">
                             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
+                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
                                 <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
                             </div>
                         </div>
@@ -814,10 +788,6 @@
                     <div class="photo-section">
                         <div class="photo-label">
                             <span>📷 ${t('before')}</span>
-                            ${readOnly?'':`<label class="btn btn-small btn-secondary" style="width:auto; padding:4px 8px; font-size:0.75rem;">
-                                <span>+ ${t('addPhoto')}</span>
-                                <input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${a.id}','before',this)">
-                            </label>`}
                         </div>
                         <div class="photo-grid" id="photos-before-${a.id}"></div>
                     </div>
@@ -825,10 +795,6 @@
                     <div class="photo-section">
                         <div class="photo-label">
                             <span>📷 ${t('after')}</span>
-                            ${readOnly?'':`<label class="btn btn-small btn-secondary" style="width:auto; padding:4px 8px; font-size:0.75rem;">
-                                <span>+ ${t('addPhoto')}</span>
-                                <input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${a.id}','after',this)">
-                            </label>`}
                         </div>
                         <div class="photo-grid" id="photos-after-${a.id}"></div>
                     </div>
@@ -954,16 +920,17 @@
                              ['Mo','Tu','We','Th','Fr','Sa','Su'];
             weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
             let startOffset=firstDay===0?6:firstDay-1;
-            for(let i=0;i<startOffset;i++) grid.appendChild(document.createElement('div'));
+            for(let i=0; i<<startOffset; i++) grid.appendChild(document.createElement('div'));
             const today=new Date();
-            state.actuacions.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
+            const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date);
+            validActs.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
             for(let d=1; d<=daysInMonth; d++){
                 const date=new Date(year,month,d);
                 const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
                 if(date.toDateString()===today.toDateString()) el.classList.add('today');
-                const has=state.actuacions.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
-                if(!has && state.actuacions.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5'; // other rodals faint
-                if(state.actuacions.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
+                const has=validActs.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
+                if(!has && validActs.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5';
+                if(validActs.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
                 grid.appendChild(el);
             }
         }
@@ -974,15 +941,15 @@
         function renderGantt(){
             const container=document.getElementById('ganttChart');
             container.innerHTML='';
-            const acts=state.actuacions.slice().sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
-            if(acts.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
-            const allDates=acts.flatMap(a=>[new Date(a.start_date||'2026-01-01'),new Date(a.end_date||'2026-01-01')]);
+            const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date&&!isNaN(new Date(a.start_date))&&!isNaN(new Date(a.end_date))).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+            if(validActs.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
+            const allDates=validActs.flatMap(a=>[new Date(a.start_date),new Date(a.end_date)]);
             const minDate=new Date(Math.min(...allDates));
             const maxDate=new Date(Math.max(...allDates));
             const totalDays=Math.max(1,(maxDate-minDate)/86400000);
             const sMap={executing:'gantt-status-executing',completed:'gantt-status-completed',delayed:'gantt-status-delayed',pending:'gantt-status-pending'};
-            acts.forEach(a=>{
-                const start=new Date(a.start_date||minDate), end=new Date(a.end_date||maxDate);
+            validActs.forEach(a=>{
+                const start=new Date(a.start_date), end=new Date(a.end_date);
                 const so=((start-minDate)/86400000)/totalDays*100;
                 const du=((end-start)/86400000)/totalDays*100;
                 const row=document.createElement('div'); row.className='gantt-row';
@@ -1018,7 +985,7 @@
             state.rodals.forEach((r,ri)=>{
                 if(y>250){ doc.addPage(); y=20; }
                 doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${parseFloat(r.area_ha).toFixed(2)} ha)`,14,y);
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
                 acts.forEach((a,ai)=>{
                     if(y>270){ doc.addPage(); y=20; }
                     doc.setFontSize(10); doc.setTextColor(80,80,80);
@@ -1034,7 +1001,7 @@
         document.getElementById('btnExcel').addEventListener('click',()=>{
             const data=[];
             state.rodals.forEach(r=>{
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
                 if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:'-', Estat:'-', Progres:'-', Inici:'-', Fi:'-'});
                 acts.forEach(a=>{
                     data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:a.title, Estat:a.status, Progres:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
@@ -1082,7 +1049,22 @@
         // ==================== DEMO DATA ====================
         function loadDemoData(){
             if(state.rodals.length>0) return;
-            // Demo rodals without geojson for initial empty state
+            state.rodals=[
+                {id:'demo-r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:{
+                    type:'Feature', properties:{name:'Rodal Nord'},
+                    geometry:{type:'Polygon', coordinates:[[[2.1,41.7],[2.11,41.7],[2.11,41.71],[2.1,41.71],[2.1,41.7]]]}
+                }},
+                {id:'demo-r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:{
+                    type:'Feature', properties:{name:'Rodal Sud'},
+                    geometry:{type:'Polygon', coordinates:[[[2.12,41.68],[2.13,41.68],[2.13,41.69],[2.12,41.69],[2.12,41.68]]]}
+                }}
+            ];
+            state.actuacions=[
+                {id:'demo-a1', rodal_id:'demo-r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
+                {id:'demo-a2', rodal_id:'demo-r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
+                {id:'demo-a3', rodal_id:'demo-r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'}
+            ];
+            persistLocal();
         }
 
         // ==================== INIT ====================
@@ -1093,19 +1075,26 @@
             loadLocal();
             initMap();
             
-            // Restore map layers if rodals exist
             if(state.rodals.length>0){
-                state.rodals.forEach(r=>{
-                    if(r.geojson_data) addRodalToMap(r, r.geojson_data);
-                });
-                if(Object.values(state.mapLayers).length>0){
-                    const group=L.featureGroup(Object.values(state.mapLayers));
+                state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                const allLayers=Object.values(state.mapLayers);
+                if(allLayers.length>0){
+                    const group=L.featureGroup(allLayers);
                     state.map.fitBounds(group.getBounds(),{padding:[30,30]});
                 }
             }
             
             checkPublicMode();
             if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
+            if(!state.isPublicMode && state.rodals.length>0 && Object.values(state.mapLayers).length===0){
+                state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                const allLayers=Object.values(state.mapLayers);
+                if(allLayers.length>0){
+                    const group=L.featureGroup(allLayers);
+                    state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                }
+            }
+            
             renderRodals();
             showSection('map');
         }
