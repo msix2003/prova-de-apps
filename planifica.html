@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SPA Forestal — M.S.i.X Hub</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.min.js"></script>
@@ -92,8 +92,16 @@
         .calendar-day:hover { background: rgba(250,250,250,0.08); }
         .calendar-day.today { border: 1px solid var(--accent); }
         .calendar-day.has-event::after { content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+        .calendar-day.selected { background: var(--accent-dim); border: 1px solid var(--accent); }
         .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .calendar-nav button { background: transparent; border: 1px solid var(--border); color: var(--text-primary); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-family: 'DM Mono'; }
+
+        .day-detail { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 12px; display: none; }
+        .day-detail-header { padding: 10px 14px; background: rgba(250,250,250,0.03); border-bottom: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .day-detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+        .day-detail-item:last-child { border-bottom: none; }
+        .day-detail-title { font-weight: 700; font-size: 0.9rem; }
+        .day-detail-meta { font-size: 0.8rem; color: var(--text-secondary); }
 
         .gantt-container { overflow-x: auto; }
         .gantt-row { display: flex; align-items: center; margin-bottom: 8px; min-width: 600px; }
@@ -139,12 +147,16 @@
         .badge-delayed { background: rgba(239,68,68,0.2); color: var(--danger); }
         .badge-pending { background: rgba(250,250,250,0.1); color: var(--text-secondary); }
 
+        .status-select { background: transparent; border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; font-family: 'DM Sans'; cursor: pointer; }
+        .status-select option { background: var(--bg-secondary); color: var(--text-primary); }
+
         @media (min-width: 768px) { #map { height: 400px; } .bottom-nav { display: none; } body { padding-bottom: 16px; } .nav-desktop { display: flex; gap: 8px; margin-bottom: 16px; } .photo-grid { grid-template-columns: repeat(4, 1fr); } }
         @media (max-width: 767px) { .nav-desktop { display: none; } }
 
         .nav-desktop button { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: 'DM Sans'; }
         .nav-desktop button.active { background: var(--accent); color: #064e3b; border-color: var(--accent); font-weight: 700; }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -193,7 +205,7 @@
         <section id="section-rodals" class="section">
             <div class="card">
                 <div class="card-title" id="rodalsTitle">Rodals i actuacions</div>
-                
+
                 <div id="detectedBanner" class="detected-banner" style="display:none;">
                     <span id="detectedText"></span>
                 </div>
@@ -212,7 +224,7 @@
                     </div>
 
                     <div class="card-title" style="font-size:0.95rem; margin-top:16px;" id="actuacionsTitle">Actuacions programades</div>
-                    
+
                     <div id="actuacionsList" class="actuacions-list"></div>
 
                     <div id="actuacioForm" style="display:none; margin-top:12px; padding:12px; background:var(--bg-primary); border-radius:8px;">
@@ -278,6 +290,7 @@
                     <button id="calNext">›</button>
                 </div>
                 <div class="calendar-grid" id="calendarGrid"></div>
+                <div id="dayDetail" class="day-detail"></div>
             </div>
         </section>
 
@@ -369,6 +382,7 @@
             actuacions: [],
             selectedRodalId: null,
             currentMonth: new Date(),
+            selectedDay: null,
             map: null,
             mapLayers: {},
             user: null,
@@ -386,53 +400,56 @@
             ca: {
                 appTitle:'Gestió Forestal', backHub:'Tornar al Hub', mapTitle:'Mapa de la finca',
                 uploadGeo:'Penjar GeoJSON', rodalsTitle:'Rodals i actuacions', addActuacio:'Nova actuació',
-                actType:'Tipus d\'actuació', actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi',
-                actDesc:'Descripció / observacions', schedule:'Programar actuació', calendar:'Calendari d\'actuacions',
-                timeline:'Línia de temps forestal', reports:'Resum i exportació', rodals:'Rodals', area:'Superfície',
-                actuacions:'Actuacions', avgProgress:'Progrés mig', pdf:'Descarregar PDF', excel:'Descarregar Excel',
-                executing:'En execució', completed:'Completat', delayed:'Retardat', pending:'Pendent',
-                publicMode:'Mode Visor Públic — Només lectura', syncOnline:'Sincronitzat', syncOffline:'Mode local',
-                toastOffline:'Treballant en mode local (Offline)', toastSync:'Sincronitzat amb el servidor',
-                toastError:'Error de xarxa. Dades desades localment.', toastSaved:'Desat correctament',
-                toastGeoJSON:'GeoJSON carregat', noGeoJSON:'Arxiu no vàlid', navMap:'Mapa', navRodals:'Rodals',
-                navCal:'Calendari', navTime:'Temps', navRep:'Informes', emptyRodals:'No hi ha rodals creats',
-                emptyActs:'Cap actuació programada', progress:'Progrés', before:'Abans', after:'Després',
-                addPhoto:'Afegir foto', delete:'Eliminar', treatmentLoaded:'Tractament carregat',
-                detectedRodals:'rodals detectats del GeoJSON', reprojected:'Reprojectat des de'
+                actType:'Tipus d'actuació', actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi',
+                actDesc:'Descripció / observacions', schedule:'Programar actuació', cancel:'Cancel·la',
+                calendar:'Calendari d'actuacions', timeline:'Línia de temps forestal', reports:'Resum i exportació',
+                rodals:'Rodals', area:'Superfície', actuacions:'Actuacions', avgProgress:'Progrés mig',
+                pdf:'Descarregar PDF', excel:'Descarregar Excel', executing:'En execució', completed:'Completat',
+                delayed:'Retardat', pending:'Pendent', publicMode:'Mode Visor Públic — Només lectura',
+                syncOnline:'Sincronitzat', syncOffline:'Mode local', toastOffline:'Treballant en mode local (Offline)',
+                toastSync:'Sincronitzat amb el servidor', toastError:'Error de xarxa. Dades desades localment.',
+                toastSaved:'Desat correctament', toastGeoJSON:'GeoJSON carregat', noGeoJSON:'Arxiu no vàlid',
+                navMap:'Mapa', navRodals:'Rodals', navCal:'Calendari', navTime:'Temps', navRep:'Informes',
+                emptyRodals:'No hi ha rodals creats', emptyActs:'Cap actuació programada', progress:'Progrés',
+                before:'Abans', after:'Després', addPhoto:'Afegir foto', delete:'Eliminar',
+                treatmentLoaded:'Tractament carregat', detectedRodals:'rodals detectats del GeoJSON',
+                reprojected:'Reprojectat des de', noDayEvents:'Cap actuació aquest dia'
             },
             es: {
                 appTitle:'Gestión Forestal', backHub:'Volver al Hub', mapTitle:'Mapa de la finca',
                 uploadGeo:'Subir GeoJSON', rodalsTitle:'Rodales y actuaciones', addActuacio:'Nueva actuación',
                 actType:'Tipo de actuación', actStatus:'Estado', actStart:'Fecha inicio', actEnd:'Fecha fin',
-                actDesc:'Descripción / observaciones', schedule:'Programar actuación', calendar:'Calendario de actuaciones',
-                timeline:'Línea de tiempo forestal', reports:'Resumen y exportación', rodals:'Rodales', area:'Superficie',
-                actuaciones:'Actuaciones', avgProgress:'Progreso medio', pdf:'Descargar PDF', excel:'Descargar Excel',
-                executing:'En ejecución', completed:'Completado', delayed:'Retrasado', pending:'Pendiente',
-                publicMode:'Modo Visor Público — Solo lectura', syncOnline:'Sincronizado', syncOffline:'Modo local',
-                toastOffline:'Trabajando en modo local', toastSync:'Sincronizado con el servidor',
-                toastError:'Error de red. Datos guardados localmente.', toastSaved:'Guardado correctamente',
-                toastGeoJSON:'GeoJSON cargado', noGeoJSON:'Archivo no válido', navMap:'Mapa', navRodals:'Rodales',
-                navCal:'Calendario', navTime:'Tiempo', navRep:'Informes', emptyRodals:'No hay rodales creados',
-                emptyActs:'Ninguna actuación programada', progress:'Progreso', before:'Antes', after:'Después',
-                addPhoto:'Añadir foto', delete:'Eliminar', treatmentLoaded:'Tratamiento cargado',
-                detectedRodals:'rodales detectados del GeoJSON', reprojected:'Reproyectado desde'
+                actDesc:'Descripción / observaciones', schedule:'Programar actuación', cancel:'Cancelar',
+                calendar:'Calendario de actuaciones', timeline:'Línea de tiempo forestal', reports:'Resumen y exportación',
+                rodals:'Rodales', area:'Superficie', actuaciones:'Actuaciones', avgProgress:'Progreso medio',
+                pdf:'Descargar PDF', excel:'Descargar Excel', executing:'En ejecución', completed:'Completado',
+                delayed:'Retrasado', pending:'Pendiente', publicMode:'Modo Visor Público — Solo lectura',
+                syncOnline:'Sincronizado', syncOffline:'Modo local', toastOffline:'Trabajando en modo local',
+                toastSync:'Sincronizado con el servidor', toastError:'Error de red. Datos guardados localmente.',
+                toastSaved:'Guardado correctamente', toastGeoJSON:'GeoJSON cargado', noGeoJSON:'Archivo no válido',
+                navMap:'Mapa', navRodals:'Rodales', navCal:'Calendario', navTime:'Tiempo', navRep:'Informes',
+                emptyRodals:'No hay rodales creados', emptyActs:'Ninguna actuación programada', progress:'Progreso',
+                before:'Antes', after:'Después', addPhoto:'Añadir foto', delete:'Eliminar',
+                treatmentLoaded:'Tratamiento cargado', detectedRodals:'rodales detectados del GeoJSON',
+                reprojected:'Reproyectado desde', noDayEvents:'Ninguna actuación este día'
             },
             en: {
                 appTitle:'Forest Management', backHub:'Back to Hub', mapTitle:'Property Map',
                 uploadGeo:'Upload GeoJSON', rodalsTitle:'Stands & Operations', addActuacio:'New operation',
                 actType:'Operation type', actStatus:'Status', actStart:'Start date', actEnd:'End date',
-                actDesc:'Description / notes', schedule:'Schedule operation', calendar:'Operations Calendar',
-                timeline:'Forest Timeline', reports:'Summary & Export', rodals:'Stands', area:'Surface area',
-                actuacions:'Operations', avgProgress:'Avg progress', pdf:'Download PDF', excel:'Download Excel',
-                executing:'In progress', completed:'Completed', delayed:'Delayed', pending:'Pending',
-                publicMode:'Public Viewer — Read only', syncOnline:'Synced', syncOffline:'Local mode',
-                toastOffline:'Working offline', toastSync:'Synced with server',
-                toastError:'Network error. Data saved locally.', toastSaved:'Saved successfully',
-                toastGeoJSON:'GeoJSON loaded', noGeoJSON:'Invalid file', navMap:'Map', navRodals:'Stands',
-                navCal:'Calendar', navTime:'Timeline', navRep:'Reports', emptyRodals:'No stands created',
-                emptyActs:'No operations scheduled', progress:'Progress', before:'Before', after:'After',
-                addPhoto:'Add photo', delete:'Delete', treatmentLoaded:'Treatment loaded',
-                detectedRodals:'stands detected from GeoJSON', reprojected:'Reprojected from'
+                actDesc:'Description / notes', schedule:'Schedule operation', cancel:'Cancel',
+                calendar:'Operations Calendar', timeline:'Forest Timeline', reports:'Summary & Export',
+                rodals:'Stands', area:'Surface area', actuacions:'Operations', avgProgress:'Avg progress',
+                pdf:'Download PDF', excel:'Download Excel', executing:'In progress', completed:'Completed',
+                delayed:'Delayed', pending:'Pending', publicMode:'Public Viewer — Read only',
+                syncOnline:'Synced', syncOffline:'Local mode', toastOffline:'Working offline',
+                toastSync:'Synced with server', toastError:'Network error. Data saved locally.',
+                toastSaved:'Saved successfully', toastGeoJSON:'GeoJSON loaded', noGeoJSON:'Invalid file',
+                navMap:'Map', navRodals:'Stands', navCal:'Calendar', navTime:'Timeline', navRep:'Reports',
+                emptyRodals:'No stands created', emptyActs:'No operations scheduled', progress:'Progress',
+                before:'Before', after:'After', addPhoto:'Add photo', delete:'Delete',
+                treatmentLoaded:'Treatment loaded', detectedRodals:'stands detected from GeoJSON',
+                reprojected:'Reprojected from', noDayEvents:'No operations this day'
             }
         };
 
@@ -481,9 +498,55 @@
                 };
             });
         }
-        function persistLocal(){
+
+        function dbPut(store, data){
+            return new Promise((res,rej)=>{
+                if(!state.db){ res(null); return; }
+                const tx=state.db.transaction(store,'readwrite');
+                const os=tx.objectStore(store);
+                const req=os.put(data);
+                req.onsuccess=()=>res(req.result);
+                req.onerror=()=>rej(req.error);
+            });
+        }
+        function dbGet(store, id){
+            return new Promise((res,rej)=>{
+                if(!state.db){ res(null); return; }
+                const tx=state.db.transaction(store,'readonly');
+                const os=tx.objectStore(store);
+                const req=os.get(id);
+                req.onsuccess=()=>res(req.result);
+                req.onerror=()=>rej(req.error);
+            });
+        }
+        function dbGetAll(store){
+            return new Promise((res,rej)=>{
+                if(!state.db){ res([]); return; }
+                const tx=state.db.transaction(store,'readonly');
+                const os=tx.objectStore(store);
+                const req=os.getAll();
+                req.onsuccess=()=>res(req.result);
+                req.onerror=()=>rej(req.error);
+            });
+        }
+        function dbDelete(store, id){
+            return new Promise((res,rej)=>{
+                if(!state.db){ res(null); return; }
+                const tx=state.db.transaction(store,'readwrite');
+                const os=tx.objectStore(store);
+                const req=os.delete(id);
+                req.onsuccess=()=>res(req.result);
+                req.onerror=()=>rej(req.error);
+            });
+        }
+
+        async function persistLocal(){
             localStorage.setItem('forest_rodals', JSON.stringify(state.rodals));
             localStorage.setItem('forest_actuacions', JSON.stringify(state.actuacions));
+            if(state.db){
+                await dbPut('rodals', {id:'current', data:state.rodals, updated_at:new Date().toISOString()});
+                await dbPut('actuacions', {id:'current', data:state.actuacions, updated_at:new Date().toISOString()});
+            }
         }
         function loadLocal(){
             try{
@@ -492,6 +555,15 @@
                 if(r) state.rodals=JSON.parse(r);
                 if(a) state.actuacions=JSON.parse(a);
             }catch(e){ console.error('loadLocal error', e); }
+        }
+        async function loadIndexedDB(){
+            if(!state.db) return;
+            try{
+                const r=await dbGet('rodals','current');
+                const a=await dbGet('actuacions','current');
+                if(r && r.data && r.data.length>0 && state.rodals.length===0) state.rodals=r.data;
+                if(a && a.data && a.data.length>0 && state.actuacions.length===0) state.actuacions=a.data;
+            }catch(e){ console.error('loadIndexedDB error',e); }
         }
 
         // ==================== SUPABASE ====================
@@ -515,13 +587,55 @@
             }
         }
 
+        async function syncData(){
+            if(!state.supabase || !state.isOnline || state.isPublicMode) return;
+            try{
+                for(const r of state.rodals){
+                    await supabaseCall(state.supabase.from('rodals').upsert({...r, geojson_data:JSON.stringify(r.geojson_data)}));
+                }
+                for(const a of state.actuacions){
+                    await supabaseCall(state.supabase.from('actuacions').upsert(a));
+                }
+                showToast(t('toastSync'),'info');
+            }catch(e){
+                console.error('Sync error',e);
+                showToast(t('toastError'),'error',4000);
+            }
+        }
+        async function loadFromServer(){
+            if(!state.supabase || !state.isOnline || state.isPublicMode) return;
+            try{
+                const {data:rodals}=await supabaseCall(state.supabase.from('rodals').select('*'));
+                const {data:actuacions}=await supabaseCall(state.supabase.from('actuacions').select('*'));
+                if(rodals && rodals.length>0){
+                    state.rodals=rodals.map(r=>{ try{r.geojson_data=JSON.parse(r.geojson_data);}catch(e){} return r; });
+                    state.actuacions=actuacions||[];
+                    persistLocal();
+                    clearMapLayers();
+                    state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                    const allLayers=Object.values(state.mapLayers);
+                    if(allLayers.length>0){
+                        const group=L.featureGroup(allLayers);
+                        state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                    }
+                    renderRodals();
+                    showToast(t('treatmentLoaded'),'info');
+                }
+            }catch(e){
+                console.error('Load from server error',e);
+            }
+        }
+
         // ==================== NETWORK ====================
         function updateSyncDot(){
             const d=document.getElementById('syncDot');
             d.classList.toggle('online', state.isOnline);
             d.title=state.isOnline?t('syncOnline'):t('syncOffline');
         }
-        window.addEventListener('online',()=>{ state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info'); });
+        window.addEventListener('online',async()=>{
+            state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info');
+            await syncData();
+        });
         window.addEventListener('offline',()=>{ state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000); });
 
         // ==================== MAP ====================
@@ -559,7 +673,7 @@
             const layer=L.geoJSON(geojson,{
                 style:{ color:'#4ade80', weight:2, opacity:0.6, fillColor:'#4ade80', fillOpacity:0.1 }
             }).addTo(state.map);
-            layer.bindPopup(`<<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
+            layer.bindPopup(`<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
             state.mapLayers[rodal.id]=layer;
         }
 
@@ -585,7 +699,7 @@
             if(first){
                 const [x,y]=first;
                 if(Math.abs(x)>1000 && Math.abs(y)>1000){
-                    if(y>4000000 && y<<5000000 && x>200000 && x<<600000) return 'EPSG:25831';
+                    if(y>4000000 && y<5000000 && x>200000 && x<600000) return 'EPSG:25831';
                 }
             }
             return 'EPSG:4326';
@@ -596,9 +710,8 @@
             if(Array.isArray(coords[0])){
                 return coords.map(c=>transformCoordinates(c, fromCRS));
             }
-            // proj4 returns [x, y] = [longitude, latitude] when converting to WGS84
             const transformed=proj4(fromCRS, 'WGS84', coords);
-            return transformed; // GeoJSON format: [longitude, latitude]
+            return transformed;
         }
 
         function transformGeometry(geom, fromCRS){
@@ -613,19 +726,19 @@
 
         function shoelaceArea(ring){
             let area=0;
-            for(let i=0;i<<ring.length-1;i++){
+            for(let i=0;i<ring.length-1;i++){
                 area+=ring[i][0]*ring[i+1][1]-ring[i+1][0]*ring[i][1];
             }
             return Math.abs(area)/2;
         }
 
         function polygonAreaHa(geometry, originalCRS){
-            if(originalCRS==='EPSG:4326') return 0; // Cannot calculate reliably from degrees without complex geodesic formula
+            if(originalCRS==='EPSG:4326') return 0;
             let areaM2=0;
             const coords=geometry.coordinates;
             if(geometry.type==='Polygon'){
                 areaM2+=shoelaceArea(coords[0]);
-                for(let i=1;i<<coords.length;i++) areaM2-=shoelaceArea(coords[i]);
+                for(let i=1;i<coords.length;i++) areaM2-=shoelaceArea(coords[i]);
             }else if(geometry.type==='MultiPolygon'){
                 coords.forEach(poly=>{
                     areaM2+=shoelaceArea(poly[0]);
@@ -641,8 +754,8 @@
             geojson.features.forEach((feat, idx)=>{
                 const geom=feat.geometry;
                 if(!geom||!(geom.type==='Polygon'||geom.type==='MultiPolygon')) return;
-                const wgs84Geom=transformGeometry(geom, originalCRS);
                 const areaHa=polygonAreaHa(geom, originalCRS);
+                const wgs84Geom=transformGeometry(geom, originalCRS);
                 const p=feat.properties||{};
                 const name=p.Nom||p.nom||p.Name||p.name||p.rodal||p.Rodal||p.id||p.ID||(`${t('rodals')} ${idx+1}`);
                 const id=feat.id||`rodal-${idx}-${Date.now()}`;
@@ -665,31 +778,31 @@
                 const crs=detectCRS(geojson);
                 const newRodals=extractRodalsFromGeoJSON(geojson, crs);
                 if(newRodals.length===0){ showToast(t('noGeoJSON'),'error'); return; }
-                
+
                 if(state.rodals.length>0 && !state.isPublicMode){
                     const msg = state.lang==='ca' ? `Reemplaçar els ${state.rodals.length} rodals actuals pels ${newRodals.length} detectats?` :
                               state.lang==='es' ? `¿Reemplazar los ${state.rodals.length} rodales actuales por los ${newRodals.length} detectados?` :
                               `Replace current ${state.rodals.length} stands with ${newRodals.length} detected?`;
                     if(!confirm(msg)) return;
                 }
-                
+
                 clearMapLayers();
                 state.rodals=newRodals;
                 state.actuacions=[];
                 state.selectedRodalId=null;
-                persistLocal();
-                
+                await persistLocal();
+
                 state.rodals.forEach(r=>addRodalToMap(r, r.geojson_data));
                 const allLayers=Object.values(state.mapLayers);
                 if(allLayers.length>0){
                     const group=L.featureGroup(allLayers);
                     state.map.fitBounds(group.getBounds(),{padding:[30,30]});
                 }
-                
+
                 const banner=document.getElementById('detectedBanner');
                 banner.style.display='flex';
                 document.getElementById('detectedText').textContent=`${newRodals.length} ${t('detectedRodals')}${crs!=='EPSG:4326'?' · '+t('reprojected')+' '+crs:''}`;
-                
+
                 showToast(t('toastGeoJSON'),'info');
                 renderRodals();
                 showSection('rodals');
@@ -756,18 +869,22 @@
 
             acts.forEach(a=>{
                 const card=document.createElement('div'); card.className='actuacio-card';
+                const statusOptions=['pending','executing','completed','delayed'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${statusLabel[s]||s}</option>`).join('');
                 card.innerHTML=`
                     <div class="actuacio-header">
                         <div style="flex:1;">
                             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
-                                <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
+                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
+                                ${readOnly?`<span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>`:`
+                                <select class="status-select badge ${statusClass[a.status]||'badge-pending'}" onchange="updateActStatus('${a.id}', this.value)" style="background:${getBadgeBg(a.status)}; color:${getBadgeColor(a.status)};">
+                                    ${statusOptions}
+                                </select>`}
                             </div>
                         </div>
                         ${readOnly?'':`<button class="btn btn-danger btn-icon" onclick="deleteActuacio('${a.id}')" title="${t('delete')}">🗑️</button>`}
                     </div>
                     ${a.description?`<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">${a.description}</div>`:''}
-                    
+
                     <div class="form-row" style="margin-bottom:8px;">
                         <div class="form-group" style="min-width:100px;">
                             <label style="font-size:0.7rem;">${t('actStart')}</label>
@@ -805,6 +922,15 @@
             });
         }
 
+        function getBadgeBg(status){
+            const map={executing:'rgba(234,179,8,0.2)',completed:'rgba(74,222,128,0.2)',delayed:'rgba(239,68,68,0.2)',pending:'rgba(250,250,250,0.1)'};
+            return map[status]||map.pending;
+        }
+        function getBadgeColor(status){
+            const map={executing:'var(--warning)',completed:'var(--accent)',delayed:'var(--danger)',pending:'var(--text-secondary)'};
+            return map[status]||map.pending;
+        }
+
         function renderPhotoGrid(actId, type, photos, readOnly){
             const grid=document.getElementById(`photos-${type}-${actId}`);
             if(!grid) return;
@@ -829,6 +955,10 @@
             const a=state.actuacions.find(x=>x.id===id);
             if(a){ a[field]=value; persistLocal(); if(field.includes('date')){ renderCalendar(); renderGantt(); } }
         }
+        function updateActStatus(id, val){
+            const a=state.actuacions.find(x=>x.id===id);
+            if(a){ a.status=val; persistLocal(); renderActuacions(); renderGantt(); }
+        }
         function updateProgress(id, val){
             const a=state.actuacions.find(x=>x.id===id);
             if(a){ a.progress=parseInt(val); const el=document.getElementById(`prog-${id}`); if(el) el.textContent=val+'%'; persistLocal(); }
@@ -837,7 +967,7 @@
             const msg=state.lang==='ca'?'Eliminar aquesta actuació?':state.lang==='es'?'¿Eliminar esta actuación?':'Delete this operation?';
             if(!confirm(msg)) return;
             state.actuacions=state.actuacions.filter(a=>a.id!==id);
-            persistLocal(); renderActuacions(); renderRodals();
+            persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
         }
         function removePhoto(actId, type, idx){
             const a=state.actuacions.find(x=>x.id===actId);
@@ -875,8 +1005,8 @@
             const start=document.getElementById('inputActStart').value;
             const end=document.getElementById('inputActEnd').value;
             const desc=document.getElementById('inputActDesc').value.trim();
-            const customTitle=type==='Altres'?prompt(state.lang==='ca'?'Nom de l\'actuació:':state.lang==='es'?'Nombre de la actuación:':'Operation name:')||'Altres':type;
-            
+            const customTitle=type==='Altres'?prompt(state.lang==='ca'?'Nom de l'actuació:':state.lang==='es'?'Nombre de la actuación:':'Operation name:')||'Altres':type;
+
             const act={
                 id:crypto.randomUUID(),
                 rodal_id:state.selectedRodalId,
@@ -890,7 +1020,7 @@
                 description:desc,
                 created_at:new Date().toISOString()
             };
-            state.actuacions.push(act); persistLocal(); renderActuacions(); renderRodals();
+            state.actuacions.push(act); persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
             document.getElementById('btnCancelActuacio').click();
             showToast(t('toastSaved'),'info');
         });
@@ -900,7 +1030,7 @@
             if(state.mapLayers[state.selectedRodalId]){ state.map.removeLayer(state.mapLayers[state.selectedRodalId]); delete state.mapLayers[state.selectedRodalId]; }
             state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
             state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
-            state.selectedRodalId=null; persistLocal(); renderRodals();
+            state.selectedRodalId=null; persistLocal(); renderRodals(); renderCalendar(); renderGantt();
             document.getElementById('rodalDetail').style.display='none';
         });
 
@@ -920,7 +1050,7 @@
                              ['Mo','Tu','We','Th','Fr','Sa','Su'];
             weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
             let startOffset=firstDay===0?6:firstDay-1;
-            for(let i=0; i<<startOffset; i++) grid.appendChild(document.createElement('div'));
+            for(let i=0; i<startOffset; i++) grid.appendChild(document.createElement('div'));
             const today=new Date();
             const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date);
             validActs.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
@@ -928,14 +1058,47 @@
                 const date=new Date(year,month,d);
                 const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
                 if(date.toDateString()===today.toDateString()) el.classList.add('today');
+                if(state.selectedDay && date.toDateString()===state.selectedDay.toDateString()) el.classList.add('selected');
                 const has=validActs.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
                 if(!has && validActs.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5';
                 if(validActs.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
+                el.onclick=()=>{ state.selectedDay=date; renderCalendar(); showDayDetail(date); };
                 grid.appendChild(el);
             }
         }
-        document.getElementById('calPrev').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()-1); renderCalendar(); });
-        document.getElementById('calNext').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()+1); renderCalendar(); });
+
+        function showDayDetail(date){
+            const panel=document.getElementById('dayDetail');
+            const acts=state.actuacions.filter(a=>{
+                if(!a.start_date||!a.end_date) return false;
+                const s=new Date(a.start_date), e=new Date(a.end_date);
+                return date>=s && date<=e;
+            }).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+
+            if(acts.length===0){
+                panel.innerHTML=`<div style="padding:12px; color:var(--text-secondary); font-size:0.9rem;">${t('noDayEvents')}</div>`;
+            }else{
+                const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
+                const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
+                const dateStr=date.toLocaleDateString(state.lang==='en'?'en-US':(state.lang==='es'?'es-ES':'ca-ES'));
+                panel.innerHTML=`<div class="day-detail-header"><span>${dateStr}</span><span style="font-size:0.75rem; color:var(--text-secondary);">${acts.length} ${t('actuacions').toLowerCase()}</span></div>`;
+                panel.innerHTML+=acts.map(a=>{
+                    const rodal=state.rodals.find(r=>r.id===a.rodal_id);
+                    return `
+                    <div class="day-detail-item">
+                        <div>
+                            <div class="day-detail-title">${a.title}</div>
+                            <div class="day-detail-meta">${rodal?rodal.name:'-'} · ${a.progress||0}%</div>
+                        </div>
+                        <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
+                    </div>`;
+                }).join('');
+            }
+            panel.style.display='block';
+        }
+
+        document.getElementById('calPrev').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()-1); state.selectedDay=null; document.getElementById('dayDetail').style.display='none'; renderCalendar(); });
+        document.getElementById('calNext').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()+1); state.selectedDay=null; document.getElementById('dayDetail').style.display='none'; renderCalendar(); });
 
         // ==================== GANTT ====================
         function renderGantt(){
@@ -1037,9 +1200,9 @@
                 state.isPublicMode=true; state.publicId=id;
                 document.getElementById('publicBanner').style.display='flex';
                 document.getElementById('btnAddActuacio').style.display='none';
+                document.getElementById('btnGeoJSON').style.display='none';
+                document.getElementById('btnHub').style.display='none';
                 document.getElementById('bottomNav').style.display='none';
-                document.querySelector('.app-header').style.display='none';
-                document.body.style.paddingBottom='16px';
                 document.querySelectorAll('.section').forEach(s=>s.classList.add('active'));
                 document.querySelectorAll('.section').forEach(s=>s.style.marginBottom='20px');
                 showToast(t('treatmentLoaded'),'info');
@@ -1073,8 +1236,12 @@
             updateSyncDot();
             await initIndexedDB();
             loadLocal();
+            await loadIndexedDB();
             initMap();
-            
+
+            state.supabase=createSupabaseClient();
+            if(state.supabase && state.isOnline && !state.isPublicMode) await loadFromServer();
+
             if(state.rodals.length>0){
                 state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
                 const allLayers=Object.values(state.mapLayers);
@@ -1083,7 +1250,7 @@
                     state.map.fitBounds(group.getBounds(),{padding:[30,30]});
                 }
             }
-            
+
             checkPublicMode();
             if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
             if(!state.isPublicMode && state.rodals.length>0 && Object.values(state.mapLayers).length===0){
@@ -1094,7 +1261,7 @@
                     state.map.fitBounds(group.getBounds(),{padding:[30,30]});
                 }
             }
-            
+
             renderRodals();
             showSection('map');
         }
