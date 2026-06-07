@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SPA Forestal — M.S.i.X Hub</title>
+    <title>SPA Forestal - M.S.i.X Hub</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -162,8 +162,8 @@
 
     <header class="app-header">
         <div class="header-left">
-            <div class="sync-dot" id="syncDot" title="Estat de connexió"></div>
-            <div class="app-title" id="appTitle">Gestió Forestal</div>
+            <div class="sync-dot" id="syncDot" title="Estat de connexio"></div>
+            <div class="app-title" id="appTitle">Gestio Forestal</div>
         </div>
         <a href="https://msix2003.github.io/prova-de-apps/" class="btn-hub" id="btnHub">Tornar al Hub</a>
     </header>
@@ -173,7 +173,7 @@
     <div class="container">
         <div id="publicBanner" class="public-banner" style="display:none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            <span id="publicText">Mode Visor Públic — Només lectura</span>
+            <span id="publicText">Mode Visor Public - Nomes lectura</span>
         </div>
 
         <div class="nav-desktop" id="navDesktop">
@@ -194,7 +194,7 @@
                 <div id="map"></div>
                 <div style="margin-top:12px;">
                     <label class="btn btn-secondary" id="btnGeoJSON">
-                        <span>📁 <span id="txtUploadGeo">Penjar GeoJSON</span></span>
+                        <span>&#128193; <span id="txtUploadGeo">Penjar GeoJSON</span></span>
                         <input type="file" id="fileGeoJSON" accept=".geojson,.json" class="hidden-input">
                     </label>
                 </div>
@@ -220,7 +220,7 @@
                             <div id="selectedRodalName" style="font-weight:700; font-size:1.1rem;"></div>
                             <div id="selectedRodalMeta" style="font-size:0.8rem; color:var(--text-secondary);"></div>
                         </div>
-                        <button class="btn btn-danger btn-small" id="btnDeleteRodal">🗑️</button>
+                        <button class="btn btn-danger btn-small" id="btnDeleteRodal">&#128465;</button>
                     </div>
 
                     <div class="card-title" style="font-size:0.95rem; margin-top:16px;" id="actuacionsTitle">Actuacions programades</div>
@@ -230,12 +230,12 @@
                     <div id="actuacioForm" style="display:none; margin-top:12px; padding:12px; background:var(--bg-primary); border-radius:8px;">
                         <div class="form-row">
                             <div class="form-group" style="flex:2;">
-                                <label id="lblActType">Tipus d'actuació</label>
+                                <label id="lblActType">Tipus d actuacio</label>
                                 <select id="selectActType">
                                     <option value="Clariana selectiva">Clariana selectiva</option>
                                     <option value="Poda">Poda</option>
-                                    <option value="Plantació">Plantació</option>
-                                    <option value="Repoblació">Repoblació</option>
+                                    <option value="Plantacio">Plantacio</option>
+                                    <option value="Repoblacio">Repoblacio</option>
                                     <option value="Sequera">Sequera</option>
                                     <option value="Defensa incendis">Defensa incendis</option>
                                     <option value="Tractament fitosanitari">Tractament fitosanitari</option>
@@ -247,7 +247,7 @@
                                 <label id="lblActStatus">Estat</label>
                                 <select id="selectActStatus">
                                     <option value="pending">Pendent</option>
-                                    <option value="executing">En execució</option>
+                                    <option value="executing">En execucio</option>
                                     <option value="completed">Completat</option>
                                     <option value="delayed">Retardat</option>
                                 </select>
@@ -264,17 +264,17 @@
                             </div>
                         </div>
                         <div class="form-group" style="margin-bottom:10px;">
-                            <label id="lblActDesc">Descripció / observacions</label>
-                            <textarea id="inputActDesc" placeholder="Descripció de l'actuació..."></textarea>
+                            <label id="lblActDesc">Descripcio / observacions</label>
+                            <textarea id="inputActDesc" placeholder="Descripcio de l actuacio..."></textarea>
                         </div>
                         <div class="form-row">
-                            <button class="btn btn-primary btn-small" id="btnSaveActuacio" style="flex:1;">Programar actuació</button>
-                            <button class="btn btn-secondary btn-small" id="btnCancelActuacio" style="flex:1;">Cancel·la</button>
+                            <button class="btn btn-primary btn-small" id="btnSaveActuacio" style="flex:1;">Programar actuacio</button>
+                            <button class="btn btn-secondary btn-small" id="btnCancelActuacio" style="flex:1;">Cancel la</button>
                         </div>
                     </div>
 
                     <button class="btn btn-secondary" id="btnAddActuacio" style="margin-top:10px; display:none;">
-                        <span>➕ <span id="txtAddActuacio">Nova actuació</span></span>
+                        <span>&#10133; <span id="txtAddActuacio">Nova actuacio</span></span>
                     </button>
                 </div>
             </div>
@@ -283,11 +283,11 @@
         <!-- CALENDAR -->
         <section id="section-calendar" class="section">
             <div class="card">
-                <div class="card-title" id="calendarTitle">Calendari d'actuacions</div>
+                <div class="card-title" id="calendarTitle">Calendari d actuacions</div>
                 <div class="calendar-nav">
-                    <button id="calPrev">‹</button>
+                    <button id="calPrev">&#8249;</button>
                     <span id="calMonth" class="font-mono" style="font-weight:500;"></span>
-                    <button id="calNext">›</button>
+                    <button id="calNext">&#8250;</button>
                 </div>
                 <div class="calendar-grid" id="calendarGrid"></div>
                 <div id="dayDetail" class="day-detail"></div>
@@ -297,12 +297,12 @@
         <!-- TIMELINE -->
         <section id="section-timeline" class="section">
             <div class="card">
-                <div class="card-title" id="timelineTitle">Línia de temps forestal</div>
+                <div class="card-title" id="timelineTitle">Linia de temps forestal</div>
                 <div class="gantt-container">
                     <div id="ganttChart"></div>
                 </div>
                 <div class="gantt-legend">
-                    <div class="legend-item"><div class="legend-dot gantt-status-executing"></div><span id="legExecuting">En execució</span></div>
+                    <div class="legend-item"><div class="legend-dot gantt-status-executing"></div><span id="legExecuting">En execucio</span></div>
                     <div class="legend-item"><div class="legend-dot gantt-status-completed"></div><span id="legCompleted">Completat</span></div>
                     <div class="legend-item"><div class="legend-dot gantt-status-delayed"></div><span id="legDelayed">Retardat</span></div>
                     <div class="legend-item"><div class="legend-dot gantt-status-pending"></div><span id="legPending">Pendent</span></div>
@@ -313,7 +313,7 @@
         <!-- REPORTS -->
         <section id="section-reports" class="section">
             <div class="card">
-                <div class="card-title" id="reportsTitle">Resum i exportació</div>
+                <div class="card-title" id="reportsTitle">Resum i exportacio</div>
                 <div class="summary-grid">
                     <div class="summary-item">
                         <div class="summary-value font-mono" id="statRodals">0</div>
@@ -321,7 +321,7 @@
                     </div>
                     <div class="summary-item">
                         <div class="summary-value font-mono" id="statArea">0 ha</div>
-                        <div class="summary-label" id="lblArea">Superfície</div>
+                        <div class="summary-label" id="lblArea">Superficie</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-value font-mono" id="statActuacions">0</div>
@@ -329,12 +329,12 @@
                     </div>
                     <div class="summary-item">
                         <div class="summary-value font-mono" id="statAvgProgress">0%</div>
-                        <div class="summary-label" id="lblAvgProgress">Progrés mig</div>
+                        <div class="summary-label" id="lblAvgProgress">Progres mig</div>
                     </div>
                 </div>
                 <div class="export-buttons">
-                    <button class="btn btn-primary" id="btnPdf"><span>📄 <span id="txtPdf">Descarregar PDF</span></span></button>
-                    <button class="btn btn-secondary" id="btnExcel"><span>📊 <span id="txtExcel">Descarregar Excel</span></span></button>
+                    <button class="btn btn-primary" id="btnPdf"><span>&#128196; <span id="txtPdf">Descarregar PDF</span></span></button>
+                    <button class="btn btn-secondary" id="btnExcel"><span>&#128202; <span id="txtExcel">Descarregar Excel</span></span></button>
                 </div>
             </div>
         </section>
@@ -364,6 +364,7 @@
     </nav>
 
     <script>
+
         // ==================== CONFIG & STATE ====================
         const CONFIG = {
             SUPABASE_URL: 'https://your-project.supabase.co',
@@ -392,16 +393,23 @@
 
         // ==================== UTILS ====================
         function generateUUID(){
-            if(typeof crypto!=='undefined' && crypto.randomUUID) return crypto.randomUUID();
+            if(typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
-                const r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8);
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
 
+        function escapeHtml(text){
+            if(!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // ==================== PROJ4 DEFINITIONS ====================
         function initProj4(){
-            if(typeof proj4==='undefined'){ console.warn('proj4 no disponible'); return false; }
+            if(typeof proj4 === 'undefined'){ console.warn('proj4 no disponible'); return false; }
             try{
                 proj4.defs('EPSG:25831', '+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
                 proj4.defs('EPSG:32631', '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs');
@@ -413,40 +421,40 @@
         // ==================== I18N ====================
         const i18n = {
             ca: {
-                appTitle:'Gestió Forestal', backHub:'Tornar al Hub', mapTitle:'Mapa de la finca',
-                uploadGeo:'Penjar GeoJSON', rodalsTitle:'Rodals i actuacions', addActuacio:'Nova actuació',
-                actType:'Tipus d'actuació', actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi',
-                actDesc:'Descripció / observacions', schedule:'Programar actuació', cancel:'Cancel·la',
-                calendar:'Calendari d'actuacions', timeline:'Línia de temps forestal', reports:'Resum i exportació',
-                rodals:'Rodals', area:'Superfície', actuacions:'Actuacions', avgProgress:'Progrés mig',
-                pdf:'Descarregar PDF', excel:'Descarregar Excel', executing:'En execució', completed:'Completat',
-                delayed:'Retardat', pending:'Pendent', publicMode:'Mode Visor Públic — Només lectura',
+                appTitle:'Gestio Forestal', backHub:'Tornar al Hub', mapTitle:'Mapa de la finca',
+                uploadGeo:'Penjar GeoJSON', rodalsTitle:'Rodals i actuacions', addActuacio:'Nova actuacio',
+                actType:'Tipus d actuacio', actStatus:'Estat', actStart:'Data inici', actEnd:'Data fi',
+                actDesc:'Descripcio / observacions', schedule:'Programar actuacio', cancel:'Cancel la',
+                calendar:'Calendari d actuacions', timeline:'Linia de temps forestal', reports:'Resum i exportacio',
+                rodals:'Rodals', area:'Superficie', actuacions:'Actuacions', avgProgress:'Progres mig',
+                pdf:'Descarregar PDF', excel:'Descarregar Excel', executing:'En execucio', completed:'Completat',
+                delayed:'Retardat', pending:'Pendent', publicMode:'Mode Visor Public - Nomes lectura',
                 syncOnline:'Sincronitzat', syncOffline:'Mode local', toastOffline:'Treballant en mode local (Offline)',
                 toastSync:'Sincronitzat amb el servidor', toastError:'Error de xarxa. Dades desades localment.',
-                toastSaved:'Desat correctament', toastGeoJSON:'GeoJSON carregat', noGeoJSON:'Arxiu no vàlid',
+                toastSaved:'Desat correctament', toastGeoJSON:'GeoJSON carregat', noGeoJSON:'Arxiu no valid',
                 navMap:'Mapa', navRodals:'Rodals', navCal:'Calendari', navTime:'Temps', navRep:'Informes',
-                emptyRodals:'No hi ha rodals creats', emptyActs:'Cap actuació programada', progress:'Progrés',
-                before:'Abans', after:'Després', addPhoto:'Afegir foto', delete:'Eliminar',
+                emptyRodals:'No hi ha rodals creats', emptyActs:'Cap actuacio programada', progress:'Progres',
+                before:'Abans', after:'Despres', addPhoto:'Afegir foto', delete:'Eliminar',
                 treatmentLoaded:'Tractament carregat', detectedRodals:'rodals detectats del GeoJSON',
-                reprojected:'Reprojectat des de', noDayEvents:'Cap actuació aquest dia'
+                reprojected:'Reprojectat des de', noDayEvents:'Cap actuacio aquest dia'
             },
             es: {
-                appTitle:'Gestión Forestal', backHub:'Volver al Hub', mapTitle:'Mapa de la finca',
-                uploadGeo:'Subir GeoJSON', rodalsTitle:'Rodales y actuaciones', addActuacio:'Nueva actuación',
-                actType:'Tipo de actuación', actStatus:'Estado', actStart:'Fecha inicio', actEnd:'Fecha fin',
-                actDesc:'Descripción / observaciones', schedule:'Programar actuación', cancel:'Cancelar',
-                calendar:'Calendario de actuaciones', timeline:'Línea de tiempo forestal', reports:'Resumen y exportación',
+                appTitle:'Gestion Forestal', backHub:'Volver al Hub', mapTitle:'Mapa de la finca',
+                uploadGeo:'Subir GeoJSON', rodalsTitle:'Rodales y actuaciones', addActuacio:'Nueva actuacion',
+                actType:'Tipo de actuacion', actStatus:'Estado', actStart:'Fecha inicio', actEnd:'Fecha fin',
+                actDesc:'Descripcion / observaciones', schedule:'Programar actuacion', cancel:'Cancelar',
+                calendar:'Calendario de actuaciones', timeline:'Linea de tiempo forestal', reports:'Resumen y exportacion',
                 rodals:'Rodales', area:'Superficie', actuaciones:'Actuaciones', avgProgress:'Progreso medio',
-                pdf:'Descargar PDF', excel:'Descargar Excel', executing:'En ejecución', completed:'Completado',
-                delayed:'Retrasado', pending:'Pendiente', publicMode:'Modo Visor Público — Solo lectura',
+                pdf:'Descargar PDF', excel:'Descargar Excel', executing:'En ejecucion', completed:'Completado',
+                delayed:'Retrasado', pending:'Pendiente', publicMode:'Modo Visor Publico - Solo lectura',
                 syncOnline:'Sincronizado', syncOffline:'Modo local', toastOffline:'Trabajando en modo local',
                 toastSync:'Sincronizado con el servidor', toastError:'Error de red. Datos guardados localmente.',
-                toastSaved:'Guardado correctamente', toastGeoJSON:'GeoJSON cargado', noGeoJSON:'Archivo no válido',
+                toastSaved:'Guardado correctamente', toastGeoJSON:'GeoJSON cargado', noGeoJSON:'Archivo no valido',
                 navMap:'Mapa', navRodals:'Rodales', navCal:'Calendario', navTime:'Tiempo', navRep:'Informes',
-                emptyRodals:'No hay rodales creados', emptyActs:'Ninguna actuación programada', progress:'Progreso',
-                before:'Antes', after:'Después', addPhoto:'Añadir foto', delete:'Eliminar',
+                emptyRodals:'No hay rodales creados', emptyActs:'Ninguna actuacion programada', progress:'Progreso',
+                before:'Antes', after:'Despues', addPhoto:'Anadir foto', delete:'Eliminar',
                 treatmentLoaded:'Tratamiento cargado', detectedRodals:'rodales detectados del GeoJSON',
-                reprojected:'Reproyectado desde', noDayEvents:'Ninguna actuación este día'
+                reprojected:'Reproyectado desde', noDayEvents:'Ninguna actuacion este dia'
             },
             en: {
                 appTitle:'Forest Management', backHub:'Back to Hub', mapTitle:'Property Map',
@@ -456,7 +464,7 @@
                 calendar:'Operations Calendar', timeline:'Forest Timeline', reports:'Summary & Export',
                 rodals:'Stands', area:'Surface area', actuacions:'Operations', avgProgress:'Avg progress',
                 pdf:'Download PDF', excel:'Download Excel', executing:'In progress', completed:'Completed',
-                delayed:'Delayed', pending:'Pending', publicMode:'Public Viewer — Read only',
+                delayed:'Delayed', pending:'Pending', publicMode:'Public Viewer - Read only',
                 syncOnline:'Synced', syncOffline:'Local mode', toastOffline:'Working offline',
                 toastSync:'Synced with server', toastError:'Network error. Data saved locally.',
                 toastSaved:'Saved successfully', toastGeoJSON:'GeoJSON loaded', noGeoJSON:'Invalid file',
@@ -468,13 +476,13 @@
             }
         };
 
-        function t(k){ return i18n[state.lang]?.[k] || i18n.ca[k] || k; }
+        function t(k){ return i18n[state.lang] && i18n[state.lang][k] ? i18n[state.lang][k] : (i18n.ca[k] || k); }
 
         function detectLanguage(){
             try{
                 const l = localStorage.getItem('M.S.X._lang');
-                state.lang = (l==='es'||l==='en') ? l : 'ca';
-            }catch(e){ state.lang='ca'; }
+                state.lang = (l === 'es' || l === 'en') ? l : 'ca';
+            }catch(e){ state.lang = 'ca'; }
             applyTranslations();
         }
 
@@ -490,82 +498,94 @@
                 navMap:'navMap', navRodals:'navRodals', navCalendar:'navCal', navTimeline:'navTime', navReports:'navRep',
                 navMapM:'navMap', navRodalsM:'navRodals', navCalM:'navCal', navTimeM:'navTime', navRepM:'navRep'
             };
-            Object.entries(ids).forEach(([id,key])=>{ const el=document.getElementById(id); if(el) el.textContent=t(key); });
+            Object.entries(ids).forEach(function(entry){
+                const id = entry[0], key = entry[1];
+                const el = document.getElementById(id);
+                if(el) el.textContent = t(key);
+            });
         }
 
         // ==================== TOASTS ====================
-        function showToast(msg, type='info', dur=3000){
-            const c=document.getElementById('toastContainer');
+        function showToast(msg, type, dur){
+            type = type || 'info';
+            dur = dur || 3000;
+            const c = document.getElementById('toastContainer');
             if(!c) return;
-            const d=document.createElement('div'); d.className=`toast ${type}`; d.textContent=msg;
-            c.appendChild(d); requestAnimationFrame(()=>d.classList.add('show'));
-            setTimeout(()=>{ d.classList.remove('show'); setTimeout(()=>d.remove(),300); }, dur);
+            const d = document.createElement('div');
+            d.className = 'toast ' + type;
+            d.textContent = msg;
+            c.appendChild(d);
+            requestAnimationFrame(function(){ d.classList.add('show'); });
+            setTimeout(function(){
+                d.classList.remove('show');
+                setTimeout(function(){ d.remove(); }, 300);
+            }, dur);
         }
 
         // ==================== INDEXEDDB & LOCALSTORAGE ====================
         function initIndexedDB(){
-            return new Promise((res)=>{
+            return new Promise(function(res){
                 try{
                     if(!window.indexedDB){ console.warn('IndexedDB no disponible'); res(null); return; }
                     const r = indexedDB.open(CONFIG.DB_NAME, 1);
-                    r.onerror=()=>{ console.warn('IndexedDB error', r.error); res(null); };
-                    r.onsuccess=()=>{ state.db=r.result; res(r.result); };
-                    r.onupgradeneeded=(e)=>{
-                        const db=e.target.result;
+                    r.onerror = function(){ console.warn('IndexedDB error', r.error); res(null); };
+                    r.onsuccess = function(){ state.db = r.result; res(r.result); };
+                    r.onupgradeneeded = function(e){
+                        const db = e.target.result;
                         if(!db.objectStoreNames.contains(CONFIG.STORE_NAME)) db.createObjectStore(CONFIG.STORE_NAME, {keyPath:'id', autoIncrement:true});
                         if(!db.objectStoreNames.contains('rodals')) db.createObjectStore('rodals', {keyPath:'id'});
                         if(!db.objectStoreNames.contains('actuacions')) db.createObjectStore('actuacions', {keyPath:'id'});
                     };
-                }catch(e){ console.warn('IndexedDB excepció', e); res(null); }
+                }catch(e){ console.warn('IndexedDB excepcio', e); res(null); }
             });
         }
 
         function dbPut(store, data){
-            return new Promise((res)=>{
+            return new Promise(function(res){
                 if(!state.db){ res(null); return; }
                 try{
-                    const tx=state.db.transaction(store,'readwrite');
-                    const os=tx.objectStore(store);
-                    const req=os.put(data);
-                    req.onsuccess=()=>res(req.result);
-                    req.onerror=()=>{ console.warn('dbPut error', req.error); res(null); };
-                }catch(e){ console.warn('dbPut excepció', e); res(null); }
+                    const tx = state.db.transaction(store, 'readwrite');
+                    const os = tx.objectStore(store);
+                    const req = os.put(data);
+                    req.onsuccess = function(){ res(req.result); };
+                    req.onerror = function(){ console.warn('dbPut error', req.error); res(null); };
+                }catch(e){ console.warn('dbPut excepcio', e); res(null); }
             });
         }
         function dbGet(store, id){
-            return new Promise((res)=>{
+            return new Promise(function(res){
                 if(!state.db){ res(null); return; }
                 try{
-                    const tx=state.db.transaction(store,'readonly');
-                    const os=tx.objectStore(store);
-                    const req=os.get(id);
-                    req.onsuccess=()=>res(req.result);
-                    req.onerror=()=>{ console.warn('dbGet error', req.error); res(null); };
-                }catch(e){ console.warn('dbGet excepció', e); res(null); }
+                    const tx = state.db.transaction(store, 'readonly');
+                    const os = tx.objectStore(store);
+                    const req = os.get(id);
+                    req.onsuccess = function(){ res(req.result); };
+                    req.onerror = function(){ console.warn('dbGet error', req.error); res(null); };
+                }catch(e){ console.warn('dbGet excepcio', e); res(null); }
             });
         }
         function dbGetAll(store){
-            return new Promise((res)=>{
+            return new Promise(function(res){
                 if(!state.db){ res([]); return; }
                 try{
-                    const tx=state.db.transaction(store,'readonly');
-                    const os=tx.objectStore(store);
-                    const req=os.getAll();
-                    req.onsuccess=()=>res(req.result);
-                    req.onerror=()=>{ console.warn('dbGetAll error', req.error); res([]); };
-                }catch(e){ console.warn('dbGetAll excepció', e); res([]); }
+                    const tx = state.db.transaction(store, 'readonly');
+                    const os = tx.objectStore(store);
+                    const req = os.getAll();
+                    req.onsuccess = function(){ res(req.result); };
+                    req.onerror = function(){ console.warn('dbGetAll error', req.error); res([]); };
+                }catch(e){ console.warn('dbGetAll excepcio', e); res([]); }
             });
         }
         function dbDelete(store, id){
-            return new Promise((res)=>{
+            return new Promise(function(res){
                 if(!state.db){ res(null); return; }
                 try{
-                    const tx=state.db.transaction(store,'readwrite');
-                    const os=tx.objectStore(store);
-                    const req=os.delete(id);
-                    req.onsuccess=()=>res(req.result);
-                    req.onerror=()=>{ console.warn('dbDelete error', req.error); res(null); };
-                }catch(e){ console.warn('dbDelete excepció', e); res(null); }
+                    const tx = state.db.transaction(store, 'readwrite');
+                    const os = tx.objectStore(store);
+                    const req = os.delete(id);
+                    req.onsuccess = function(){ res(req.result); };
+                    req.onerror = function(){ console.warn('dbDelete error', req.error); res(null); };
+                }catch(e){ console.warn('dbDelete excepcio', e); res(null); }
             });
         }
 
@@ -579,41 +599,43 @@
         }
         function loadLocal(){
             try{
-                const r=localStorage.getItem('forest_rodals');
-                const a=localStorage.getItem('forest_actuacions');
-                if(r) state.rodals=JSON.parse(r);
-                if(a) state.actuacions=JSON.parse(a);
+                const r = localStorage.getItem('forest_rodals');
+                const a = localStorage.getItem('forest_actuacions');
+                if(r) state.rodals = JSON.parse(r);
+                if(a) state.actuacions = JSON.parse(a);
             }catch(e){ console.warn('loadLocal error', e); }
         }
         async function loadIndexedDB(){
             if(!state.db) return;
             try{
-                const r=await dbGet('rodals','current');
-                const a=await dbGet('actuacions','current');
-                if(r && r.data && r.data.length>0 && state.rodals.length===0) state.rodals=r.data;
-                if(a && a.data && a.data.length>0 && state.actuacions.length===0) state.actuacions=a.data;
-            }catch(e){ console.warn('loadIndexedDB error',e); }
+                const r = await dbGet('rodals', 'current');
+                const a = await dbGet('actuacions', 'current');
+                if(r && r.data && r.data.length > 0 && state.rodals.length === 0) state.rodals = r.data;
+                if(a && a.data && a.data.length > 0 && state.actuacions.length === 0) state.actuacions = a.data;
+            }catch(e){ console.warn('loadIndexedDB error', e); }
         }
 
         // ==================== SUPABASE ====================
         function createSupabaseClient(){
             try{
-                if(typeof supabase==='undefined' || !supabase.createClient){ console.warn('Supabase no disponible'); return null; }
-                const url=localStorage.getItem('M.S.X._supabase_url')||CONFIG.SUPABASE_URL;
-                const key=localStorage.getItem('M.S.X._supabase_key')||CONFIG.SUPABASE_KEY;
-                if(!url||url.includes('your-project')) return null;
-                return supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
+                if(typeof supabase === 'undefined' || !supabase.createClient){ console.warn('Supabase no disponible'); return null; }
+                const url = localStorage.getItem('M.S.X._supabase_url') || CONFIG.SUPABASE_URL;
+                const key = localStorage.getItem('M.S.X._supabase_key') || CONFIG.SUPABASE_KEY;
+                if(!url || url.indexOf('your-project') !== -1) return null;
+                return supabase.createClient(url, key, {auth:{persistSession:true, autoRefreshToken:true}});
             }catch(e){ console.warn('createSupabaseClient error', e); return null; }
         }
         async function supabaseCall(promise){
-            const to=new Promise((_,r)=>setTimeout(()=>r(new Error('TIMEOUT')),CONFIG.TIMEOUT_MS));
+            const to = new Promise(function(_, r){ setTimeout(function(){ r(new Error('TIMEOUT')); }, CONFIG.TIMEOUT_MS); });
             try{
-                const res=await Promise.race([promise,to]);
+                const res = await Promise.race([promise, to]);
                 if(res.error) throw res.error;
                 return res;
             }catch(err){
-                if(err.message==='TIMEOUT'||!navigator.onLine){
-                    state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000);
+                if(err.message === 'TIMEOUT' || !navigator.onLine){
+                    state.isOnline = false;
+                    updateSyncDot();
+                    showToast(t('toastOffline'), 'warning', 4000);
                 }
                 throw err;
             }
@@ -622,39 +644,45 @@
         async function syncData(){
             if(!state.supabase || !state.isOnline || state.isPublicMode) return;
             try{
-                for(const r of state.rodals){
+                for(let i = 0; i < state.rodals.length; i++){
+                    const r = state.rodals[i];
                     await supabaseCall(state.supabase.from('rodals').upsert({...r, geojson_data:JSON.stringify(r.geojson_data)}));
                 }
-                for(const a of state.actuacions){
-                    await supabaseCall(state.supabase.from('actuacions').upsert(a));
+                for(let i = 0; i < state.actuacions.length; i++){
+                    await supabaseCall(state.supabase.from('actuacions').upsert(state.actuacions[i]));
                 }
-                showToast(t('toastSync'),'info');
+                showToast(t('toastSync'), 'info');
             }catch(e){
-                console.warn('Sync error',e);
-                showToast(t('toastError'),'error',4000);
+                console.warn('Sync error', e);
+                showToast(t('toastError'), 'error', 4000);
             }
         }
         async function loadFromServer(){
             if(!state.supabase || !state.isOnline || state.isPublicMode) return;
             try{
-                const {data:rodals}=await supabaseCall(state.supabase.from('rodals').select('*'));
-                const {data:actuacions}=await supabaseCall(state.supabase.from('actuacions').select('*'));
-                if(rodals && rodals.length>0){
-                    state.rodals=rodals.map(r=>{ try{r.geojson_data=JSON.parse(r.geojson_data);}catch(e){} return r; });
-                    state.actuacions=actuacions||[];
+                const rodalsRes = await supabaseCall(state.supabase.from('rodals').select('*'));
+                const actuacionsRes = await supabaseCall(state.supabase.from('actuacions').select('*'));
+                const rodals = rodalsRes.data;
+                const actuacions = actuacionsRes.data;
+                if(rodals && rodals.length > 0){
+                    state.rodals = rodals.map(function(r){
+                        try{ r.geojson_data = JSON.parse(r.geojson_data); }catch(e){}
+                        return r;
+                    });
+                    state.actuacions = actuacions || [];
                     persistLocal();
                     clearMapLayers();
-                    state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                    const allLayers=Object.values(state.mapLayers);
-                    if(allLayers.length>0){
-                        const group=L.featureGroup(allLayers);
-                        state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                    state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                    const allLayers = Object.values(state.mapLayers);
+                    if(allLayers.length > 0 && state.map){
+                        const group = L.featureGroup(allLayers);
+                        state.map.fitBounds(group.getBounds(), {padding:[30,30]});
                     }
                     renderRodals();
-                    showToast(t('treatmentLoaded'),'info');
+                    showToast(t('treatmentLoaded'), 'info');
                 }
             }catch(e){
-                console.warn('Load from server error',e);
+                console.warn('Load from server error', e);
             }
         }
 
@@ -664,159 +692,165 @@
             updateSyncDot();
         }
         function updateSyncDot(){
-            const d=document.getElementById('syncDot');
+            const d = document.getElementById('syncDot');
             if(!d) return;
             d.classList.toggle('online', state.isOnline);
-            d.title=state.isOnline?t('syncOnline'):t('syncOffline');
+            d.title = state.isOnline ? t('syncOnline') : t('syncOffline');
         }
-        window.addEventListener('online',async()=>{
-            state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info');
+        window.addEventListener('online', async function(){
+            state.isOnline = true;
+            updateSyncDot();
+            showToast(t('toastSync'), 'info');
             try{ await syncData(); }catch(e){}
         });
-        window.addEventListener('offline',()=>{ state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000); });
+        window.addEventListener('offline', function(){
+            state.isOnline = false;
+            updateSyncDot();
+            showToast(t('toastOffline'), 'warning', 4000);
+        });
 
         // ==================== MAP ====================
         function initMap(){
             try{
-                if(typeof L==='undefined'){ console.warn('Leaflet no disponible'); return; }
-                state.map=L.map('map').setView([41.7,2.1],8);
+                if(typeof L === 'undefined'){ console.warn('Leaflet no disponible'); return; }
+                state.map = L.map('map').setView([41.7, 2.1], 8);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19
                 }).addTo(state.map);
-                if(navigator.geolocation&&!state.isPublicMode){
-                    navigator.geolocation.getCurrentPosition((pos)=>{
-                        const {latitude,longitude}=pos.coords;
-                        state.map.setView([latitude,longitude],14);
-                        const cd=document.getElementById('coordsDisplay');
-                        if(cd) cd.textContent=`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-                    },()=>{});
+                if(navigator.geolocation && !state.isPublicMode){
+                    navigator.geolocation.getCurrentPosition(function(pos){
+                        const lat = pos.coords.latitude, lng = pos.coords.longitude;
+                        state.map.setView([lat, lng], 14);
+                        const cd = document.getElementById('coordsDisplay');
+                        if(cd) cd.textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+                    }, function(){});
                 }
             }catch(e){ console.warn('initMap error', e); }
         }
 
         function clearMapLayers(){
             try{
-                Object.values(state.mapLayers).forEach(l=>{ if(state.map) state.map.removeLayer(l); });
-                state.mapLayers={};
+                Object.values(state.mapLayers).forEach(function(l){ if(state.map) state.map.removeLayer(l); });
+                state.mapLayers = {};
             }catch(e){ console.warn('clearMapLayers error', e); }
         }
 
         function highlightRodal(rodalId){
             try{
-                Object.entries(state.mapLayers).forEach(([id, layer])=>{
-                    layer.setStyle({ color: '#4ade80', weight: 2, opacity: 0.6, fillOpacity: 0.1 });
+                Object.entries(state.mapLayers).forEach(function(entry){
+                    entry[1].setStyle({ color: '#4ade80', weight: 2, opacity: 0.6, fillOpacity: 0.1 });
                 });
                 if(state.mapLayers[rodalId]){
                     state.mapLayers[rodalId].setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillOpacity: 0.25 });
-                    if(state.map) state.map.fitBounds(state.mapLayers[rodalId].getBounds(),{padding:[40,40], maxZoom:18});
+                    if(state.map) state.map.fitBounds(state.mapLayers[rodalId].getBounds(), {padding:[40,40], maxZoom:18});
                 }
             }catch(e){ console.warn('highlightRodal error', e); }
         }
 
         function addRodalToMap(rodal, geojson){
             try{
-                if(!geojson || typeof L==='undefined' || !state.map) return;
-                const layer=L.geoJSON(geojson,{
+                if(!geojson || typeof L === 'undefined' || !state.map) return;
+                const layer = L.geoJSON(geojson, {
                     style:{ color:'#4ade80', weight:2, opacity:0.6, fillColor:'#4ade80', fillOpacity:0.1 }
                 }).addTo(state.map);
-                layer.bindPopup(`<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
-                state.mapLayers[rodal.id]=layer;
+                layer.bindPopup('<b>' + rodal.name + '</b><br>' + parseFloat(rodal.area_ha).toFixed(2) + ' ha');
+                state.mapLayers[rodal.id] = layer;
             }catch(e){ console.warn('addRodalToMap error', e); }
         }
 
         // ==================== CRS DETECTION & TRANSFORMATION ====================
         function getFirstCoordinate(geojson){
-            if(!geojson.features||!geojson.features.length) return null;
-            const geom=geojson.features[0].geometry;
+            if(!geojson.features || !geojson.features.length) return null;
+            const geom = geojson.features[0].geometry;
             if(!geom) return null;
-            let coords=geom.coordinates;
-            while(Array.isArray(coords[0])) coords=coords[0];
+            let coords = geom.coordinates;
+            while(Array.isArray(coords[0])) coords = coords[0];
             return coords;
         }
 
         function detectCRS(geojson){
-            if(geojson.crs?.properties?.name){
-                const name=geojson.crs.properties.name.toLowerCase();
-                if(name.includes('25831')) return 'EPSG:25831';
-                if(name.includes('32631')) return 'EPSG:32631';
-                if(name.includes('23031')) return 'EPSG:23031';
-                if(name.includes('4326')) return 'EPSG:4326';
+            if(geojson.crs && geojson.crs.properties && geojson.crs.properties.name){
+                const name = geojson.crs.properties.name.toLowerCase();
+                if(name.indexOf('25831') !== -1) return 'EPSG:25831';
+                if(name.indexOf('32631') !== -1) return 'EPSG:32631';
+                if(name.indexOf('23031') !== -1) return 'EPSG:23031';
+                if(name.indexOf('4326') !== -1) return 'EPSG:4326';
             }
-            const first=getFirstCoordinate(geojson);
+            const first = getFirstCoordinate(geojson);
             if(first){
-                const [x,y]=first;
-                if(Math.abs(x)>1000 && Math.abs(y)>1000){
-                    if(y>4000000 && y<5000000 && x>200000 && x<600000) return 'EPSG:25831';
+                const x = first[0], y = first[1];
+                if(Math.abs(x) > 1000 && Math.abs(y) > 1000){
+                    if(y > 4000000 && y < 5000000 && x > 200000 && x < 600000) return 'EPSG:25831';
                 }
             }
             return 'EPSG:4326';
         }
 
         function transformCoordinates(coords, fromCRS){
-            if(fromCRS==='EPSG:4326') return coords;
+            if(fromCRS === 'EPSG:4326') return coords;
             if(!coords || !Array.isArray(coords)) return coords;
             if(Array.isArray(coords[0])){
-                return coords.map(c=>transformCoordinates(c, fromCRS));
+                return coords.map(function(c){ return transformCoordinates(c, fromCRS); });
             }
-            if(typeof proj4==='undefined') return coords;
+            if(typeof proj4 === 'undefined') return coords;
             try{
-                const transformed=proj4(fromCRS, 'WGS84', coords);
+                const transformed = proj4(fromCRS, 'WGS84', coords);
                 return transformed;
             }catch(e){ console.warn('proj4 transform error', e); return coords; }
         }
 
         function transformGeometry(geom, fromCRS){
             try{
-                const g=JSON.parse(JSON.stringify(geom));
-                if(g.type==='Point') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
-                else if(g.type==='Polygon') g.coordinates=g.coordinates.map(ring=>transformCoordinates(ring, fromCRS));
-                else if(g.type==='MultiPolygon') g.coordinates=g.coordinates.map(poly=>poly.map(ring=>transformCoordinates(ring, fromCRS)));
-                else if(g.type==='LineString') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
-                else if(g.type==='MultiLineString') g.coordinates=g.coordinates.map(line=>transformCoordinates(line, fromCRS));
+                const g = JSON.parse(JSON.stringify(geom));
+                if(g.type === 'Point') g.coordinates = transformCoordinates(g.coordinates, fromCRS);
+                else if(g.type === 'Polygon') g.coordinates = g.coordinates.map(function(ring){ return transformCoordinates(ring, fromCRS); });
+                else if(g.type === 'MultiPolygon') g.coordinates = g.coordinates.map(function(poly){ return poly.map(function(ring){ return transformCoordinates(ring, fromCRS); }); });
+                else if(g.type === 'LineString') g.coordinates = transformCoordinates(g.coordinates, fromCRS);
+                else if(g.type === 'MultiLineString') g.coordinates = g.coordinates.map(function(line){ return transformCoordinates(line, fromCRS); });
                 return g;
             }catch(e){ console.warn('transformGeometry error', e); return geom; }
         }
 
         function shoelaceArea(ring){
-            let area=0;
-            for(let i=0;i<ring.length-1;i++){
-                area+=ring[i][0]*ring[i+1][1]-ring[i+1][0]*ring[i][1];
+            let area = 0;
+            for(let i = 0; i < ring.length - 1; i++){
+                area += ring[i][0] * ring[i+1][1] - ring[i+1][0] * ring[i][1];
             }
-            return Math.abs(area)/2;
+            return Math.abs(area) / 2;
         }
 
         function polygonAreaHa(geometry, originalCRS){
-            if(originalCRS==='EPSG:4326') return 0;
-            let areaM2=0;
-            const coords=geometry.coordinates;
-            if(geometry.type==='Polygon'){
-                areaM2+=shoelaceArea(coords[0]);
-                for(let i=1;i<coords.length;i++) areaM2-=shoelaceArea(coords[i]);
-            }else if(geometry.type==='MultiPolygon'){
-                coords.forEach(poly=>{
-                    areaM2+=shoelaceArea(poly[0]);
-                    for(let i=1;i<poly.length;i++) areaM2-=shoelaceArea(poly[i]);
+            if(originalCRS === 'EPSG:4326') return 0;
+            let areaM2 = 0;
+            const coords = geometry.coordinates;
+            if(geometry.type === 'Polygon'){
+                areaM2 += shoelaceArea(coords[0]);
+                for(let i = 1; i < coords.length; i++) areaM2 -= shoelaceArea(coords[i]);
+            }else if(geometry.type === 'MultiPolygon'){
+                coords.forEach(function(poly){
+                    areaM2 += shoelaceArea(poly[0]);
+                    for(let i = 1; i < poly.length; i++) areaM2 -= shoelaceArea(poly[i]);
                 });
             }
-            return areaM2/10000;
+            return areaM2 / 10000;
         }
 
         function extractRodalsFromGeoJSON(geojson, originalCRS){
-            const rodals=[];
+            const rodals = [];
             if(!geojson.features) return rodals;
-            geojson.features.forEach((feat, idx)=>{
+            geojson.features.forEach(function(feat, idx){
                 try{
-                    const geom=feat.geometry;
-                    if(!geom||!(geom.type==='Polygon'||geom.type==='MultiPolygon')) return;
-                    const areaHa=polygonAreaHa(geom, originalCRS);
-                    const wgs84Geom=transformGeometry(geom, originalCRS);
-                    const p=feat.properties||{};
-                    const name=p.Nom||p.nom||p.Name||p.name||p.rodal||p.Rodal||p.id||p.ID||(`${t('rodals')} ${idx+1}`);
-                    const id=feat.id||`rodal-${idx}-${Date.now()}`;
+                    const geom = feat.geometry;
+                    if(!geom || !(geom.type === 'Polygon' || geom.type === 'MultiPolygon')) return;
+                    const areaHa = polygonAreaHa(geom, originalCRS);
+                    const wgs84Geom = transformGeometry(geom, originalCRS);
+                    const p = feat.properties || {};
+                    const name = p.Nom || p.nom || p.Name || p.name || p.rodal || p.Rodal || p.id || p.ID || (t('rodals') + ' ' + (idx + 1));
+                    const id = feat.id || ('rodal-' + idx + '-' + Date.now());
                     rodals.push({
                         id: String(id),
                         name: String(name),
-                        area_ha: areaHa>0?areaHa:0,
+                        area_ha: areaHa > 0 ? areaHa : 0,
                         geojson_data: {type:'Feature', properties:p, geometry:wgs84Geom}
                     });
                 }catch(e){ console.warn('Error extractRodals feature', idx, e); }
@@ -825,74 +859,70 @@
         }
 
         // ==================== GEOJSON UPLOAD ====================
-        document.getElementById('fileGeoJSON').addEventListener('change', async (e)=>{
-            const file=e.target.files[0]; if(!file) return;
+        document.getElementById('fileGeoJSON').addEventListener('change', async function(e){
+            const file = e.target.files[0];
+            if(!file) return;
             try{
-                const geojson=JSON.parse(await file.text());
+                const text = await file.text();
+                const geojson = JSON.parse(text);
                 if(!geojson.type) throw new Error('Invalid');
-                const crs=detectCRS(geojson);
-                const newRodals=extractRodalsFromGeoJSON(geojson, crs);
-                if(newRodals.length===0){ showToast(t('noGeoJSON'),'error'); return; }
+                const crs = detectCRS(geojson);
+                const newRodals = extractRodalsFromGeoJSON(geojson, crs);
+                if(newRodals.length === 0){ showToast(t('noGeoJSON'), 'error'); return; }
 
-                if(state.rodals.length>0 && !state.isPublicMode){
-                    const msg = state.lang==='ca' ? `Reemplaçar els ${state.rodals.length} rodals actuals pels ${newRodals.length} detectats?` :
-                              state.lang==='es' ? `¿Reemplazar los ${state.rodals.length} rodales actuales por los ${newRodals.length} detectados?` :
-                              `Replace current ${state.rodals.length} stands with ${newRodals.length} detected?`;
+                if(state.rodals.length > 0 && !state.isPublicMode){
+                    const msg = state.lang === 'ca' ? 'Reemplacar els ' + state.rodals.length + ' rodals actuals pels ' + newRodals.length + ' detectats?' :
+                              state.lang === 'es' ? 'Reemplazar los ' + state.rodals.length + ' rodales actuales por los ' + newRodals.length + ' detectados?' :
+                              'Replace current ' + state.rodals.length + ' stands with ' + newRodals.length + ' detected?';
                     if(!confirm(msg)) return;
                 }
 
                 clearMapLayers();
-                state.rodals=newRodals;
-                state.actuacions=[];
-                state.selectedRodalId=null;
+                state.rodals = newRodals;
+                state.actuacions = [];
+                state.selectedRodalId = null;
                 await persistLocal();
 
-                state.rodals.forEach(r=>addRodalToMap(r, r.geojson_data));
-                const allLayers=Object.values(state.mapLayers);
-                if(allLayers.length>0 && state.map){
-                    const group=L.featureGroup(allLayers);
-                    state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                state.rodals.forEach(function(r){ addRodalToMap(r, r.geojson_data); });
+                const allLayers = Object.values(state.mapLayers);
+                if(allLayers.length > 0 && state.map){
+                    const group = L.featureGroup(allLayers);
+                    state.map.fitBounds(group.getBounds(), {padding:[30,30]});
                 }
 
-                const banner=document.getElementById('detectedBanner');
+                const banner = document.getElementById('detectedBanner');
                 if(banner){
-                    banner.style.display='flex';
-                    document.getElementById('detectedText').textContent=`${newRodals.length} ${t('detectedRodals')}${crs!=='EPSG:4326'?' · '+t('reprojected')+' '+crs:''}`;
+                    banner.style.display = 'flex';
+                    document.getElementById('detectedText').textContent = newRodals.length + ' ' + t('detectedRodals') + (crs !== 'EPSG:4326' ? ' . ' + t('reprojected') + ' ' + crs : '');
                 }
 
-                showToast(t('toastGeoJSON'),'info');
+                showToast(t('toastGeoJSON'), 'info');
                 renderRodals();
                 showSection('rodals');
-            }catch(err){ console.error('GeoJSON upload error', err); showToast(t('noGeoJSON'),'error'); }
-            e.target.value='';
+            }catch(err){ console.error('GeoJSON upload error', err); showToast(t('noGeoJSON'), 'error'); }
+            e.target.value = '';
         });
 
         // ==================== RODALS ====================
         function renderRodals(){
             try{
-                const list=document.getElementById('rodalsList');
-                const banner=document.getElementById('detectedBanner');
-                if(banner) banner.style.display='none';
-                if(state.rodals.length===0){
-                    if(list) list.innerHTML=`<div class="empty-state">${t('emptyRodals')}</div>`;
-                    const rd=document.getElementById('rodalDetail');
-                    if(rd) rd.style.display='none';
+                const list = document.getElementById('rodalsList');
+                const banner = document.getElementById('detectedBanner');
+                if(banner) banner.style.display = 'none';
+                if(state.rodals.length === 0){
+                    if(list) list.innerHTML = '<div class="empty-state">' + t('emptyRodals') + '</div>';
+                    const rd = document.getElementById('rodalDetail');
+                    if(rd) rd.style.display = 'none';
                     return;
                 }
                 if(list){
-                    list.innerHTML='';
-                    state.rodals.forEach(r=>{
-                        const acts=state.actuacions.filter(a=>a.rodal_id===r.id).length;
-                        const div=document.createElement('div');
-                        div.className=`rodal-item ${state.selectedRodalId===r.id?'active':''}`;
-                        div.innerHTML=`
-                            <div>
-                                <div class="rodal-name">${r.name}</div>
-                                <div class="rodal-meta">${acts} ${t('actuacions').toLowerCase()}</div>
-                            </div>
-                            <div class="rodal-area font-mono">${parseFloat(r.area_ha||0).toFixed(2)} ha</div>
-                        `;
-                        div.onclick=()=>selectRodal(r.id);
+                    list.innerHTML = '';
+                    state.rodals.forEach(function(r){
+                        const acts = state.actuacions.filter(function(a){ return a.rodal_id === r.id; }).length;
+                        const div = document.createElement('div');
+                        div.className = 'rodal-item ' + (state.selectedRodalId === r.id ? 'active' : '');
+                        div.innerHTML = '<div><div class="rodal-name">' + r.name + '</div><div class="rodal-meta">' + acts + ' ' + t('actuacions').toLowerCase() + '</div></div><div class="rodal-area font-mono">' + parseFloat(r.area_ha || 0).toFixed(2) + ' ha</div>';
+                        div.onclick = function(){ selectRodal(r.id); };
                         list.appendChild(div);
                     });
                 }
@@ -902,12 +932,12 @@
 
         function selectRodal(id){
             try{
-                state.selectedRodalId=id;
+                state.selectedRodalId = id;
                 renderRodals();
-                const rd=document.getElementById('rodalDetail');
-                if(rd) rd.style.display='block';
-                const ba=document.getElementById('btnAddActuacio');
-                if(ba) ba.style.display=state.isPublicMode?'none':'block';
+                const rd = document.getElementById('rodalDetail');
+                if(rd) rd.style.display = 'block';
+                const ba = document.getElementById('btnAddActuacio');
+                if(ba) ba.style.display = state.isPublicMode ? 'none' : 'block';
                 renderRodalDetail();
                 highlightRodal(id);
             }catch(e){ console.warn('selectRodal error', e); }
@@ -915,121 +945,118 @@
 
         function renderRodalDetail(){
             try{
-                const r=state.rodals.find(x=>x.id===state.selectedRodalId);
+                const r = state.rodals.find(function(x){ return x.id === state.selectedRodalId; });
                 if(!r) return;
-                const srn=document.getElementById('selectedRodalName');
-                const srm=document.getElementById('selectedRodalMeta');
-                const bdr=document.getElementById('btnDeleteRodal');
-                if(srn) srn.textContent=r.name;
-                if(srm) srm.textContent=`${parseFloat(r.area_ha||0).toFixed(2)} ha · ${state.actuacions.filter(a=>a.rodal_id===r.id).length} ${t('actuacions').toLowerCase()}`;
-                if(bdr) bdr.style.display=state.isPublicMode?'none':'inline-flex';
+                const srn = document.getElementById('selectedRodalName');
+                const srm = document.getElementById('selectedRodalMeta');
+                const bdr = document.getElementById('btnDeleteRodal');
+                if(srn) srn.textContent = r.name;
+                if(srm) srm.textContent = parseFloat(r.area_ha || 0).toFixed(2) + ' ha . ' + state.actuacions.filter(function(a){ return a.rodal_id === r.id; }).length + ' ' + t('actuacions').toLowerCase();
+                if(bdr) bdr.style.display = state.isPublicMode ? 'none' : 'inline-flex';
                 renderActuacions();
             }catch(e){ console.warn('renderRodalDetail error', e); }
         }
 
         // ==================== ACTUACIONS ====================
+        function getBadgeBg(status){
+            const map = {executing:'rgba(234,179,8,0.2)', completed:'rgba(74,222,128,0.2)', delayed:'rgba(239,68,68,0.2)', pending:'rgba(250,250,250,0.1)'};
+            return map[status] || map.pending;
+        }
+        function getBadgeColor(status){
+            const map = {executing:'var(--warning)', completed:'var(--accent)', delayed:'var(--danger)', pending:'var(--text-secondary)'};
+            return map[status] || map.pending;
+        }
+
         function renderActuacions(){
             try{
-                const container=document.getElementById('actuacionsList');
+                const container = document.getElementById('actuacionsList');
                 if(!container) return;
-                const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId).sort((a,b)=>new Date(a.start_date||'2099-01-01')-new Date(b.start_date||'2099-01-01'));
-                if(acts.length===0){
-                    container.innerHTML=`<div class="empty-state">${t('emptyActs')}</div>`; return;
+                const acts = state.actuacions.filter(function(a){ return a.rodal_id === state.selectedRodalId; }).sort(function(a,b){ return new Date(a.start_date || '2099-01-01') - new Date(b.start_date || '2099-01-01'); });
+                if(acts.length === 0){
+                    container.innerHTML = '<div class="empty-state">' + t('emptyActs') + '</div>';
+                    return;
                 }
-                container.innerHTML='';
-                const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
-                const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
-                const readOnly=state.isPublicMode;
+                container.innerHTML = '';
+                const statusClass = {executing:'badge-executing', completed:'badge-completed', delayed:'badge-delayed', pending:'badge-pending'};
+                const statusLabel = {executing:t('executing'), completed:t('completed'), delayed:t('delayed'), pending:t('pending')};
+                const readOnly = state.isPublicMode;
 
-                acts.forEach(a=>{
-                    const card=document.createElement('div'); card.className='actuacio-card';
-                    const statusOptions=['pending','executing','completed','delayed'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${statusLabel[s]||s}</option>`).join('');
-                    card.innerHTML=`
-                        <div class="actuacio-header">
-                            <div style="flex:1;">
-                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                                    ${readOnly?`<span style="font-weight:700;">${escapeHtml(a.title)}</span>`:`<input type="text" class="actuacio-title" value="${escapeHtml(a.title)}" onchange="updateActField('${a.id}','title',this.value)">`}
-                                    ${readOnly?`<span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>`:`
-                                    <select class="status-select badge ${statusClass[a.status]||'badge-pending'}" onchange="updateActStatus('${a.id}', this.value)" style="background:${getBadgeBg(a.status)}; color:${getBadgeColor(a.status)};">
-                                        ${statusOptions}
-                                    </select>`}
-                                </div>
-                            </div>
-                            ${readOnly?'':`<button class="btn btn-danger btn-icon" onclick="deleteActuacio('${a.id}')" title="${t('delete')}">🗑️</button>`}
-                        </div>
-                        ${a.description?`<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">${escapeHtml(a.description)}</div>`:''}
+                acts.forEach(function(a){
+                    const card = document.createElement('div');
+                    card.className = 'actuacio-card';
+                    const statusOptions = ['pending','executing','completed','delayed'].map(function(s){
+                        return '<option value="' + s + '"' + (a.status === s ? ' selected' : '') + '>' + (statusLabel[s] || s) + '</option>';
+                    }).join('');
 
-                        <div class="form-row" style="margin-bottom:8px;">
-                            <div class="form-group" style="min-width:100px;">
-                                <label style="font-size:0.7rem;">${t('actStart')}</label>
-                                <input type="date" value="${a.start_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','start_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
-                            </div>
-                            <div class="form-group" style="min-width:100px;">
-                                <label style="font-size:0.7rem;">${t('actEnd')}</label>
-                                <input type="date" value="${a.end_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','end_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
-                            </div>
-                        </div>
+                    let titleHtml;
+                    if(readOnly){
+                        titleHtml = '<span style="font-weight:700;">' + escapeHtml(a.title) + '</span>';
+                    }else{
+                        titleHtml = '<input type="text" class="actuacio-title" value="' + escapeHtml(a.title) + '" onchange="updateActField(\'' + a.id + '\', \'title\', this.value)">';
+                    }
 
-                        <div class="progress-wrap">
-                            <input type="range" min="0" max="100" value="${a.progress||0}" class="progress-slider" 
-                                oninput="updateProgress('${a.id}', this.value)" ${readOnly?'disabled':''}>
-                            <span class="progress-value" id="prog-${a.id}">${a.progress||0}%</span>
-                        </div>
+                    let statusHtml;
+                    if(readOnly){
+                        statusHtml = '<span class="badge ' + (statusClass[a.status] || 'badge-pending') + '">' + (statusLabel[a.status] || a.status) + '</span>';
+                    }else{
+                        statusHtml = '<select class="status-select badge ' + (statusClass[a.status] || 'badge-pending') + '" onchange="updateActStatus(\'' + a.id + '\', this.value)" style="background:' + getBadgeBg(a.status) + '; color:' + getBadgeColor(a.status) + ';">' + statusOptions + '</select>';
+                    }
 
-                        <div class="photo-section">
-                            <div class="photo-label">
-                                <span>📷 ${t('before')}</span>
-                            </div>
-                            <div class="photo-grid" id="photos-before-${a.id}"></div>
-                        </div>
+                    card.innerHTML = 
+                        '<div class="actuacio-header">' +
+                        '<div style="flex:1;">' +
+                        '<div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">' + titleHtml + statusHtml + '</div>' +
+                        '</div>' +
+                        (readOnly ? '' : '<button class="btn btn-danger btn-icon" onclick="deleteActuacio(\'' + a.id + '\')" title="' + t('delete') + '">&#128465;</button>') +
+                        '</div>' +
+                        (a.description ? '<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">' + escapeHtml(a.description) + '</div>' : '') +
+                        '<div class="form-row" style="margin-bottom:8px;">' +
+                        '<div class="form-group" style="min-width:100px;">' +
+                        '<label style="font-size:0.7rem;">' + t('actStart') + '</label>' +
+                        '<input type="date" value="' + (a.start_date || '') + '" ' + (readOnly ? 'disabled' : '') + ' onchange="updateActField(\'' + a.id + '\', \'start_date\', this.value)" style="padding:6px 8px; font-size:0.85rem;">' +
+                        '</div>' +
+                        '<div class="form-group" style="min-width:100px;">' +
+                        '<label style="font-size:0.7rem;">' + t('actEnd') + '</label>' +
+                        '<input type="date" value="' + (a.end_date || '') + '" ' + (readOnly ? 'disabled' : '') + ' onchange="updateActField(\'' + a.id + '\', \'end_date\', this.value)" style="padding:6px 8px; font-size:0.85rem;">' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="progress-wrap">' +
+                        '<input type="range" min="0" max="100" value="' + (a.progress || 0) + '" class="progress-slider" oninput="updateProgress(\'' + a.id + '\', this.value)" ' + (readOnly ? 'disabled' : '') + '>' +
+                        '<span class="progress-value" id="prog-' + a.id + '">' + (a.progress || 0) + '%</span>' +
+                        '</div>' +
+                        '<div class="photo-section">' +
+                        '<div class="photo-label"><span>&#128247; ' + t('before') + '</span></div>' +
+                        '<div class="photo-grid" id="photos-before-' + a.id + '"></div>' +
+                        '</div>' +
+                        '<div class="photo-section">' +
+                        '<div class="photo-label"><span>&#128247; ' + t('after') + '</span></div>' +
+                        '<div class="photo-grid" id="photos-after-' + a.id + '"></div>' +
+                        '</div>';
 
-                        <div class="photo-section">
-                            <div class="photo-label">
-                                <span>📷 ${t('after')}</span>
-                            </div>
-                            <div class="photo-grid" id="photos-after-${a.id}"></div>
-                        </div>
-                    `;
                     container.appendChild(card);
-                    renderPhotoGrid(a.id,'before',a.photos_before||[],readOnly);
-                    renderPhotoGrid(a.id,'after',a.photos_after||[],readOnly);
+                    renderPhotoGrid(a.id, 'before', a.photos_before || [], readOnly);
+                    renderPhotoGrid(a.id, 'after', a.photos_after || [], readOnly);
                 });
             }catch(e){ console.warn('renderActuacions error', e); }
         }
 
-        function escapeHtml(text){
-            if(!text) return '';
-            const div=document.createElement('div');
-            div.textContent=text;
-            return div.innerHTML;
-        }
-
-        function getBadgeBg(status){
-            const map={executing:'rgba(234,179,8,0.2)',completed:'rgba(74,222,128,0.2)',delayed:'rgba(239,68,68,0.2)',pending:'rgba(250,250,250,0.1)'};
-            return map[status]||map.pending;
-        }
-        function getBadgeColor(status){
-            const map={executing:'var(--warning)',completed:'var(--accent)',delayed:'var(--danger)',pending:'var(--text-secondary)'};
-            return map[status]||map.pending;
-        }
-
         function renderPhotoGrid(actId, type, photos, readOnly){
             try{
-                const grid=document.getElementById(`photos-${type}-${actId}`);
+                const grid = document.getElementById('photos-' + type + '-' + actId);
                 if(!grid) return;
-                grid.innerHTML='';
-                photos.forEach((src, idx)=>{
-                    const div=document.createElement('div'); div.className='photo-thumb';
-                    div.innerHTML=`
-                        <img src="${src}" alt="${type}" onclick="window.open('${src}','_blank')">
-                        ${readOnly?'':`<button class="remove-btn" onclick="removePhoto('${actId}','${type}',${idx})">×</button>`}
-                    `;
+                grid.innerHTML = '';
+                photos.forEach(function(src, idx){
+                    const div = document.createElement('div');
+                    div.className = 'photo-thumb';
+                    div.innerHTML = '<img src="' + src + '" alt="' + type + '" onclick="window.open(\'' + src + '\', \'_blank\')">' +
+                        (readOnly ? '' : '<button class="remove-btn" onclick="removePhoto(\'' + actId + '\', \'' + type + '\', ' + idx + ')">x</button>');
                     grid.appendChild(div);
                 });
                 if(!readOnly){
-                    const add=document.createElement('label'); add.className='photo-add';
-                    add.innerHTML=`<span style="font-size:1.2rem;">+</span><span style="font-size:0.65rem;">${t('addPhoto')}</span>`;
-                    add.innerHTML+=`<input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${actId}','${type}',this)">`;
+                    const add = document.createElement('label');
+                    add.className = 'photo-add';
+                    add.innerHTML = '<span style="font-size:1.2rem;">+</span><span style="font-size:0.65rem;">' + t('addPhoto') + '</span>' +
+                        '<input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto(\'' + actId + '\', \'' + type + '\', this)">';
                     grid.appendChild(add);
                 }
             }catch(e){ console.warn('renderPhotoGrid error', e); }
@@ -1037,147 +1064,164 @@
 
         function updateActField(id, field, value){
             try{
-                const a=state.actuacions.find(x=>x.id===id);
-                if(a){ a[field]=value; persistLocal(); if(field.includes('date')){ renderCalendar(); renderGantt(); } }
+                const a = state.actuacions.find(function(x){ return x.id === id; });
+                if(a){ a[field] = value; persistLocal(); if(field.indexOf('date') !== -1){ renderCalendar(); renderGantt(); } }
             }catch(e){ console.warn('updateActField error', e); }
         }
         function updateActStatus(id, val){
             try{
-                const a=state.actuacions.find(x=>x.id===id);
-                if(a){ a.status=val; persistLocal(); renderActuacions(); renderGantt(); }
+                const a = state.actuacions.find(function(x){ return x.id === id; });
+                if(a){ a.status = val; persistLocal(); renderActuacions(); renderGantt(); }
             }catch(e){ console.warn('updateActStatus error', e); }
         }
         function updateProgress(id, val){
             try{
-                const a=state.actuacions.find(x=>x.id===id);
-                if(a){ a.progress=parseInt(val); const el=document.getElementById(`prog-${id}`); if(el) el.textContent=val+'%'; persistLocal(); }
+                const a = state.actuacions.find(function(x){ return x.id === id; });
+                if(a){ a.progress = parseInt(val); const el = document.getElementById('prog-' + id); if(el) el.textContent = val + '%'; persistLocal(); }
             }catch(e){ console.warn('updateProgress error', e); }
         }
         function deleteActuacio(id){
             try{
-                const msg=state.lang==='ca'?'Eliminar aquesta actuació?':state.lang==='es'?'¿Eliminar esta actuación?':'Delete this operation?';
+                const msg = state.lang === 'ca' ? 'Eliminar aquesta actuacio?' : state.lang === 'es' ? 'Eliminar esta actuacion?' : 'Delete this operation?';
                 if(!confirm(msg)) return;
-                state.actuacions=state.actuacions.filter(a=>a.id!==id);
+                state.actuacions = state.actuacions.filter(function(a){ return a.id !== id; });
                 persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
             }catch(e){ console.warn('deleteActuacio error', e); }
         }
         function removePhoto(actId, type, idx){
             try{
-                const a=state.actuacions.find(x=>x.id===actId);
-                if(a&&a[`photos_${type}`]){ a[`photos_${type}`].splice(idx,1); persistLocal(); renderActuacions(); }
+                const a = state.actuacions.find(function(x){ return x.id === actId; });
+                if(a && a['photos_' + type]){ a['photos_' + type].splice(idx, 1); persistLocal(); renderActuacions(); }
             }catch(e){ console.warn('removePhoto error', e); }
         }
 
         async function handlePhoto(actId, type, input){
             try{
-                const file=input.files[0]; if(!file) return;
-                const reader=new FileReader();
-                reader.onload=(e)=>{
+                const file = input.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e){
                     try{
-                        const a=state.actuacions.find(x=>x.id===actId);
+                        const a = state.actuacions.find(function(x){ return x.id === actId; });
                         if(a){
-                            if(!a[`photos_${type}`]) a[`photos_${type}`]=[];
-                            a[`photos_${type}`].push(e.target.result);
-                            persistLocal(); renderActuacions(); showToast(t('toastSaved'),'info');
+                            if(!a['photos_' + type]) a['photos_' + type] = [];
+                            a['photos_' + type].push(e.target.result);
+                            persistLocal(); renderActuacions(); showToast(t('toastSaved'), 'info');
                         }
                     }catch(err){ console.warn('handlePhoto onload error', err); }
                 };
                 reader.readAsDataURL(file);
-                input.value='';
+                input.value = '';
             }catch(e){ console.warn('handlePhoto error', e); }
         }
 
         // ==================== FORMS ====================
-        document.getElementById('btnAddActuacio').addEventListener('click', ()=>{
+        document.getElementById('btnAddActuacio').addEventListener('click', function(){
             try{
-                const af=document.getElementById('actuacioForm');
-                const ba=document.getElementById('btnAddActuacio');
-                if(af) af.style.display='block';
-                if(ba) ba.style.display='none';
+                const af = document.getElementById('actuacioForm');
+                const ba = document.getElementById('btnAddActuacio');
+                if(af) af.style.display = 'block';
+                if(ba) ba.style.display = 'none';
             }catch(e){}
         });
-        document.getElementById('btnCancelActuacio').addEventListener('click', ()=>{
+        document.getElementById('btnCancelActuacio').addEventListener('click', function(){
             try{
-                const af=document.getElementById('actuacioForm');
-                const ba=document.getElementById('btnAddActuacio');
-                const ad=document.getElementById('inputActDesc');
-                if(af) af.style.display='none';
-                if(ba) ba.style.display='block';
-                if(ad) ad.value='';
+                const af = document.getElementById('actuacioForm');
+                const ba = document.getElementById('btnAddActuacio');
+                const ad = document.getElementById('inputActDesc');
+                if(af) af.style.display = 'none';
+                if(ba) ba.style.display = 'block';
+                if(ad) ad.value = '';
             }catch(e){}
         });
-        document.getElementById('btnSaveActuacio').addEventListener('click', ()=>{
+        document.getElementById('btnSaveActuacio').addEventListener('click', function(){
             try{
-                const type=document.getElementById('selectActType').value;
-                const status=document.getElementById('selectActStatus').value;
-                const start=document.getElementById('inputActStart').value;
-                const end=document.getElementById('inputActEnd').value;
-                const desc=document.getElementById('inputActDesc').value.trim();
-                const customTitle=type==='Altres'?prompt(state.lang==='ca'?'Nom de l'actuació:':state.lang==='es'?'Nombre de la actuación:':'Operation name:')||'Altres':type;
+                const type = document.getElementById('selectActType').value;
+                const status = document.getElementById('selectActStatus').value;
+                const start = document.getElementById('inputActStart').value;
+                const end = document.getElementById('inputActEnd').value;
+                const desc = document.getElementById('inputActDesc').value.trim();
+                const customTitle = type === 'Altres' ? prompt(state.lang === 'ca' ? 'Nom de l actuacio:' : state.lang === 'es' ? 'Nombre de la actuacion:' : 'Operation name:') || 'Altres' : type;
 
-                const act={
-                    id:generateUUID(),
-                    rodal_id:state.selectedRodalId,
-                    title:customTitle,
-                    status,
-                    start_date:start,
-                    end_date:end,
-                    progress:0,
-                    photos_before:[],
-                    photos_after:[],
-                    description:desc,
-                    created_at:new Date().toISOString()
+                const act = {
+                    id: generateUUID(),
+                    rodal_id: state.selectedRodalId,
+                    title: customTitle,
+                    status: status,
+                    start_date: start,
+                    end_date: end,
+                    progress: 0,
+                    photos_before: [],
+                    photos_after: [],
+                    description: desc,
+                    created_at: new Date().toISOString()
                 };
-                state.actuacions.push(act); persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
+                state.actuacions.push(act);
+                persistLocal();
+                renderActuacions();
+                renderRodals();
+                renderCalendar();
+                renderGantt();
                 document.getElementById('btnCancelActuacio').click();
-                showToast(t('toastSaved'),'info');
-            }catch(e){ console.warn('btnSaveActuacio error', e); showToast('Error','error'); }
+                showToast(t('toastSaved'), 'info');
+            }catch(e){ console.warn('btnSaveActuacio error', e); showToast('Error', 'error'); }
         });
-        document.getElementById('btnDeleteRodal').addEventListener('click', ()=>{
+        document.getElementById('btnDeleteRodal').addEventListener('click', function(){
             try{
-                const msg=state.lang==='ca'?'Eliminar aquest rodal i totes les seves actuacions?':state.lang==='es'?'¿Eliminar este rodal y todas sus actuaciones?':'Delete this stand and all its operations?';
+                const msg = state.lang === 'ca' ? 'Eliminar aquest rodal i totes les seves actuacions?' : state.lang === 'es' ? 'Eliminar este rodal y todas sus actuaciones?' : 'Delete this stand and all its operations?';
                 if(!confirm(msg)) return;
                 if(state.mapLayers[state.selectedRodalId]){ if(state.map) state.map.removeLayer(state.mapLayers[state.selectedRodalId]); delete state.mapLayers[state.selectedRodalId]; }
-                state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
-                state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
-                state.selectedRodalId=null; persistLocal(); renderRodals(); renderCalendar(); renderGantt();
-                const rd=document.getElementById('rodalDetail');
-                if(rd) rd.style.display='none';
+                state.rodals = state.rodals.filter(function(r){ return r.id !== state.selectedRodalId; });
+                state.actuacions = state.actuacions.filter(function(a){ return a.rodal_id !== state.selectedRodalId; });
+                state.selectedRodalId = null;
+                persistLocal();
+                renderRodals();
+                renderCalendar();
+                renderGantt();
+                const rd = document.getElementById('rodalDetail');
+                if(rd) rd.style.display = 'none';
             }catch(e){ console.warn('btnDeleteRodal error', e); }
         });
 
         // ==================== CALENDAR ====================
         function renderCalendar(){
             try{
-                const grid=document.getElementById('calendarGrid');
+                const grid = document.getElementById('calendarGrid');
                 if(!grid) return;
-                grid.innerHTML='';
-                const year=state.currentMonth.getFullYear(), month=state.currentMonth.getMonth();
-                const firstDay=new Date(year,month,1).getDay();
-                const daysInMonth=new Date(year,month+1,0).getDate();
-                const monthNames=state.lang==='ca'?['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre']:
-                                 state.lang==='es'?['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']:
+                grid.innerHTML = '';
+                const year = state.currentMonth.getFullYear(), month = state.currentMonth.getMonth();
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const monthNames = state.lang === 'ca' ? ['Gener','Febrer','Marc','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'] :
+                                 state.lang === 'es' ? ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] :
                                  ['January','February','March','April','May','June','July','August','September','October','November','December'];
-                const cm=document.getElementById('calMonth');
-                if(cm) cm.textContent=`${monthNames[month]} ${year}`;
-                const weekDays=state.lang==='ca'?['Dl','Dt','Dc','Dj','Dv','Ds','Dg']:
-                                 state.lang==='es'?['Lu','Ma','Mi','Ju','Vi','Sa','Do']:
+                const cm = document.getElementById('calMonth');
+                if(cm) cm.textContent = monthNames[month] + ' ' + year;
+                const weekDays = state.lang === 'ca' ? ['Dl','Dt','Dc','Dj','Dv','Ds','Dg'] :
+                                 state.lang === 'es' ? ['Lu','Ma','Mi','Ju','Vi','Sa','Do'] :
                                  ['Mo','Tu','We','Th','Fr','Sa','Su'];
-                weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
-                let startOffset=firstDay===0?6:firstDay-1;
-                for(let i=0; i<startOffset; i++) grid.appendChild(document.createElement('div'));
-                const today=new Date();
-                const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date);
-                validActs.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
-                for(let d=1; d<=daysInMonth; d++){
-                    const date=new Date(year,month,d);
-                    const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
-                    if(date.toDateString()===today.toDateString()) el.classList.add('today');
-                    if(state.selectedDay && date.toDateString()===state.selectedDay.toDateString()) el.classList.add('selected');
-                    const has=validActs.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
-                    if(!has && validActs.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5';
-                    if(validActs.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
-                    el.onclick=()=>{ state.selectedDay=date; renderCalendar(); showDayDetail(date); };
+                weekDays.forEach(function(d){
+                    const el = document.createElement('div');
+                    el.className = 'calendar-header';
+                    el.textContent = d;
+                    grid.appendChild(el);
+                });
+                let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+                for(let i = 0; i < startOffset; i++) grid.appendChild(document.createElement('div'));
+                const today = new Date();
+                const validActs = state.actuacions.filter(function(a){ return a.start_date && a.end_date; });
+                validActs.forEach(function(a){ a._start = new Date(a.start_date); a._end = new Date(a.end_date); });
+                for(let d = 1; d <= daysInMonth; d++){
+                    const date = new Date(year, month, d);
+                    const el = document.createElement('div');
+                    el.className = 'calendar-day';
+                    el.innerHTML = '<span>' + d + '</span>';
+                    if(date.toDateString() === today.toDateString()) el.classList.add('today');
+                    if(state.selectedDay && date.toDateString() === state.selectedDay.toDateString()) el.classList.add('selected');
+                    const has = validActs.some(function(a){ return a.rodal_id === state.selectedRodalId && date >= a._start && date <= a._end; });
+                    if(!has && validActs.some(function(a){ return date >= a._start && date <= a._end; })) el.style.opacity = '0.5';
+                    if(validActs.some(function(a){ return date >= a._start && date <= a._end; })) el.classList.add('has-event');
+                    el.onclick = function(){ state.selectedDay = date; renderCalendar(); showDayDetail(date); };
                     grid.appendChild(el);
                 }
             }catch(e){ console.warn('renderCalendar error', e); }
@@ -1185,64 +1229,70 @@
 
         function showDayDetail(date){
             try{
-                const panel=document.getElementById('dayDetail');
+                const panel = document.getElementById('dayDetail');
                 if(!panel) return;
-                const acts=state.actuacions.filter(a=>{
-                    if(!a.start_date||!a.end_date) return false;
-                    const s=new Date(a.start_date), e=new Date(a.end_date);
-                    return date>=s && date<=e;
-                }).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+                const acts = state.actuacions.filter(function(a){
+                    if(!a.start_date || !a.end_date) return false;
+                    const s = new Date(a.start_date), e = new Date(a.end_date);
+                    return date >= s && date <= e;
+                }).sort(function(a,b){ return new Date(a.start_date) - new Date(b.start_date); });
 
-                if(acts.length===0){
-                    panel.innerHTML=`<div style="padding:12px; color:var(--text-secondary); font-size:0.9rem;">${t('noDayEvents')}</div>`;
+                if(acts.length === 0){
+                    panel.innerHTML = '<div style="padding:12px; color:var(--text-secondary); font-size:0.9rem;">' + t('noDayEvents') + '</div>';
                 }else{
-                    const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
-                    const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
-                    const dateStr=date.toLocaleDateString(state.lang==='en'?'en-US':(state.lang==='es'?'es-ES':'ca-ES'));
-                    panel.innerHTML=`<div class="day-detail-header"><span>${dateStr}</span><span style="font-size:0.75rem; color:var(--text-secondary);">${acts.length} ${t('actuacions').toLowerCase()}</span></div>`;
-                    panel.innerHTML+=acts.map(a=>{
-                        const rodal=state.rodals.find(r=>r.id===a.rodal_id);
-                        return `
-                        <div class="day-detail-item">
-                            <div>
-                                <div class="day-detail-title">${escapeHtml(a.title)}</div>
-                                <div class="day-detail-meta">${rodal?escapeHtml(rodal.name):'-'} · ${a.progress||0}%</div>
-                            </div>
-                            <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
-                        </div>`;
+                    const statusClass = {executing:'badge-executing', completed:'badge-completed', delayed:'badge-delayed', pending:'badge-pending'};
+                    const statusLabel = {executing:t('executing'), completed:t('completed'), delayed:t('delayed'), pending:t('pending')};
+                    const dateStr = date.toLocaleDateString(state.lang === 'en' ? 'en-US' : (state.lang === 'es' ? 'es-ES' : 'ca-ES'));
+                    panel.innerHTML = '<div class="day-detail-header"><span>' + dateStr + '</span><span style="font-size:0.75rem; color:var(--text-secondary);">' + acts.length + ' ' + t('actuacions').toLowerCase() + '</span></div>';
+                    panel.innerHTML += acts.map(function(a){
+                        const rodal = state.rodals.find(function(r){ return r.id === a.rodal_id; });
+                        return '<div class="day-detail-item"><div><div class="day-detail-title">' + escapeHtml(a.title) + '</div><div class="day-detail-meta">' + (rodal ? escapeHtml(rodal.name) : '-') + ' . ' + (a.progress || 0) + '%</div></div><span class="badge ' + (statusClass[a.status] || 'badge-pending') + '">' + (statusLabel[a.status] || a.status) + '</span></div>';
                     }).join('');
                 }
-                panel.style.display='block';
+                panel.style.display = 'block';
             }catch(e){ console.warn('showDayDetail error', e); }
         }
 
-        document.getElementById('calPrev').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()-1); state.selectedDay=null; const dd=document.getElementById('dayDetail'); if(dd) dd.style.display='none'; renderCalendar(); });
-        document.getElementById('calNext').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()+1); state.selectedDay=null; const dd=document.getElementById('dayDetail'); if(dd) dd.style.display='none'; renderCalendar(); });
+        document.getElementById('calPrev').addEventListener('click', function(){
+            state.currentMonth.setMonth(state.currentMonth.getMonth() - 1);
+            state.selectedDay = null;
+            const dd = document.getElementById('dayDetail');
+            if(dd) dd.style.display = 'none';
+            renderCalendar();
+        });
+        document.getElementById('calNext').addEventListener('click', function(){
+            state.currentMonth.setMonth(state.currentMonth.getMonth() + 1);
+            state.selectedDay = null;
+            const dd = document.getElementById('dayDetail');
+            if(dd) dd.style.display = 'none';
+            renderCalendar();
+        });
 
         // ==================== GANTT ====================
         function renderGantt(){
             try{
-                const container=document.getElementById('ganttChart');
+                const container = document.getElementById('ganttChart');
                 if(!container) return;
-                container.innerHTML='';
-                const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date&&!isNaN(new Date(a.start_date))&&!isNaN(new Date(a.end_date))).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
-                if(validActs.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
-                const allDates=validActs.flatMap(a=>[new Date(a.start_date),new Date(a.end_date)]);
-                const minDate=new Date(Math.min(...allDates));
-                const maxDate=new Date(Math.max(...allDates));
-                const totalDays=Math.max(1,(maxDate-minDate)/86400000);
-                const sMap={executing:'gantt-status-executing',completed:'gantt-status-completed',delayed:'gantt-status-delayed',pending:'gantt-status-pending'};
-                validActs.forEach(a=>{
-                    const start=new Date(a.start_date), end=new Date(a.end_date);
-                    const so=((start-minDate)/86400000)/totalDays*100;
-                    const du=((end-start)/86400000)/totalDays*100;
-                    const row=document.createElement('div'); row.className='gantt-row';
-                    row.innerHTML=`
-                        <div class="gantt-label" title="${escapeHtml(a.title)}">${escapeHtml(a.title)}</div>
-                        <div class="gantt-bar-bg">
-                            <div class="gantt-bar ${sMap[a.status]||'gantt-status-pending'}" style="left:${so}%; width:${Math.max(2,du)}%;"></div>
-                        </div>
-                    `;
+                container.innerHTML = '';
+                const validActs = state.actuacions.filter(function(a){
+                    return a.start_date && a.end_date && !isNaN(new Date(a.start_date)) && !isNaN(new Date(a.end_date));
+                }).sort(function(a,b){ return new Date(a.start_date) - new Date(b.start_date); });
+                if(validActs.length === 0){ container.innerHTML = '<div class="empty-state">No data</div>'; return; }
+                const allDates = validActs.flatMap(function(a){ return [new Date(a.start_date), new Date(a.end_date)]; });
+                const minDate = new Date(Math.min.apply(null, allDates));
+                const maxDate = new Date(Math.max.apply(null, allDates));
+                const totalDays = Math.max(1, (maxDate - minDate) / 86400000);
+                const sMap = {executing:'gantt-status-executing', completed:'gantt-status-completed', delayed:'gantt-status-delayed', pending:'gantt-status-pending'};
+                validActs.forEach(function(a){
+                    const start = new Date(a.start_date), end = new Date(a.end_date);
+                    const so = ((start - minDate) / 86400000) / totalDays * 100;
+                    const du = ((end - start) / 86400000) / totalDays * 100;
+                    const row = document.createElement('div');
+                    row.className = 'gantt-row';
+                    row.innerHTML = '<div class="gantt-label" title="' + escapeHtml(a.title) + '">' + escapeHtml(a.title) + '</div>' +
+                        '<div class="gantt-bar-bg">' +
+                        '<div class="gantt-bar ' + (sMap[a.status] || 'gantt-status-pending') + '" style="left:' + so + '%; width:' + Math.max(2, du) + '%;"></div>' +
+                        '</div>';
                     container.appendChild(row);
                 });
             }catch(e){ console.warn('renderGantt error', e); }
@@ -1251,104 +1301,114 @@
         // ==================== REPORTS ====================
         function updateStats(){
             try{
-                const totalR=state.rodals.length;
-                const area=state.rodals.reduce((s,r)=>s+(parseFloat(r.area_ha)||0),0);
-                const totalA=state.actuacions.length;
-                const avg=totalA?Math.round(state.actuacions.reduce((s,a)=>s+(a.progress||0),0)/totalA):0;
-                const sr=document.getElementById('statRodals');
-                const sa=document.getElementById('statArea');
-                const sta=document.getElementById('statActuacions');
-                const sap=document.getElementById('statAvgProgress');
-                if(sr) sr.textContent=totalR;
-                if(sa) sa.textContent=area.toFixed(1)+' ha';
-                if(sta) sta.textContent=totalA;
-                if(sap) sap.textContent=avg+'%';
+                const totalR = state.rodals.length;
+                const area = state.rodals.reduce(function(s, r){ return s + (parseFloat(r.area_ha) || 0); }, 0);
+                const totalA = state.actuacions.length;
+                const avg = totalA ? Math.round(state.actuacions.reduce(function(s, a){ return s + (a.progress || 0); }, 0) / totalA) : 0;
+                const sr = document.getElementById('statRodals');
+                const sa = document.getElementById('statArea');
+                const sta = document.getElementById('statActuacions');
+                const sap = document.getElementById('statAvgProgress');
+                if(sr) sr.textContent = totalR;
+                if(sa) sa.textContent = area.toFixed(1) + ' ha';
+                if(sta) sta.textContent = totalA;
+                if(sap) sap.textContent = avg + '%';
             }catch(e){ console.warn('updateStats error', e); }
         }
 
-        document.getElementById('btnPdf').addEventListener('click',()=>{
+        document.getElementById('btnPdf').addEventListener('click', function(){
             try{
-                if(!window.jspdf || !window.jspdf.jsPDF){ showToast('jsPDF no disponible','error'); return; }
-                const {jsPDF}=window.jspdf;
-                const doc=new jsPDF();
-                doc.setFillColor(17,41,29); doc.rect(0,0,210,40,'F');
-                doc.setTextColor(250,250,250); doc.setFontSize(20); doc.text(t('appTitle'),14,20);
-                doc.setFontSize(10); doc.text(new Date().toLocaleDateString(),14,30);
-                doc.setTextColor(50,50,50); doc.setFontSize(12); let y=50;
-                state.rodals.forEach((r,ri)=>{
-                    if(y>250){ doc.addPage(); y=20; }
-                    doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${parseFloat(r.area_ha).toFixed(2)} ha)`,14,y);
-                    const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
-                    acts.forEach((a,ai)=>{
-                        if(y>270){ doc.addPage(); y=20; }
-                        doc.setFontSize(10); doc.setTextColor(80,80,80);
-                        doc.text(`  ${ai+1}. ${a.title} — ${a.progress||0}% — ${a.start_date||'-'} → ${a.end_date||'-'}`,14,y+6);
-                        y+=14;
+                if(!window.jspdf || !window.jspdf.jsPDF){ showToast('jsPDF no disponible', 'error'); return; }
+                const jsPDF = window.jspdf.jsPDF;
+                const doc = new jsPDF();
+                doc.setFillColor(17, 41, 29);
+                doc.rect(0, 0, 210, 40, 'F');
+                doc.setTextColor(250, 250, 250);
+                doc.setFontSize(20);
+                doc.text(t('appTitle'), 14, 20);
+                doc.setFontSize(10);
+                doc.text(new Date().toLocaleDateString(), 14, 30);
+                doc.setTextColor(50, 50, 50);
+                doc.setFontSize(12);
+                let y = 50;
+                state.rodals.forEach(function(r, ri){
+                    if(y > 250){ doc.addPage(); y = 20; }
+                    doc.setFontSize(13);
+                    doc.setTextColor(17, 41, 29);
+                    doc.text((ri + 1) + '. ' + r.name + ' (' + parseFloat(r.area_ha).toFixed(2) + ' ha)', 14, y);
+                    const acts = state.actuacions.filter(function(a){ return a.rodal_id === r.id; }).sort(function(a,b){ return new Date(a.start_date || 0) - new Date(b.start_date || 0); });
+                    acts.forEach(function(a, ai){
+                        if(y > 270){ doc.addPage(); y = 20; }
+                        doc.setFontSize(10);
+                        doc.setTextColor(80, 80, 80);
+                        doc.text('  ' + (ai + 1) + '. ' + a.title + ' - ' + (a.progress || 0) + '% - ' + (a.start_date || '-') + ' -> ' + (a.end_date || '-'), 14, y + 6);
+                        y += 14;
                     });
-                    y+=10;
+                    y += 10;
                 });
                 doc.save('informe-forestal.pdf');
-                showToast(t('toastSaved'),'info');
-            }catch(e){ console.warn('btnPdf error', e); showToast('Error PDF','error'); }
+                showToast(t('toastSaved'), 'info');
+            }catch(e){ console.warn('btnPdf error', e); showToast('Error PDF', 'error'); }
         });
 
-        document.getElementById('btnExcel').addEventListener('click',()=>{
+        document.getElementById('btnExcel').addEventListener('click', function(){
             try{
-                if(typeof XLSX==='undefined'){ showToast('SheetJS no disponible','error'); return; }
-                const data=[];
-                state.rodals.forEach(r=>{
-                    const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
-                    if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:'-', Estat:'-', Progres:'-', Inici:'-', Fi:'-'});
-                    acts.forEach(a=>{
-                        data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:a.title, Estat:a.status, Progres:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
+                if(typeof XLSX === 'undefined'){ showToast('SheetJS no disponible', 'error'); return; }
+                const data = [];
+                state.rodals.forEach(function(r){
+                    const acts = state.actuacions.filter(function(a){ return a.rodal_id === r.id; }).sort(function(a,b){ return new Date(a.start_date || 0) - new Date(b.start_date || 0); });
+                    if(acts.length === 0) data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:'-', Estat:'-', Progres:'-', Inici:'-', Fi:'-'});
+                    acts.forEach(function(a){
+                        data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:a.title, Estat:a.status, Progres:(a.progress || 0) + '%', Inici:a.start_date, Fi:a.end_date});
                     });
                 });
-                const ws=XLSX.utils.json_to_sheet(data);
-                const wb=XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb,ws,'Programacio');
-                XLSX.writeFile(wb,'programacio-forestal.xlsx');
-                showToast(t('toastSaved'),'info');
-            }catch(e){ console.warn('btnExcel error', e); showToast('Error Excel','error'); }
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Programacio');
+                XLSX.writeFile(wb, 'programacio-forestal.xlsx');
+                showToast(t('toastSaved'), 'info');
+            }catch(e){ console.warn('btnExcel error', e); showToast('Error Excel', 'error'); }
         });
 
         // ==================== NAVIGATION ====================
         function showSection(id){
             try{
-                document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-                const sec=document.getElementById('section-'+id);
+                document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+                const sec = document.getElementById('section-' + id);
                 if(sec) sec.classList.add('active');
-                document.querySelectorAll('.nav-item, .nav-desktop button').forEach(b=>b.classList.remove('active'));
-                document.querySelectorAll(`[data-section="${id}"]`).forEach(b=>b.classList.add('active'));
-                if(id==='calendar') renderCalendar();
-                if(id==='timeline') renderGantt();
-                if(id==='reports') updateStats();
-                if(id==='rodals') renderRodals();
+                document.querySelectorAll('.nav-item, .nav-desktop button').forEach(function(b){ b.classList.remove('active'); });
+                document.querySelectorAll('[data-section="' + id + '"]').forEach(function(b){ b.classList.add('active'); });
+                if(id === 'calendar') renderCalendar();
+                if(id === 'timeline') renderGantt();
+                if(id === 'reports') updateStats();
+                if(id === 'rodals') renderRodals();
             }catch(e){ console.warn('showSection error', e); }
         }
-        document.querySelectorAll('.nav-item, .nav-desktop button').forEach(btn=>{
-            btn.addEventListener('click',()=>showSection(btn.dataset.section));
+        document.querySelectorAll('.nav-item, .nav-desktop button').forEach(function(btn){
+            btn.addEventListener('click', function(){ showSection(btn.dataset.section); });
         });
 
         // ==================== PUBLIC MODE ====================
         function checkPublicMode(){
             try{
-                const p=new URLSearchParams(window.location.search);
-                const id=p.get('tractament_id');
+                const p = new URLSearchParams(window.location.search);
+                const id = p.get('tractament_id');
                 if(id){
-                    state.isPublicMode=true; state.publicId=id;
-                    const pb=document.getElementById('publicBanner');
-                    if(pb) pb.style.display='flex';
-                    const ba=document.getElementById('btnAddActuacio');
-                    if(ba) ba.style.display='none';
-                    const bg=document.getElementById('btnGeoJSON');
-                    if(bg) bg.style.display='none';
-                    const bh=document.getElementById('btnHub');
-                    if(bh) bh.style.display='none';
-                    const bn=document.getElementById('bottomNav');
-                    if(bn) bn.style.display='none';
-                    document.querySelectorAll('.section').forEach(s=>s.classList.add('active'));
-                    document.querySelectorAll('.section').forEach(s=>s.style.marginBottom='20px');
-                    showToast(t('treatmentLoaded'),'info');
+                    state.isPublicMode = true;
+                    state.publicId = id;
+                    const pb = document.getElementById('publicBanner');
+                    if(pb) pb.style.display = 'flex';
+                    const ba = document.getElementById('btnAddActuacio');
+                    if(ba) ba.style.display = 'none';
+                    const bg = document.getElementById('btnGeoJSON');
+                    if(bg) bg.style.display = 'none';
+                    const bh = document.getElementById('btnHub');
+                    if(bh) bh.style.display = 'none';
+                    const bn = document.getElementById('bottomNav');
+                    if(bn) bn.style.display = 'none';
+                    document.querySelectorAll('.section').forEach(function(s){ s.classList.add('active'); });
+                    document.querySelectorAll('.section').forEach(function(s){ s.style.marginBottom = '20px'; });
+                    showToast(t('treatmentLoaded'), 'info');
                 }
             }catch(e){ console.warn('checkPublicMode error', e); }
         }
@@ -1356,8 +1416,8 @@
         // ==================== DEMO DATA ====================
         function loadDemoData(){
             try{
-                if(state.rodals.length>0) return;
-                state.rodals=[
+                if(state.rodals.length > 0) return;
+                state.rodals = [
                     {id:'demo-r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:{
                         type:'Feature', properties:{name:'Rodal Nord'},
                         geometry:{type:'Polygon', coordinates:[[[2.1,41.7],[2.11,41.7],[2.11,41.71],[2.1,41.71],[2.1,41.7]]]}
@@ -1367,7 +1427,7 @@
                         geometry:{type:'Polygon', coordinates:[[[2.12,41.68],[2.13,41.68],[2.13,41.69],[2.12,41.69],[2.12,41.68]]]}
                     }}
                 ];
-                state.actuacions=[
+                state.actuacions = [
                     {id:'demo-a1', rodal_id:'demo-r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
                     {id:'demo-a2', rodal_id:'demo-r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
                     {id:'demo-a3', rodal_id:'demo-r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'}
@@ -1387,38 +1447,38 @@
                 initProj4();
                 initMap();
 
-                state.supabase=createSupabaseClient();
+                state.supabase = createSupabaseClient();
                 if(state.supabase && state.isOnline && !state.isPublicMode){
                     try{ await loadFromServer(); }catch(e){ console.warn('loadFromServer init error', e); }
                 }
 
-                if(state.rodals.length>0){
-                    state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                    const allLayers=Object.values(state.mapLayers);
-                    if(allLayers.length>0 && state.map){
-                        const group=L.featureGroup(allLayers);
-                        state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                if(state.rodals.length > 0){
+                    state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                    const allLayers = Object.values(state.mapLayers);
+                    if(allLayers.length > 0 && state.map){
+                        const group = L.featureGroup(allLayers);
+                        state.map.fitBounds(group.getBounds(), {padding:[30,30]});
                     }
                 }
 
                 checkPublicMode();
-                if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
-                if(!state.isPublicMode && state.rodals.length>0 && Object.values(state.mapLayers).length===0){
-                    state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                    const allLayers=Object.values(state.mapLayers);
-                    if(allLayers.length>0 && state.map){
-                        const group=L.featureGroup(allLayers);
-                        state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                if(!state.isPublicMode && state.rodals.length === 0) loadDemoData();
+                if(!state.isPublicMode && state.rodals.length > 0 && Object.values(state.mapLayers).length === 0){
+                    state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                    const allLayers = Object.values(state.mapLayers);
+                    if(allLayers.length > 0 && state.map){
+                        const group = L.featureGroup(allLayers);
+                        state.map.fitBounds(group.getBounds(), {padding:[30,30]});
                     }
                 }
 
                 renderRodals();
                 showSection('map');
 
-                if(!state.isOnline) showToast(t('toastOffline'),'warning',5000);
+                if(!state.isOnline) showToast(t('toastOffline'), 'warning', 5000);
             }catch(e){
-                console.error('INIT ERROR CRÍTIC', e);
-                showToast('Error inicialitzant l'app. Revisa la consola.','error',10000);
+                console.error('INIT ERROR CRITIC', e);
+                showToast('Error inicialitzant l app. Revisa la consola.', 'error', 10000);
             }
         }
 
