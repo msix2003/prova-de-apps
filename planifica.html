@@ -33,6 +33,7 @@
         .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px var(--danger); transition: all 0.3s; flex-shrink: 0; }
         .sync-dot.online { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
         .app-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+        .project-badge { font-size: 0.8rem; color: var(--accent); font-weight: 500; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
         .btn-hub { background: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 8px 14px; border-radius: 8px; font-family: 'DM Sans'; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: all 0.2s; }
         .btn-hub:hover { background: var(--bg-secondary); border-color: var(--accent); }
 
@@ -117,9 +118,10 @@
         .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17,41,29,0.98); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px; color: var(--text-secondary); font-size: 0.65rem; cursor: pointer; transition: color 0.2s; border: none; background: transparent; font-family: 'DM Sans'; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px; color: var(--text-secondary); font-size: 0.65rem; cursor: pointer; transition: color 0.2s; border: none; background: transparent; font-family: 'DM Sans'; flex: 1; min-width: 0; }
         .nav-item.active { color: var(--accent); }
-        .nav-item svg { width: 22px; height: 22px; }
+        .nav-item svg { width: 22px; height: 22px; flex-shrink: 0; }
+        .nav-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; }
 
         .toast-container { position: fixed; top: 70px; right: 16px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
         .toast { background: var(--bg-secondary); border: 1px solid var(--border); border-left: 4px solid var(--accent); color: var(--text-primary); padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateX(120%); transition: transform 0.3s ease; pointer-events: auto; max-width: 300px; }
@@ -163,7 +165,10 @@
     <header class="app-header">
         <div class="header-left">
             <div class="sync-dot" id="syncDot" title="Estat de connexio"></div>
-            <div class="app-title" id="appTitle">Gestio Forestal</div>
+            <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
+                <div class="app-title" id="appTitle">Gestio Forestal</div>
+                <div class="project-badge" id="currentProjectBadge"></div>
+            </div>
         </div>
         <a href="https://msix2003.github.io/prova-de-apps/" class="btn-hub" id="btnHub">Tornar al Hub</a>
     </header>
@@ -181,6 +186,7 @@
             <button data-section="rodals" id="navRodals">Rodals</button>
             <button data-section="calendar" id="navCalendar">Calendari</button>
             <button data-section="timeline" id="navTimeline">Temps</button>
+            <button data-section="projects" id="navProjects">Projectes</button>
             <button data-section="reports" id="navReports">Informes</button>
         </div>
 
@@ -310,6 +316,25 @@
             </div>
         </section>
 
+        <!-- PROJECTS -->
+        <section id="section-projects" class="section">
+            <div class="card">
+                <div class="card-title" id="projectsTitle">Les meves finques</div>
+                <div id="projectForm" style="margin-bottom:12px;">
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <label id="lblProjectName">Nom de la finca</label>
+                            <input type="text" id="inputProjectName" placeholder="Ex: Finca de Cal Rovira">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="btnCreateProject">
+                        <span>&#10133; <span id="txtCreateProject">Crear finca</span></span>
+                    </button>
+                </div>
+                <div id="projectsList" class="rodals-list"></div>
+            </div>
+        </section>
+
         <!-- REPORTS -->
         <section id="section-reports" class="section">
             <div class="card">
@@ -357,6 +382,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
             <span id="navTimeM">Temps</span>
         </button>
+        <button class="nav-item" data-section="projects">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span id="navProjectsM">Finca</span>
+        </button>
         <button class="nav-item" data-section="reports">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
             <span id="navRepM">Informes</span>
@@ -379,6 +408,8 @@
             isOnline: false,
             isPublicMode: false,
             publicId: null,
+            projects: [],
+            currentProjectId: null,
             rodals: [],
             actuacions: [],
             selectedRodalId: null,
@@ -436,7 +467,11 @@
                 emptyRodals:'No hi ha rodals creats', emptyActs:'Cap actuacio programada', progress:'Progres',
                 before:'Abans', after:'Despres', addPhoto:'Afegir foto', delete:'Eliminar',
                 treatmentLoaded:'Tractament carregat', detectedRodals:'rodals detectats del GeoJSON',
-                reprojected:'Reprojectat des de', noDayEvents:'Cap actuacio aquest dia'
+                reprojected:'Reprojectat des de', noDayEvents:'Cap actuacio aquest dia',
+                projectsTitle:'Les meves finques', projectName:'Nom de la finca', createProject:'Crear finca',
+                noProjects:'No hi ha finques creades', selectProject:'Seleccionar', deleteProject:'Eliminar',
+                projectActive:'Activa', projectCreated:'Finca creada', projectDeleted:'Finca eliminada',
+                projectLoaded:'Finca activa', navProjects:'Projectes', navProjectsM:'Finca'
             },
             es: {
                 appTitle:'Gestion Forestal', backHub:'Volver al Hub', mapTitle:'Mapa de la finca',
@@ -454,7 +489,11 @@
                 emptyRodals:'No hay rodales creados', emptyActs:'Ninguna actuacion programada', progress:'Progreso',
                 before:'Antes', after:'Despues', addPhoto:'Anadir foto', delete:'Eliminar',
                 treatmentLoaded:'Tratamiento cargado', detectedRodals:'rodales detectados del GeoJSON',
-                reprojected:'Reproyectado desde', noDayEvents:'Ninguna actuacion este dia'
+                reprojected:'Reproyectado desde', noDayEvents:'Ninguna actuacion este dia',
+                projectsTitle:'Mis fincas', projectName:'Nombre de la finca', createProject:'Crear finca',
+                noProjects:'No hay fincas creadas', selectProject:'Seleccionar', deleteProject:'Eliminar',
+                projectActive:'Activa', projectCreated:'Finca creada', projectDeleted:'Finca eliminada',
+                projectLoaded:'Finca activa', navProjects:'Proyectos', navProjectsM:'Finca'
             },
             en: {
                 appTitle:'Forest Management', backHub:'Back to Hub', mapTitle:'Property Map',
@@ -472,7 +511,11 @@
                 emptyRodals:'No stands created', emptyActs:'No operations scheduled', progress:'Progress',
                 before:'Before', after:'After', addPhoto:'Add photo', delete:'Delete',
                 treatmentLoaded:'Treatment loaded', detectedRodals:'stands detected from GeoJSON',
-                reprojected:'Reprojected from', noDayEvents:'No operations this day'
+                reprojected:'Reprojected from', noDayEvents:'No operations this day',
+                projectsTitle:'My properties', projectName:'Property name', createProject:'Create property',
+                noProjects:'No properties created', selectProject:'Select', deleteProject:'Delete',
+                projectActive:'Active', projectCreated:'Property created', projectDeleted:'Property deleted',
+                projectLoaded:'Property active', navProjects:'Projects', navProjectsM:'Property'
             }
         };
 
@@ -480,7 +523,7 @@
 
         function detectLanguage(){
             try{
-                const l = localStorage.getItem('M.S.X._lang');
+                const l = localStorage.getItem('M.S.i.X_lang');
                 state.lang = (l === 'es' || l === 'en') ? l : 'ca';
             }catch(e){ state.lang = 'ca'; }
             applyTranslations();
@@ -496,7 +539,9 @@
                 txtPdf:'pdf', txtExcel:'excel', legExecuting:'executing', legCompleted:'completed',
                 legDelayed:'delayed', legPending:'pending', publicText:'publicMode',
                 navMap:'navMap', navRodals:'navRodals', navCalendar:'navCal', navTimeline:'navTime', navReports:'navRep',
-                navMapM:'navMap', navRodalsM:'navRodals', navCalM:'navCal', navTimeM:'navTime', navRepM:'navRep'
+                navMapM:'navMap', navRodalsM:'navRodals', navCalM:'navCal', navTimeM:'navTime', navRepM:'navRep',
+                projectsTitle:'projectsTitle', lblProjectName:'projectName', txtCreateProject:'createProject',
+                navProjects:'navProjects', navProjectsM:'navProjectsM'
             };
             Object.entries(ids).forEach(function(entry){
                 const id = entry[0], key = entry[1];
@@ -590,13 +635,17 @@
         }
 
         async function persistLocal(){
-            try{ localStorage.setItem('forest_rodals', JSON.stringify(state.rodals)); }catch(e){ console.warn('localStorage rodals error', e); }
-            try{ localStorage.setItem('forest_actuacions', JSON.stringify(state.actuacions)); }catch(e){ console.warn('localStorage actuacions error', e); }
-            if(state.db){
-                try{ await dbPut('rodals', {id:'current', data:state.rodals, updated_at:new Date().toISOString()}); }catch(e){}
-                try{ await dbPut('actuacions', {id:'current', data:state.actuacions, updated_at:new Date().toISOString()}); }catch(e){}
-            }
+            if(!state.currentProjectId) return;
+            try{
+                const payload = JSON.stringify({rodals: state.rodals, actuacions: state.actuacions});
+                localStorage.setItem('forest_project_data_' + state.currentProjectId, payload);
+            }catch(e){ console.warn('persistLocal error', e); }
+            try{
+                localStorage.setItem('forest_projects_list', JSON.stringify(state.projects));
+                localStorage.setItem('forest_current_project_id', state.currentProjectId);
+            }catch(e){ console.warn('persistMeta error', e); }
         }
+
         function loadLocal(){
             try{
                 const r = localStorage.getItem('forest_rodals');
@@ -615,12 +664,173 @@
             }catch(e){ console.warn('loadIndexedDB error', e); }
         }
 
+        // ==================== PROJECTS ====================
+        function initProjects(){
+            try{
+                const list = localStorage.getItem('forest_projects_list');
+                const current = localStorage.getItem('forest_current_project_id');
+                state.projects = list ? JSON.parse(list) : [];
+                if(state.projects.length === 0){
+                    const demoId = generateUUID();
+                    state.projects = [{id: demoId, name: 'Finca Demo', createdAt: new Date().toISOString()}];
+                    state.currentProjectId = demoId;
+                    loadDemoDataIntoState();
+                    persistLocal();
+                    saveProjectsList();
+                } else {
+                    state.currentProjectId = current || state.projects[0].id;
+                    if(!state.projects.find(function(p){ return p.id === state.currentProjectId; })){
+                        state.currentProjectId = state.projects[0].id;
+                    }
+                    loadProjectData(state.currentProjectId);
+                }
+            }catch(e){
+                console.warn('initProjects error', e);
+                state.projects = [];
+                state.currentProjectId = null;
+                state.rodals = [];
+                state.actuacions = [];
+            }
+        }
+
+        function loadProjectData(projectId){
+            try{
+                const data = localStorage.getItem('forest_project_data_' + projectId);
+                if(data){
+                    const parsed = JSON.parse(data);
+                    state.rodals = parsed.rodals || [];
+                    state.actuacions = parsed.actuacions || [];
+                }else{
+                    state.rodals = [];
+                    state.actuacions = [];
+                }
+            }catch(e){
+                state.rodals = [];
+                state.actuacions = [];
+            }
+        }
+
+        function saveProjectsList(){
+            try{
+                localStorage.setItem('forest_projects_list', JSON.stringify(state.projects));
+            }catch(e){}
+        }
+
+        function createProject(name){
+            if(!name.trim()) return;
+            const id = generateUUID();
+            const project = {id: id, name: name.trim(), createdAt: new Date().toISOString()};
+            state.projects.push(project);
+            state.currentProjectId = id;
+            state.rodals = [];
+            state.actuacions = [];
+            persistLocal();
+            saveProjectsList();
+            renderProjects();
+            updateProjectBadge();
+            showToast(t('projectCreated'), 'info');
+        }
+
+        function deleteProject(id){
+            const msg = state.lang === 'ca' ? 'Eliminar aquesta finca i totes les seves dades?' :
+                      state.lang === 'es' ? 'Eliminar esta finca y todos sus datos?' :
+                      'Delete this property and all its data?';
+            if(!confirm(msg)) return;
+            state.projects = state.projects.filter(function(p){ return p.id !== id; });
+            localStorage.removeItem('forest_project_data_' + id);
+            saveProjectsList();
+            if(state.currentProjectId === id){
+                state.currentProjectId = state.projects.length > 0 ? state.projects[0].id : null;
+                if(state.currentProjectId) loadProjectData(state.currentProjectId);
+                else { state.rodals = []; state.actuacions = []; }
+            }
+            persistLocal();
+            renderProjects();
+            renderRodals();
+            renderCalendar();
+            renderGantt();
+            updateStats();
+            updateProjectBadge();
+            showToast(t('projectDeleted'), 'info');
+        }
+
+        function switchProject(id){
+            if(id === state.currentProjectId) return;
+            persistLocal();
+            state.currentProjectId = id;
+            loadProjectData(id);
+            localStorage.setItem('forest_current_project_id', id);
+            state.selectedRodalId = null;
+            clearMapLayers();
+            state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+            const allLayers = Object.values(state.mapLayers);
+            if(allLayers.length > 0 && state.map){
+                const group = L.featureGroup(allLayers);
+                state.map.fitBounds(group.getBounds(), {padding:[30,30]});
+            }
+            renderRodals();
+            renderCalendar();
+            renderGantt();
+            updateStats();
+            updateProjectBadge();
+            showToast(t('projectLoaded'), 'info');
+        }
+
+        function renderProjects(){
+            const container = document.getElementById('projectsList');
+            if(!container) return;
+            if(state.projects.length === 0){
+                container.innerHTML = '<div class="empty-state">' + t('noProjects') + '</div>';
+                return;
+            }
+            container.innerHTML = '';
+            state.projects.forEach(function(p){
+                const isActive = p.id === state.currentProjectId;
+                let rodalsCount = 0, actsCount = 0;
+                try{
+                    const data = localStorage.getItem('forest_project_data_' + p.id);
+                    if(data){
+                        const d = JSON.parse(data);
+                        rodalsCount = (d.rodals || []).length;
+                        actsCount = (d.actuacions || []).length;
+                    }
+                }catch(e){}
+                const div = document.createElement('div');
+                div.className = 'rodal-item ' + (isActive ? 'active' : '');
+                div.style.cursor = 'default';
+                div.innerHTML = 
+                    '<div style="flex:1;">' +
+                    '<div class="rodal-name">' + escapeHtml(p.name) + '</div>' +
+                    '<div class="rodal-meta">' + rodalsCount + ' ' + t('rodals').toLowerCase() + ' · ' + actsCount + ' ' + t('actuacions').toLowerCase() + '</div>' +
+                    '</div>' +
+                    '<div style="display:flex; gap:6px; align-items:center;">' +
+                    (isActive ? '<span class="badge badge-completed" style="font-size:0.7rem;">' + t('projectActive') + '</span>' : '') +
+                    (isActive ? '' : '<button class="btn btn-primary btn-small" onclick="switchProject(\'' + p.id + '\')">' + t('selectProject') + '</button>') +
+                    '<button class="btn btn-danger btn-small" onclick="deleteProject(\'' + p.id + '\')">&#128465;</button>' +
+                    '</div>';
+                container.appendChild(div);
+            });
+        }
+
+        function updateProjectBadge(){
+            const badge = document.getElementById('currentProjectBadge');
+            const project = state.projects.find(function(p){ return p.id === state.currentProjectId; });
+            if(badge){
+                if(project && !state.isPublicMode){
+                    badge.textContent = project.name;
+                    badge.style.display = 'block';
+                }else{
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
         // ==================== SUPABASE ====================
         function createSupabaseClient(){
             try{
                 if(typeof supabase === 'undefined' || !supabase.createClient){ console.warn('Supabase no disponible'); return null; }
-                const url = localStorage.getItem('M.S.X._supabase_url') || CONFIG.SUPABASE_URL;
-                const key = localStorage.getItem('M.S.X._supabase_key') || CONFIG.SUPABASE_KEY;
+                const url = localStorage.getItem('M.S.i.X_supabase_url') || CONFIG.SUPABASE_URL;
+                const key = localStorage.getItem('M.S.i.X_supabase_key') || CONFIG.SUPABASE_KEY;
                 if(!url || url.indexOf('your-project') !== -1) return null;
                 return supabase.createClient(url, key, {auth:{persistSession:true, autoRefreshToken:true}});
             }catch(e){ console.warn('createSupabaseClient error', e); return null; }
@@ -1183,6 +1393,20 @@
             }catch(e){ console.warn('btnDeleteRodal error', e); }
         });
 
+        // ==================== PROJECTS FORM ====================
+        document.getElementById('btnCreateProject').addEventListener('click', function(){
+            try{
+                const input = document.getElementById('inputProjectName');
+                const name = input.value.trim();
+                if(!name){
+                    showToast(state.lang === 'ca' ? 'Introdueix un nom per la finca' : state.lang === 'es' ? 'Introduce un nombre para la finca' : 'Enter a property name', 'warning');
+                    return;
+                }
+                createProject(name);
+                input.value = '';
+            }catch(e){ console.warn('btnCreateProject error', e); }
+        });
+
         // ==================== CALENDAR ====================
         function renderCalendar(){
             try{
@@ -1382,6 +1606,7 @@
                 if(id === 'timeline') renderGantt();
                 if(id === 'reports') updateStats();
                 if(id === 'rodals') renderRodals();
+                if(id === 'projects') renderProjects();
             }catch(e){ console.warn('showSection error', e); }
         }
         document.querySelectorAll('.nav-item, .nav-desktop button').forEach(function(btn){
@@ -1406,34 +1631,39 @@
                     if(bh) bh.style.display = 'none';
                     const bn = document.getElementById('bottomNav');
                     if(bn) bn.style.display = 'none';
-                    document.querySelectorAll('.section').forEach(function(s){ s.classList.add('active'); });
-                    document.querySelectorAll('.section').forEach(function(s){ s.style.marginBottom = '20px'; });
+
+                    const sp = document.getElementById('section-projects');
+                    if(sp){ sp.style.display = 'none'; sp.classList.remove('active'); }
+                    document.querySelectorAll('[data-section="projects"]').forEach(function(b){ b.style.display = 'none'; });
+
+                    document.querySelectorAll('.section').forEach(function(s){ 
+                        if(s.id !== 'section-projects') s.classList.add('active'); 
+                    });
+                    document.querySelectorAll('.section').forEach(function(s){ 
+                        if(s.id !== 'section-projects') s.style.marginBottom = '20px'; 
+                    });
                     showToast(t('treatmentLoaded'), 'info');
                 }
             }catch(e){ console.warn('checkPublicMode error', e); }
         }
 
         // ==================== DEMO DATA ====================
-        function loadDemoData(){
-            try{
-                if(state.rodals.length > 0) return;
-                state.rodals = [
-                    {id:'demo-r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:{
-                        type:'Feature', properties:{name:'Rodal Nord'},
-                        geometry:{type:'Polygon', coordinates:[[[2.1,41.7],[2.11,41.7],[2.11,41.71],[2.1,41.71],[2.1,41.7]]]}
-                    }},
-                    {id:'demo-r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:{
-                        type:'Feature', properties:{name:'Rodal Sud'},
-                        geometry:{type:'Polygon', coordinates:[[[2.12,41.68],[2.13,41.68],[2.13,41.69],[2.12,41.69],[2.12,41.68]]]}
-                    }}
-                ];
-                state.actuacions = [
-                    {id:'demo-a1', rodal_id:'demo-r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
-                    {id:'demo-a2', rodal_id:'demo-r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
-                    {id:'demo-a3', rodal_id:'demo-r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'}
-                ];
-                persistLocal();
-            }catch(e){ console.warn('loadDemoData error', e); }
+        function loadDemoDataIntoState(){
+            state.rodals = [
+                {id:'demo-r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:{
+                    type:'Feature', properties:{name:'Rodal Nord'},
+                    geometry:{type:'Polygon', coordinates:[[[2.1,41.7],[2.11,41.7],[2.11,41.71],[2.1,41.71],[2.1,41.7]]]}
+                }},
+                {id:'demo-r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:{
+                    type:'Feature', properties:{name:'Rodal Sud'},
+                    geometry:{type:'Polygon', coordinates:[[[2.12,41.68],[2.13,41.68],[2.13,41.69],[2.12,41.69],[2.12,41.68]]]}
+                }}
+            ];
+            state.actuacions = [
+                {id:'demo-a1', rodal_id:'demo-r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
+                {id:'demo-a2', rodal_id:'demo-r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
+                {id:'demo-a3', rodal_id:'demo-r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'}
+            ];
         }
 
         // ==================== INIT ====================
@@ -1442,8 +1672,7 @@
                 detectLanguage();
                 checkOnline();
                 await initIndexedDB();
-                loadLocal();
-                await loadIndexedDB();
+                initProjects();
                 initProj4();
                 initMap();
 
@@ -1452,27 +1681,30 @@
                     try{ await loadFromServer(); }catch(e){ console.warn('loadFromServer init error', e); }
                 }
 
-                if(state.rodals.length > 0){
-                    state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                    const allLayers = Object.values(state.mapLayers);
-                    if(allLayers.length > 0 && state.map){
-                        const group = L.featureGroup(allLayers);
-                        state.map.fitBounds(group.getBounds(), {padding:[30,30]});
+                if(!state.isPublicMode){
+                    if(state.rodals.length > 0){
+                        state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                        const allLayers = Object.values(state.mapLayers);
+                        if(allLayers.length > 0 && state.map){
+                            const group = L.featureGroup(allLayers);
+                            state.map.fitBounds(group.getBounds(), {padding:[30,30]});
+                        }
+                    }
+                    if(state.rodals.length > 0 && Object.values(state.mapLayers).length === 0){
+                        state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                        const allLayers = Object.values(state.mapLayers);
+                        if(allLayers.length > 0 && state.map){
+                            const group = L.featureGroup(allLayers);
+                            state.map.fitBounds(group.getBounds(), {padding:[30,30]});
+                        }
                     }
                 }
 
                 checkPublicMode();
-                if(!state.isPublicMode && state.rodals.length === 0) loadDemoData();
-                if(!state.isPublicMode && state.rodals.length > 0 && Object.values(state.mapLayers).length === 0){
-                    state.rodals.forEach(function(r){ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                    const allLayers = Object.values(state.mapLayers);
-                    if(allLayers.length > 0 && state.map){
-                        const group = L.featureGroup(allLayers);
-                        state.map.fitBounds(group.getBounds(), {padding:[30,30]});
-                    }
-                }
 
                 renderRodals();
+                renderProjects();
+                updateProjectBadge();
                 showSection('map');
 
                 if(!state.isOnline) showToast(t('toastOffline'), 'warning', 5000);
