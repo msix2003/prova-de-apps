@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ForestGIS v2.1 - Gestor d'Inventaris per Rodals</title>
+    <title>M.S.i.X · Pre-Inventari</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -30,10 +31,12 @@
         }
         
         .app-container {
-            height: calc(100vh - 56px);
+            flex: 1;
             display: flex;
             flex-direction: row;
+            min-height: 0;
         }
+        body { display: flex; flex-direction: column; }
         
         .sidebar {
             width: 440px; min-width: 440px;
@@ -171,18 +174,22 @@
             font-weight: 500; backdrop-filter: blur(4px);
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
     <!-- Navbar -->
     <nav class="navbar navbar-forest navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
                 <i class="fas fa-tree"></i>
-                <span class="fw-bold">ForestGIS</span>
-                <span class="badge bg-white text-dark ms-2" style="font-size: 0.7rem;">v2.1</span>
+                <span class="fw-bold">M.S.i.X</span>
+                <span class="badge bg-white text-dark ms-2" style="font-size: 0.7rem;">Pre-Inventari</span>
             </a>
             <div class="d-flex gap-2">
+                <a href="index.html" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Hub
+                </a>
                 <button class="btn btn-sm btn-outline-light" onclick="mostrarInstruccions()">
                     <i class="fas fa-book me-1"></i> Guia QGIS
                 </button>
@@ -198,7 +205,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h5 class="mb-1"><i class="fas fa-layer-group me-2"></i>Gestió de Rodals</h5>
+                <h5 class="mb-1"><i class="fas fa-layer-group me-2"></i>Pre-Inventari</h5>
                 <small class="opacity-75">Configura els paràmetres d'inventari per rodal</small>
             </div>
             
@@ -320,7 +327,7 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header bg-light">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-book-open text-success me-2"></i>Guia: Exportar rodals des de QGIS</h5>
+                    <h5 class="modal-title fw-bold"><i class="fas fa-book-open text-success me-2"></i>Guia QGIS · Pre-Inventari</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -1255,5 +1262,11 @@
             inicialitzarMapa();
         });
     </script>
+
+    <!-- Footer M.S.i.X -->
+    <footer style="background: linear-gradient(90deg, #1b4332 0%, #2d6a4f 100%); color: #d8f3dc; text-align: center; padding: 0.75rem; font-size: 0.85rem; margin-top: auto;">
+        🌳 Dissenyat per Martí Solé i Xanxo (M.S.X.) 🌳
+    </footer>
+
 </body>
 </html>
