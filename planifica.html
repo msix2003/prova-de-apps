@@ -375,7 +375,7 @@
 
         const state = {
             lang: 'ca',
-            isOnline: navigator.onLine,
+            isOnline: false,
             isPublicMode: false,
             publicId: null,
             rodals: [],
@@ -390,10 +390,25 @@
             db: null
         };
 
+        // ==================== UTILS ====================
+        function generateUUID(){
+            if(typeof crypto!=='undefined' && crypto.randomUUID) return crypto.randomUUID();
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+                const r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8);
+                return v.toString(16);
+            });
+        }
+
         // ==================== PROJ4 DEFINITIONS ====================
-        proj4.defs('EPSG:25831', '+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-        proj4.defs('EPSG:32631', '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs');
-        proj4.defs('EPSG:23031', '+proj=utm +zone=31 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs');
+        function initProj4(){
+            if(typeof proj4==='undefined'){ console.warn('proj4 no disponible'); return false; }
+            try{
+                proj4.defs('EPSG:25831', '+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+                proj4.defs('EPSG:32631', '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs');
+                proj4.defs('EPSG:23031', '+proj=utm +zone=31 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs');
+                return true;
+            }catch(e){ console.warn('Error init proj4', e); return false; }
+        }
 
         // ==================== I18N ====================
         const i18n = {
@@ -456,8 +471,10 @@
         function t(k){ return i18n[state.lang]?.[k] || i18n.ca[k] || k; }
 
         function detectLanguage(){
-            const l = localStorage.getItem('M.S.X._lang');
-            state.lang = (l==='es'||l==='en') ? l : 'ca';
+            try{
+                const l = localStorage.getItem('M.S.X._lang');
+                state.lang = (l==='es'||l==='en') ? l : 'ca';
+            }catch(e){ state.lang='ca'; }
             applyTranslations();
         }
 
@@ -479,6 +496,7 @@
         // ==================== TOASTS ====================
         function showToast(msg, type='info', dur=3000){
             const c=document.getElementById('toastContainer');
+            if(!c) return;
             const d=document.createElement('div'); d.className=`toast ${type}`; d.textContent=msg;
             c.appendChild(d); requestAnimationFrame(()=>d.classList.add('show'));
             setTimeout(()=>{ d.classList.remove('show'); setTimeout(()=>d.remove(),300); }, dur);
@@ -486,66 +504,77 @@
 
         // ==================== INDEXEDDB & LOCALSTORAGE ====================
         function initIndexedDB(){
-            return new Promise((res,rej)=>{
-                const r = indexedDB.open(CONFIG.DB_NAME, 1);
-                r.onerror=()=>rej(r.error);
-                r.onsuccess=()=>{ state.db=r.result; res(r.result); };
-                r.onupgradeneeded=(e)=>{
-                    const db=e.target.result;
-                    if(!db.objectStoreNames.contains(CONFIG.STORE_NAME)) db.createObjectStore(CONFIG.STORE_NAME, {keyPath:'id', autoIncrement:true});
-                    if(!db.objectStoreNames.contains('rodals')) db.createObjectStore('rodals', {keyPath:'id'});
-                    if(!db.objectStoreNames.contains('actuacions')) db.createObjectStore('actuacions', {keyPath:'id'});
-                };
+            return new Promise((res)=>{
+                try{
+                    if(!window.indexedDB){ console.warn('IndexedDB no disponible'); res(null); return; }
+                    const r = indexedDB.open(CONFIG.DB_NAME, 1);
+                    r.onerror=()=>{ console.warn('IndexedDB error', r.error); res(null); };
+                    r.onsuccess=()=>{ state.db=r.result; res(r.result); };
+                    r.onupgradeneeded=(e)=>{
+                        const db=e.target.result;
+                        if(!db.objectStoreNames.contains(CONFIG.STORE_NAME)) db.createObjectStore(CONFIG.STORE_NAME, {keyPath:'id', autoIncrement:true});
+                        if(!db.objectStoreNames.contains('rodals')) db.createObjectStore('rodals', {keyPath:'id'});
+                        if(!db.objectStoreNames.contains('actuacions')) db.createObjectStore('actuacions', {keyPath:'id'});
+                    };
+                }catch(e){ console.warn('IndexedDB excepció', e); res(null); }
             });
         }
 
         function dbPut(store, data){
-            return new Promise((res,rej)=>{
+            return new Promise((res)=>{
                 if(!state.db){ res(null); return; }
-                const tx=state.db.transaction(store,'readwrite');
-                const os=tx.objectStore(store);
-                const req=os.put(data);
-                req.onsuccess=()=>res(req.result);
-                req.onerror=()=>rej(req.error);
+                try{
+                    const tx=state.db.transaction(store,'readwrite');
+                    const os=tx.objectStore(store);
+                    const req=os.put(data);
+                    req.onsuccess=()=>res(req.result);
+                    req.onerror=()=>{ console.warn('dbPut error', req.error); res(null); };
+                }catch(e){ console.warn('dbPut excepció', e); res(null); }
             });
         }
         function dbGet(store, id){
-            return new Promise((res,rej)=>{
+            return new Promise((res)=>{
                 if(!state.db){ res(null); return; }
-                const tx=state.db.transaction(store,'readonly');
-                const os=tx.objectStore(store);
-                const req=os.get(id);
-                req.onsuccess=()=>res(req.result);
-                req.onerror=()=>rej(req.error);
+                try{
+                    const tx=state.db.transaction(store,'readonly');
+                    const os=tx.objectStore(store);
+                    const req=os.get(id);
+                    req.onsuccess=()=>res(req.result);
+                    req.onerror=()=>{ console.warn('dbGet error', req.error); res(null); };
+                }catch(e){ console.warn('dbGet excepció', e); res(null); }
             });
         }
         function dbGetAll(store){
-            return new Promise((res,rej)=>{
+            return new Promise((res)=>{
                 if(!state.db){ res([]); return; }
-                const tx=state.db.transaction(store,'readonly');
-                const os=tx.objectStore(store);
-                const req=os.getAll();
-                req.onsuccess=()=>res(req.result);
-                req.onerror=()=>rej(req.error);
+                try{
+                    const tx=state.db.transaction(store,'readonly');
+                    const os=tx.objectStore(store);
+                    const req=os.getAll();
+                    req.onsuccess=()=>res(req.result);
+                    req.onerror=()=>{ console.warn('dbGetAll error', req.error); res([]); };
+                }catch(e){ console.warn('dbGetAll excepció', e); res([]); }
             });
         }
         function dbDelete(store, id){
-            return new Promise((res,rej)=>{
+            return new Promise((res)=>{
                 if(!state.db){ res(null); return; }
-                const tx=state.db.transaction(store,'readwrite');
-                const os=tx.objectStore(store);
-                const req=os.delete(id);
-                req.onsuccess=()=>res(req.result);
-                req.onerror=()=>rej(req.error);
+                try{
+                    const tx=state.db.transaction(store,'readwrite');
+                    const os=tx.objectStore(store);
+                    const req=os.delete(id);
+                    req.onsuccess=()=>res(req.result);
+                    req.onerror=()=>{ console.warn('dbDelete error', req.error); res(null); };
+                }catch(e){ console.warn('dbDelete excepció', e); res(null); }
             });
         }
 
         async function persistLocal(){
-            localStorage.setItem('forest_rodals', JSON.stringify(state.rodals));
-            localStorage.setItem('forest_actuacions', JSON.stringify(state.actuacions));
+            try{ localStorage.setItem('forest_rodals', JSON.stringify(state.rodals)); }catch(e){ console.warn('localStorage rodals error', e); }
+            try{ localStorage.setItem('forest_actuacions', JSON.stringify(state.actuacions)); }catch(e){ console.warn('localStorage actuacions error', e); }
             if(state.db){
-                await dbPut('rodals', {id:'current', data:state.rodals, updated_at:new Date().toISOString()});
-                await dbPut('actuacions', {id:'current', data:state.actuacions, updated_at:new Date().toISOString()});
+                try{ await dbPut('rodals', {id:'current', data:state.rodals, updated_at:new Date().toISOString()}); }catch(e){}
+                try{ await dbPut('actuacions', {id:'current', data:state.actuacions, updated_at:new Date().toISOString()}); }catch(e){}
             }
         }
         function loadLocal(){
@@ -554,7 +583,7 @@
                 const a=localStorage.getItem('forest_actuacions');
                 if(r) state.rodals=JSON.parse(r);
                 if(a) state.actuacions=JSON.parse(a);
-            }catch(e){ console.error('loadLocal error', e); }
+            }catch(e){ console.warn('loadLocal error', e); }
         }
         async function loadIndexedDB(){
             if(!state.db) return;
@@ -563,15 +592,18 @@
                 const a=await dbGet('actuacions','current');
                 if(r && r.data && r.data.length>0 && state.rodals.length===0) state.rodals=r.data;
                 if(a && a.data && a.data.length>0 && state.actuacions.length===0) state.actuacions=a.data;
-            }catch(e){ console.error('loadIndexedDB error',e); }
+            }catch(e){ console.warn('loadIndexedDB error',e); }
         }
 
         // ==================== SUPABASE ====================
         function createSupabaseClient(){
-            const url=localStorage.getItem('M.S.X._supabase_url')||CONFIG.SUPABASE_URL;
-            const key=localStorage.getItem('M.S.X._supabase_key')||CONFIG.SUPABASE_KEY;
-            if(!url||url.includes('your-project')) return null;
-            return supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
+            try{
+                if(typeof supabase==='undefined' || !supabase.createClient){ console.warn('Supabase no disponible'); return null; }
+                const url=localStorage.getItem('M.S.X._supabase_url')||CONFIG.SUPABASE_URL;
+                const key=localStorage.getItem('M.S.X._supabase_key')||CONFIG.SUPABASE_KEY;
+                if(!url||url.includes('your-project')) return null;
+                return supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
+            }catch(e){ console.warn('createSupabaseClient error', e); return null; }
         }
         async function supabaseCall(promise){
             const to=new Promise((_,r)=>setTimeout(()=>r(new Error('TIMEOUT')),CONFIG.TIMEOUT_MS));
@@ -598,7 +630,7 @@
                 }
                 showToast(t('toastSync'),'info');
             }catch(e){
-                console.error('Sync error',e);
+                console.warn('Sync error',e);
                 showToast(t('toastError'),'error',4000);
             }
         }
@@ -622,59 +654,74 @@
                     showToast(t('treatmentLoaded'),'info');
                 }
             }catch(e){
-                console.error('Load from server error',e);
+                console.warn('Load from server error',e);
             }
         }
 
         // ==================== NETWORK ====================
+        function checkOnline(){
+            try{ state.isOnline = navigator.onLine; }catch(e){ state.isOnline = false; }
+            updateSyncDot();
+        }
         function updateSyncDot(){
             const d=document.getElementById('syncDot');
+            if(!d) return;
             d.classList.toggle('online', state.isOnline);
             d.title=state.isOnline?t('syncOnline'):t('syncOffline');
         }
         window.addEventListener('online',async()=>{
             state.isOnline=true; updateSyncDot(); showToast(t('toastSync'),'info');
-            await syncData();
+            try{ await syncData(); }catch(e){}
         });
         window.addEventListener('offline',()=>{ state.isOnline=false; updateSyncDot(); showToast(t('toastOffline'),'warning',4000); });
 
         // ==================== MAP ====================
         function initMap(){
-            state.map=L.map('map').setView([41.7,2.1],8);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19
-            }).addTo(state.map);
-            if(navigator.geolocation&&!state.isPublicMode){
-                navigator.geolocation.getCurrentPosition((pos)=>{
-                    const {latitude,longitude}=pos.coords;
-                    state.map.setView([latitude,longitude],14);
-                    document.getElementById('coordsDisplay').textContent=`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-                },()=>{});
-            }
+            try{
+                if(typeof L==='undefined'){ console.warn('Leaflet no disponible'); return; }
+                state.map=L.map('map').setView([41.7,2.1],8);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19
+                }).addTo(state.map);
+                if(navigator.geolocation&&!state.isPublicMode){
+                    navigator.geolocation.getCurrentPosition((pos)=>{
+                        const {latitude,longitude}=pos.coords;
+                        state.map.setView([latitude,longitude],14);
+                        const cd=document.getElementById('coordsDisplay');
+                        if(cd) cd.textContent=`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                    },()=>{});
+                }
+            }catch(e){ console.warn('initMap error', e); }
         }
 
         function clearMapLayers(){
-            Object.values(state.mapLayers).forEach(l=>state.map.removeLayer(l));
-            state.mapLayers={};
+            try{
+                Object.values(state.mapLayers).forEach(l=>{ if(state.map) state.map.removeLayer(l); });
+                state.mapLayers={};
+            }catch(e){ console.warn('clearMapLayers error', e); }
         }
 
         function highlightRodal(rodalId){
-            Object.entries(state.mapLayers).forEach(([id, layer])=>{
-                layer.setStyle({ color: '#4ade80', weight: 2, opacity: 0.6, fillOpacity: 0.1 });
-            });
-            if(state.mapLayers[rodalId]){
-                state.mapLayers[rodalId].setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillOpacity: 0.25 });
-                state.map.fitBounds(state.mapLayers[rodalId].getBounds(),{padding:[40,40], maxZoom:18});
-            }
+            try{
+                Object.entries(state.mapLayers).forEach(([id, layer])=>{
+                    layer.setStyle({ color: '#4ade80', weight: 2, opacity: 0.6, fillOpacity: 0.1 });
+                });
+                if(state.mapLayers[rodalId]){
+                    state.mapLayers[rodalId].setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillOpacity: 0.25 });
+                    if(state.map) state.map.fitBounds(state.mapLayers[rodalId].getBounds(),{padding:[40,40], maxZoom:18});
+                }
+            }catch(e){ console.warn('highlightRodal error', e); }
         }
 
         function addRodalToMap(rodal, geojson){
-            if(!geojson) return;
-            const layer=L.geoJSON(geojson,{
-                style:{ color:'#4ade80', weight:2, opacity:0.6, fillColor:'#4ade80', fillOpacity:0.1 }
-            }).addTo(state.map);
-            layer.bindPopup(`<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
-            state.mapLayers[rodal.id]=layer;
+            try{
+                if(!geojson || typeof L==='undefined' || !state.map) return;
+                const layer=L.geoJSON(geojson,{
+                    style:{ color:'#4ade80', weight:2, opacity:0.6, fillColor:'#4ade80', fillOpacity:0.1 }
+                }).addTo(state.map);
+                layer.bindPopup(`<b>${rodal.name}</b><br>${parseFloat(rodal.area_ha).toFixed(2)} ha`);
+                state.mapLayers[rodal.id]=layer;
+            }catch(e){ console.warn('addRodalToMap error', e); }
         }
 
         // ==================== CRS DETECTION & TRANSFORMATION ====================
@@ -707,21 +754,27 @@
 
         function transformCoordinates(coords, fromCRS){
             if(fromCRS==='EPSG:4326') return coords;
+            if(!coords || !Array.isArray(coords)) return coords;
             if(Array.isArray(coords[0])){
                 return coords.map(c=>transformCoordinates(c, fromCRS));
             }
-            const transformed=proj4(fromCRS, 'WGS84', coords);
-            return transformed;
+            if(typeof proj4==='undefined') return coords;
+            try{
+                const transformed=proj4(fromCRS, 'WGS84', coords);
+                return transformed;
+            }catch(e){ console.warn('proj4 transform error', e); return coords; }
         }
 
         function transformGeometry(geom, fromCRS){
-            const g=JSON.parse(JSON.stringify(geom));
-            if(g.type==='Point') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
-            else if(g.type==='Polygon') g.coordinates=g.coordinates.map(ring=>transformCoordinates(ring, fromCRS));
-            else if(g.type==='MultiPolygon') g.coordinates=g.coordinates.map(poly=>poly.map(ring=>transformCoordinates(ring, fromCRS)));
-            else if(g.type==='LineString') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
-            else if(g.type==='MultiLineString') g.coordinates=g.coordinates.map(line=>transformCoordinates(line, fromCRS));
-            return g;
+            try{
+                const g=JSON.parse(JSON.stringify(geom));
+                if(g.type==='Point') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
+                else if(g.type==='Polygon') g.coordinates=g.coordinates.map(ring=>transformCoordinates(ring, fromCRS));
+                else if(g.type==='MultiPolygon') g.coordinates=g.coordinates.map(poly=>poly.map(ring=>transformCoordinates(ring, fromCRS)));
+                else if(g.type==='LineString') g.coordinates=transformCoordinates(g.coordinates, fromCRS);
+                else if(g.type==='MultiLineString') g.coordinates=g.coordinates.map(line=>transformCoordinates(line, fromCRS));
+                return g;
+            }catch(e){ console.warn('transformGeometry error', e); return geom; }
         }
 
         function shoelaceArea(ring){
@@ -752,19 +805,21 @@
             const rodals=[];
             if(!geojson.features) return rodals;
             geojson.features.forEach((feat, idx)=>{
-                const geom=feat.geometry;
-                if(!geom||!(geom.type==='Polygon'||geom.type==='MultiPolygon')) return;
-                const areaHa=polygonAreaHa(geom, originalCRS);
-                const wgs84Geom=transformGeometry(geom, originalCRS);
-                const p=feat.properties||{};
-                const name=p.Nom||p.nom||p.Name||p.name||p.rodal||p.Rodal||p.id||p.ID||(`${t('rodals')} ${idx+1}`);
-                const id=feat.id||`rodal-${idx}-${Date.now()}`;
-                rodals.push({
-                    id: String(id),
-                    name: String(name),
-                    area_ha: areaHa>0?areaHa:0,
-                    geojson_data: {type:'Feature', properties:p, geometry:wgs84Geom}
-                });
+                try{
+                    const geom=feat.geometry;
+                    if(!geom||!(geom.type==='Polygon'||geom.type==='MultiPolygon')) return;
+                    const areaHa=polygonAreaHa(geom, originalCRS);
+                    const wgs84Geom=transformGeometry(geom, originalCRS);
+                    const p=feat.properties||{};
+                    const name=p.Nom||p.nom||p.Name||p.name||p.rodal||p.Rodal||p.id||p.ID||(`${t('rodals')} ${idx+1}`);
+                    const id=feat.id||`rodal-${idx}-${Date.now()}`;
+                    rodals.push({
+                        id: String(id),
+                        name: String(name),
+                        area_ha: areaHa>0?areaHa:0,
+                        geojson_data: {type:'Feature', properties:p, geometry:wgs84Geom}
+                    });
+                }catch(e){ console.warn('Error extractRodals feature', idx, e); }
             });
             return rodals;
         }
@@ -794,132 +849,159 @@
 
                 state.rodals.forEach(r=>addRodalToMap(r, r.geojson_data));
                 const allLayers=Object.values(state.mapLayers);
-                if(allLayers.length>0){
+                if(allLayers.length>0 && state.map){
                     const group=L.featureGroup(allLayers);
                     state.map.fitBounds(group.getBounds(),{padding:[30,30]});
                 }
 
                 const banner=document.getElementById('detectedBanner');
-                banner.style.display='flex';
-                document.getElementById('detectedText').textContent=`${newRodals.length} ${t('detectedRodals')}${crs!=='EPSG:4326'?' · '+t('reprojected')+' '+crs:''}`;
+                if(banner){
+                    banner.style.display='flex';
+                    document.getElementById('detectedText').textContent=`${newRodals.length} ${t('detectedRodals')}${crs!=='EPSG:4326'?' · '+t('reprojected')+' '+crs:''}`;
+                }
 
                 showToast(t('toastGeoJSON'),'info');
                 renderRodals();
                 showSection('rodals');
-            }catch(err){ console.error(err); showToast(t('noGeoJSON'),'error'); }
+            }catch(err){ console.error('GeoJSON upload error', err); showToast(t('noGeoJSON'),'error'); }
             e.target.value='';
         });
 
         // ==================== RODALS ====================
         function renderRodals(){
-            const list=document.getElementById('rodalsList');
-            document.getElementById('detectedBanner').style.display='none';
-            if(state.rodals.length===0){
-                list.innerHTML=`<div class="empty-state">${t('emptyRodals')}</div>`;
-                document.getElementById('rodalDetail').style.display='none';
-                return;
-            }
-            list.innerHTML='';
-            state.rodals.forEach(r=>{
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).length;
-                const div=document.createElement('div');
-                div.className=`rodal-item ${state.selectedRodalId===r.id?'active':''}`;
-                div.innerHTML=`
-                    <div>
-                        <div class="rodal-name">${r.name}</div>
-                        <div class="rodal-meta">${acts} ${t('actuacions').toLowerCase()}</div>
-                    </div>
-                    <div class="rodal-area font-mono">${parseFloat(r.area_ha||0).toFixed(2)} ha</div>
-                `;
-                div.onclick=()=>selectRodal(r.id);
-                list.appendChild(div);
-            });
-            if(state.selectedRodalId) renderRodalDetail();
+            try{
+                const list=document.getElementById('rodalsList');
+                const banner=document.getElementById('detectedBanner');
+                if(banner) banner.style.display='none';
+                if(state.rodals.length===0){
+                    if(list) list.innerHTML=`<div class="empty-state">${t('emptyRodals')}</div>`;
+                    const rd=document.getElementById('rodalDetail');
+                    if(rd) rd.style.display='none';
+                    return;
+                }
+                if(list){
+                    list.innerHTML='';
+                    state.rodals.forEach(r=>{
+                        const acts=state.actuacions.filter(a=>a.rodal_id===r.id).length;
+                        const div=document.createElement('div');
+                        div.className=`rodal-item ${state.selectedRodalId===r.id?'active':''}`;
+                        div.innerHTML=`
+                            <div>
+                                <div class="rodal-name">${r.name}</div>
+                                <div class="rodal-meta">${acts} ${t('actuacions').toLowerCase()}</div>
+                            </div>
+                            <div class="rodal-area font-mono">${parseFloat(r.area_ha||0).toFixed(2)} ha</div>
+                        `;
+                        div.onclick=()=>selectRodal(r.id);
+                        list.appendChild(div);
+                    });
+                }
+                if(state.selectedRodalId) renderRodalDetail();
+            }catch(e){ console.warn('renderRodals error', e); }
         }
 
         function selectRodal(id){
-            state.selectedRodalId=id;
-            renderRodals();
-            document.getElementById('rodalDetail').style.display='block';
-            document.getElementById('btnAddActuacio').style.display=state.isPublicMode?'none':'block';
-            renderRodalDetail();
-            highlightRodal(id);
+            try{
+                state.selectedRodalId=id;
+                renderRodals();
+                const rd=document.getElementById('rodalDetail');
+                if(rd) rd.style.display='block';
+                const ba=document.getElementById('btnAddActuacio');
+                if(ba) ba.style.display=state.isPublicMode?'none':'block';
+                renderRodalDetail();
+                highlightRodal(id);
+            }catch(e){ console.warn('selectRodal error', e); }
         }
 
         function renderRodalDetail(){
-            const r=state.rodals.find(x=>x.id===state.selectedRodalId);
-            if(!r) return;
-            document.getElementById('selectedRodalName').textContent=r.name;
-            document.getElementById('selectedRodalMeta').textContent=`${parseFloat(r.area_ha||0).toFixed(2)} ha · ${state.actuacions.filter(a=>a.rodal_id===r.id).length} ${t('actuacions').toLowerCase()}`;
-            document.getElementById('btnDeleteRodal').style.display=state.isPublicMode?'none':'inline-flex';
-            renderActuacions();
+            try{
+                const r=state.rodals.find(x=>x.id===state.selectedRodalId);
+                if(!r) return;
+                const srn=document.getElementById('selectedRodalName');
+                const srm=document.getElementById('selectedRodalMeta');
+                const bdr=document.getElementById('btnDeleteRodal');
+                if(srn) srn.textContent=r.name;
+                if(srm) srm.textContent=`${parseFloat(r.area_ha||0).toFixed(2)} ha · ${state.actuacions.filter(a=>a.rodal_id===r.id).length} ${t('actuacions').toLowerCase()}`;
+                if(bdr) bdr.style.display=state.isPublicMode?'none':'inline-flex';
+                renderActuacions();
+            }catch(e){ console.warn('renderRodalDetail error', e); }
         }
 
         // ==================== ACTUACIONS ====================
         function renderActuacions(){
-            const container=document.getElementById('actuacionsList');
-            const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId).sort((a,b)=>new Date(a.start_date||'2099-01-01')-new Date(b.start_date||'2099-01-01'));
-            if(acts.length===0){
-                container.innerHTML=`<div class="empty-state">${t('emptyActs')}</div>`; return;
-            }
-            container.innerHTML='';
-            const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
-            const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
-            const readOnly=state.isPublicMode;
+            try{
+                const container=document.getElementById('actuacionsList');
+                if(!container) return;
+                const acts=state.actuacions.filter(a=>a.rodal_id===state.selectedRodalId).sort((a,b)=>new Date(a.start_date||'2099-01-01')-new Date(b.start_date||'2099-01-01'));
+                if(acts.length===0){
+                    container.innerHTML=`<div class="empty-state">${t('emptyActs')}</div>`; return;
+                }
+                container.innerHTML='';
+                const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
+                const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
+                const readOnly=state.isPublicMode;
 
-            acts.forEach(a=>{
-                const card=document.createElement('div'); card.className='actuacio-card';
-                const statusOptions=['pending','executing','completed','delayed'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${statusLabel[s]||s}</option>`).join('');
-                card.innerHTML=`
-                    <div class="actuacio-header">
-                        <div style="flex:1;">
-                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                                ${readOnly?`<span style="font-weight:700;">${a.title}</span>`:`<input type="text" class="actuacio-title" value="${a.title}" onchange="updateActField('${a.id}','title',this.value)">`}
-                                ${readOnly?`<span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>`:`
-                                <select class="status-select badge ${statusClass[a.status]||'badge-pending'}" onchange="updateActStatus('${a.id}', this.value)" style="background:${getBadgeBg(a.status)}; color:${getBadgeColor(a.status)};">
-                                    ${statusOptions}
-                                </select>`}
+                acts.forEach(a=>{
+                    const card=document.createElement('div'); card.className='actuacio-card';
+                    const statusOptions=['pending','executing','completed','delayed'].map(s=>`<option value="${s}" ${a.status===s?'selected':''}>${statusLabel[s]||s}</option>`).join('');
+                    card.innerHTML=`
+                        <div class="actuacio-header">
+                            <div style="flex:1;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+                                    ${readOnly?`<span style="font-weight:700;">${escapeHtml(a.title)}</span>`:`<input type="text" class="actuacio-title" value="${escapeHtml(a.title)}" onchange="updateActField('${a.id}','title',this.value)">`}
+                                    ${readOnly?`<span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>`:`
+                                    <select class="status-select badge ${statusClass[a.status]||'badge-pending'}" onchange="updateActStatus('${a.id}', this.value)" style="background:${getBadgeBg(a.status)}; color:${getBadgeColor(a.status)};">
+                                        ${statusOptions}
+                                    </select>`}
+                                </div>
+                            </div>
+                            ${readOnly?'':`<button class="btn btn-danger btn-icon" onclick="deleteActuacio('${a.id}')" title="${t('delete')}">🗑️</button>`}
+                        </div>
+                        ${a.description?`<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">${escapeHtml(a.description)}</div>`:''}
+
+                        <div class="form-row" style="margin-bottom:8px;">
+                            <div class="form-group" style="min-width:100px;">
+                                <label style="font-size:0.7rem;">${t('actStart')}</label>
+                                <input type="date" value="${a.start_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','start_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
+                            </div>
+                            <div class="form-group" style="min-width:100px;">
+                                <label style="font-size:0.7rem;">${t('actEnd')}</label>
+                                <input type="date" value="${a.end_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','end_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
                             </div>
                         </div>
-                        ${readOnly?'':`<button class="btn btn-danger btn-icon" onclick="deleteActuacio('${a.id}')" title="${t('delete')}">🗑️</button>`}
-                    </div>
-                    ${a.description?`<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:8px;">${a.description}</div>`:''}
 
-                    <div class="form-row" style="margin-bottom:8px;">
-                        <div class="form-group" style="min-width:100px;">
-                            <label style="font-size:0.7rem;">${t('actStart')}</label>
-                            <input type="date" value="${a.start_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','start_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
+                        <div class="progress-wrap">
+                            <input type="range" min="0" max="100" value="${a.progress||0}" class="progress-slider" 
+                                oninput="updateProgress('${a.id}', this.value)" ${readOnly?'disabled':''}>
+                            <span class="progress-value" id="prog-${a.id}">${a.progress||0}%</span>
                         </div>
-                        <div class="form-group" style="min-width:100px;">
-                            <label style="font-size:0.7rem;">${t('actEnd')}</label>
-                            <input type="date" value="${a.end_date||''}" ${readOnly?'disabled':''} onchange="updateActField('${a.id}','end_date',this.value)" style="padding:6px 8px; font-size:0.85rem;">
-                        </div>
-                    </div>
 
-                    <div class="progress-wrap">
-                        <input type="range" min="0" max="100" value="${a.progress||0}" class="progress-slider" 
-                            oninput="updateProgress('${a.id}', this.value)" ${readOnly?'disabled':''}>
-                        <span class="progress-value" id="prog-${a.id}">${a.progress||0}%</span>
-                    </div>
-
-                    <div class="photo-section">
-                        <div class="photo-label">
-                            <span>📷 ${t('before')}</span>
+                        <div class="photo-section">
+                            <div class="photo-label">
+                                <span>📷 ${t('before')}</span>
+                            </div>
+                            <div class="photo-grid" id="photos-before-${a.id}"></div>
                         </div>
-                        <div class="photo-grid" id="photos-before-${a.id}"></div>
-                    </div>
 
-                    <div class="photo-section">
-                        <div class="photo-label">
-                            <span>📷 ${t('after')}</span>
+                        <div class="photo-section">
+                            <div class="photo-label">
+                                <span>📷 ${t('after')}</span>
+                            </div>
+                            <div class="photo-grid" id="photos-after-${a.id}"></div>
                         </div>
-                        <div class="photo-grid" id="photos-after-${a.id}"></div>
-                    </div>
-                `;
-                container.appendChild(card);
-                renderPhotoGrid(a.id,'before',a.photos_before||[],readOnly);
-                renderPhotoGrid(a.id,'after',a.photos_after||[],readOnly);
-            });
+                    `;
+                    container.appendChild(card);
+                    renderPhotoGrid(a.id,'before',a.photos_before||[],readOnly);
+                    renderPhotoGrid(a.id,'after',a.photos_after||[],readOnly);
+                });
+            }catch(e){ console.warn('renderActuacions error', e); }
+        }
+
+        function escapeHtml(text){
+            if(!text) return '';
+            const div=document.createElement('div');
+            div.textContent=text;
+            return div.innerHTML;
         }
 
         function getBadgeBg(status){
@@ -932,261 +1014,316 @@
         }
 
         function renderPhotoGrid(actId, type, photos, readOnly){
-            const grid=document.getElementById(`photos-${type}-${actId}`);
-            if(!grid) return;
-            grid.innerHTML='';
-            photos.forEach((src, idx)=>{
-                const div=document.createElement('div'); div.className='photo-thumb';
-                div.innerHTML=`
-                    <img src="${src}" alt="${type}" onclick="window.open('${src}','_blank')">
-                    ${readOnly?'':`<button class="remove-btn" onclick="removePhoto('${actId}','${type}',${idx})">×</button>`}
-                `;
-                grid.appendChild(div);
-            });
-            if(!readOnly){
-                const add=document.createElement('label'); add.className='photo-add';
-                add.innerHTML=`<span style="font-size:1.2rem;">+</span><span style="font-size:0.65rem;">${t('addPhoto')}</span>`;
-                add.innerHTML+=`<input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${actId}','${type}',this)">`;
-                grid.appendChild(add);
-            }
+            try{
+                const grid=document.getElementById(`photos-${type}-${actId}`);
+                if(!grid) return;
+                grid.innerHTML='';
+                photos.forEach((src, idx)=>{
+                    const div=document.createElement('div'); div.className='photo-thumb';
+                    div.innerHTML=`
+                        <img src="${src}" alt="${type}" onclick="window.open('${src}','_blank')">
+                        ${readOnly?'':`<button class="remove-btn" onclick="removePhoto('${actId}','${type}',${idx})">×</button>`}
+                    `;
+                    grid.appendChild(div);
+                });
+                if(!readOnly){
+                    const add=document.createElement('label'); add.className='photo-add';
+                    add.innerHTML=`<span style="font-size:1.2rem;">+</span><span style="font-size:0.65rem;">${t('addPhoto')}</span>`;
+                    add.innerHTML+=`<input type="file" accept="image/*" capture="environment" class="hidden-input" onchange="handlePhoto('${actId}','${type}',this)">`;
+                    grid.appendChild(add);
+                }
+            }catch(e){ console.warn('renderPhotoGrid error', e); }
         }
 
         function updateActField(id, field, value){
-            const a=state.actuacions.find(x=>x.id===id);
-            if(a){ a[field]=value; persistLocal(); if(field.includes('date')){ renderCalendar(); renderGantt(); } }
+            try{
+                const a=state.actuacions.find(x=>x.id===id);
+                if(a){ a[field]=value; persistLocal(); if(field.includes('date')){ renderCalendar(); renderGantt(); } }
+            }catch(e){ console.warn('updateActField error', e); }
         }
         function updateActStatus(id, val){
-            const a=state.actuacions.find(x=>x.id===id);
-            if(a){ a.status=val; persistLocal(); renderActuacions(); renderGantt(); }
+            try{
+                const a=state.actuacions.find(x=>x.id===id);
+                if(a){ a.status=val; persistLocal(); renderActuacions(); renderGantt(); }
+            }catch(e){ console.warn('updateActStatus error', e); }
         }
         function updateProgress(id, val){
-            const a=state.actuacions.find(x=>x.id===id);
-            if(a){ a.progress=parseInt(val); const el=document.getElementById(`prog-${id}`); if(el) el.textContent=val+'%'; persistLocal(); }
+            try{
+                const a=state.actuacions.find(x=>x.id===id);
+                if(a){ a.progress=parseInt(val); const el=document.getElementById(`prog-${id}`); if(el) el.textContent=val+'%'; persistLocal(); }
+            }catch(e){ console.warn('updateProgress error', e); }
         }
         function deleteActuacio(id){
-            const msg=state.lang==='ca'?'Eliminar aquesta actuació?':state.lang==='es'?'¿Eliminar esta actuación?':'Delete this operation?';
-            if(!confirm(msg)) return;
-            state.actuacions=state.actuacions.filter(a=>a.id!==id);
-            persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
+            try{
+                const msg=state.lang==='ca'?'Eliminar aquesta actuació?':state.lang==='es'?'¿Eliminar esta actuación?':'Delete this operation?';
+                if(!confirm(msg)) return;
+                state.actuacions=state.actuacions.filter(a=>a.id!==id);
+                persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
+            }catch(e){ console.warn('deleteActuacio error', e); }
         }
         function removePhoto(actId, type, idx){
-            const a=state.actuacions.find(x=>x.id===actId);
-            if(a&&a[`photos_${type}`]){ a[`photos_${type}`].splice(idx,1); persistLocal(); renderActuacions(); }
+            try{
+                const a=state.actuacions.find(x=>x.id===actId);
+                if(a&&a[`photos_${type}`]){ a[`photos_${type}`].splice(idx,1); persistLocal(); renderActuacions(); }
+            }catch(e){ console.warn('removePhoto error', e); }
         }
 
         async function handlePhoto(actId, type, input){
-            const file=input.files[0]; if(!file) return;
-            const reader=new FileReader();
-            reader.onload=(e)=>{
-                const a=state.actuacions.find(x=>x.id===actId);
-                if(a){
-                    if(!a[`photos_${type}`]) a[`photos_${type}`]=[];
-                    a[`photos_${type}`].push(e.target.result);
-                    persistLocal(); renderActuacions(); showToast(t('toastSaved'),'info');
-                }
-            };
-            reader.readAsDataURL(file);
-            input.value='';
+            try{
+                const file=input.files[0]; if(!file) return;
+                const reader=new FileReader();
+                reader.onload=(e)=>{
+                    try{
+                        const a=state.actuacions.find(x=>x.id===actId);
+                        if(a){
+                            if(!a[`photos_${type}`]) a[`photos_${type}`]=[];
+                            a[`photos_${type}`].push(e.target.result);
+                            persistLocal(); renderActuacions(); showToast(t('toastSaved'),'info');
+                        }
+                    }catch(err){ console.warn('handlePhoto onload error', err); }
+                };
+                reader.readAsDataURL(file);
+                input.value='';
+            }catch(e){ console.warn('handlePhoto error', e); }
         }
 
         // ==================== FORMS ====================
         document.getElementById('btnAddActuacio').addEventListener('click', ()=>{
-            document.getElementById('actuacioForm').style.display='block';
-            document.getElementById('btnAddActuacio').style.display='none';
+            try{
+                const af=document.getElementById('actuacioForm');
+                const ba=document.getElementById('btnAddActuacio');
+                if(af) af.style.display='block';
+                if(ba) ba.style.display='none';
+            }catch(e){}
         });
         document.getElementById('btnCancelActuacio').addEventListener('click', ()=>{
-            document.getElementById('actuacioForm').style.display='none';
-            document.getElementById('btnAddActuacio').style.display='block';
-            document.getElementById('inputActDesc').value='';
+            try{
+                const af=document.getElementById('actuacioForm');
+                const ba=document.getElementById('btnAddActuacio');
+                const ad=document.getElementById('inputActDesc');
+                if(af) af.style.display='none';
+                if(ba) ba.style.display='block';
+                if(ad) ad.value='';
+            }catch(e){}
         });
         document.getElementById('btnSaveActuacio').addEventListener('click', ()=>{
-            const type=document.getElementById('selectActType').value;
-            const status=document.getElementById('selectActStatus').value;
-            const start=document.getElementById('inputActStart').value;
-            const end=document.getElementById('inputActEnd').value;
-            const desc=document.getElementById('inputActDesc').value.trim();
-            const customTitle=type==='Altres'?prompt(state.lang==='ca'?'Nom de l'actuació:':state.lang==='es'?'Nombre de la actuación:':'Operation name:')||'Altres':type;
+            try{
+                const type=document.getElementById('selectActType').value;
+                const status=document.getElementById('selectActStatus').value;
+                const start=document.getElementById('inputActStart').value;
+                const end=document.getElementById('inputActEnd').value;
+                const desc=document.getElementById('inputActDesc').value.trim();
+                const customTitle=type==='Altres'?prompt(state.lang==='ca'?'Nom de l'actuació:':state.lang==='es'?'Nombre de la actuación:':'Operation name:')||'Altres':type;
 
-            const act={
-                id:crypto.randomUUID(),
-                rodal_id:state.selectedRodalId,
-                title:customTitle,
-                status,
-                start_date:start,
-                end_date:end,
-                progress:0,
-                photos_before:[],
-                photos_after:[],
-                description:desc,
-                created_at:new Date().toISOString()
-            };
-            state.actuacions.push(act); persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
-            document.getElementById('btnCancelActuacio').click();
-            showToast(t('toastSaved'),'info');
+                const act={
+                    id:generateUUID(),
+                    rodal_id:state.selectedRodalId,
+                    title:customTitle,
+                    status,
+                    start_date:start,
+                    end_date:end,
+                    progress:0,
+                    photos_before:[],
+                    photos_after:[],
+                    description:desc,
+                    created_at:new Date().toISOString()
+                };
+                state.actuacions.push(act); persistLocal(); renderActuacions(); renderRodals(); renderCalendar(); renderGantt();
+                document.getElementById('btnCancelActuacio').click();
+                showToast(t('toastSaved'),'info');
+            }catch(e){ console.warn('btnSaveActuacio error', e); showToast('Error','error'); }
         });
         document.getElementById('btnDeleteRodal').addEventListener('click', ()=>{
-            const msg=state.lang==='ca'?'Eliminar aquest rodal i totes les seves actuacions?':state.lang==='es'?'¿Eliminar este rodal y todas sus actuaciones?':'Delete this stand and all its operations?';
-            if(!confirm(msg)) return;
-            if(state.mapLayers[state.selectedRodalId]){ state.map.removeLayer(state.mapLayers[state.selectedRodalId]); delete state.mapLayers[state.selectedRodalId]; }
-            state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
-            state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
-            state.selectedRodalId=null; persistLocal(); renderRodals(); renderCalendar(); renderGantt();
-            document.getElementById('rodalDetail').style.display='none';
+            try{
+                const msg=state.lang==='ca'?'Eliminar aquest rodal i totes les seves actuacions?':state.lang==='es'?'¿Eliminar este rodal y todas sus actuaciones?':'Delete this stand and all its operations?';
+                if(!confirm(msg)) return;
+                if(state.mapLayers[state.selectedRodalId]){ if(state.map) state.map.removeLayer(state.mapLayers[state.selectedRodalId]); delete state.mapLayers[state.selectedRodalId]; }
+                state.rodals=state.rodals.filter(r=>r.id!==state.selectedRodalId);
+                state.actuacions=state.actuacions.filter(a=>a.rodal_id!==state.selectedRodalId);
+                state.selectedRodalId=null; persistLocal(); renderRodals(); renderCalendar(); renderGantt();
+                const rd=document.getElementById('rodalDetail');
+                if(rd) rd.style.display='none';
+            }catch(e){ console.warn('btnDeleteRodal error', e); }
         });
 
         // ==================== CALENDAR ====================
         function renderCalendar(){
-            const grid=document.getElementById('calendarGrid');
-            grid.innerHTML='';
-            const year=state.currentMonth.getFullYear(), month=state.currentMonth.getMonth();
-            const firstDay=new Date(year,month,1).getDay();
-            const daysInMonth=new Date(year,month+1,0).getDate();
-            const monthNames=state.lang==='ca'?['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre']:
-                             state.lang==='es'?['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']:
-                             ['January','February','March','April','May','June','July','August','September','October','November','December'];
-            document.getElementById('calMonth').textContent=`${monthNames[month]} ${year}`;
-            const weekDays=state.lang==='ca'?['Dl','Dt','Dc','Dj','Dv','Ds','Dg']:
-                             state.lang==='es'?['Lu','Ma','Mi','Ju','Vi','Sa','Do']:
-                             ['Mo','Tu','We','Th','Fr','Sa','Su'];
-            weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
-            let startOffset=firstDay===0?6:firstDay-1;
-            for(let i=0; i<startOffset; i++) grid.appendChild(document.createElement('div'));
-            const today=new Date();
-            const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date);
-            validActs.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
-            for(let d=1; d<=daysInMonth; d++){
-                const date=new Date(year,month,d);
-                const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
-                if(date.toDateString()===today.toDateString()) el.classList.add('today');
-                if(state.selectedDay && date.toDateString()===state.selectedDay.toDateString()) el.classList.add('selected');
-                const has=validActs.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
-                if(!has && validActs.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5';
-                if(validActs.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
-                el.onclick=()=>{ state.selectedDay=date; renderCalendar(); showDayDetail(date); };
-                grid.appendChild(el);
-            }
+            try{
+                const grid=document.getElementById('calendarGrid');
+                if(!grid) return;
+                grid.innerHTML='';
+                const year=state.currentMonth.getFullYear(), month=state.currentMonth.getMonth();
+                const firstDay=new Date(year,month,1).getDay();
+                const daysInMonth=new Date(year,month+1,0).getDate();
+                const monthNames=state.lang==='ca'?['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre']:
+                                 state.lang==='es'?['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']:
+                                 ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                const cm=document.getElementById('calMonth');
+                if(cm) cm.textContent=`${monthNames[month]} ${year}`;
+                const weekDays=state.lang==='ca'?['Dl','Dt','Dc','Dj','Dv','Ds','Dg']:
+                                 state.lang==='es'?['Lu','Ma','Mi','Ju','Vi','Sa','Do']:
+                                 ['Mo','Tu','We','Th','Fr','Sa','Su'];
+                weekDays.forEach(d=>{ const el=document.createElement('div'); el.className='calendar-header'; el.textContent=d; grid.appendChild(el); });
+                let startOffset=firstDay===0?6:firstDay-1;
+                for(let i=0; i<startOffset; i++) grid.appendChild(document.createElement('div'));
+                const today=new Date();
+                const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date);
+                validActs.forEach(a=>{ a._start=new Date(a.start_date); a._end=new Date(a.end_date); });
+                for(let d=1; d<=daysInMonth; d++){
+                    const date=new Date(year,month,d);
+                    const el=document.createElement('div'); el.className='calendar-day'; el.innerHTML=`<span>${d}</span>`;
+                    if(date.toDateString()===today.toDateString()) el.classList.add('today');
+                    if(state.selectedDay && date.toDateString()===state.selectedDay.toDateString()) el.classList.add('selected');
+                    const has=validActs.some(a=>a.rodal_id===state.selectedRodalId && date>=a._start&&date<=a._end);
+                    if(!has && validActs.some(a=> date>=a._start&&date<=a._end)) el.style.opacity='0.5';
+                    if(validActs.some(a=> date>=a._start&&date<=a._end)) el.classList.add('has-event');
+                    el.onclick=()=>{ state.selectedDay=date; renderCalendar(); showDayDetail(date); };
+                    grid.appendChild(el);
+                }
+            }catch(e){ console.warn('renderCalendar error', e); }
         }
 
         function showDayDetail(date){
-            const panel=document.getElementById('dayDetail');
-            const acts=state.actuacions.filter(a=>{
-                if(!a.start_date||!a.end_date) return false;
-                const s=new Date(a.start_date), e=new Date(a.end_date);
-                return date>=s && date<=e;
-            }).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+            try{
+                const panel=document.getElementById('dayDetail');
+                if(!panel) return;
+                const acts=state.actuacions.filter(a=>{
+                    if(!a.start_date||!a.end_date) return false;
+                    const s=new Date(a.start_date), e=new Date(a.end_date);
+                    return date>=s && date<=e;
+                }).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
 
-            if(acts.length===0){
-                panel.innerHTML=`<div style="padding:12px; color:var(--text-secondary); font-size:0.9rem;">${t('noDayEvents')}</div>`;
-            }else{
-                const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
-                const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
-                const dateStr=date.toLocaleDateString(state.lang==='en'?'en-US':(state.lang==='es'?'es-ES':'ca-ES'));
-                panel.innerHTML=`<div class="day-detail-header"><span>${dateStr}</span><span style="font-size:0.75rem; color:var(--text-secondary);">${acts.length} ${t('actuacions').toLowerCase()}</span></div>`;
-                panel.innerHTML+=acts.map(a=>{
-                    const rodal=state.rodals.find(r=>r.id===a.rodal_id);
-                    return `
-                    <div class="day-detail-item">
-                        <div>
-                            <div class="day-detail-title">${a.title}</div>
-                            <div class="day-detail-meta">${rodal?rodal.name:'-'} · ${a.progress||0}%</div>
-                        </div>
-                        <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
-                    </div>`;
-                }).join('');
-            }
-            panel.style.display='block';
+                if(acts.length===0){
+                    panel.innerHTML=`<div style="padding:12px; color:var(--text-secondary); font-size:0.9rem;">${t('noDayEvents')}</div>`;
+                }else{
+                    const statusClass={executing:'badge-executing',completed:'badge-completed',delayed:'badge-delayed',pending:'badge-pending'};
+                    const statusLabel={executing:t('executing'),completed:t('completed'),delayed:t('delayed'),pending:t('pending')};
+                    const dateStr=date.toLocaleDateString(state.lang==='en'?'en-US':(state.lang==='es'?'es-ES':'ca-ES'));
+                    panel.innerHTML=`<div class="day-detail-header"><span>${dateStr}</span><span style="font-size:0.75rem; color:var(--text-secondary);">${acts.length} ${t('actuacions').toLowerCase()}</span></div>`;
+                    panel.innerHTML+=acts.map(a=>{
+                        const rodal=state.rodals.find(r=>r.id===a.rodal_id);
+                        return `
+                        <div class="day-detail-item">
+                            <div>
+                                <div class="day-detail-title">${escapeHtml(a.title)}</div>
+                                <div class="day-detail-meta">${rodal?escapeHtml(rodal.name):'-'} · ${a.progress||0}%</div>
+                            </div>
+                            <span class="badge ${statusClass[a.status]||'badge-pending'}">${statusLabel[a.status]||a.status}</span>
+                        </div>`;
+                    }).join('');
+                }
+                panel.style.display='block';
+            }catch(e){ console.warn('showDayDetail error', e); }
         }
 
-        document.getElementById('calPrev').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()-1); state.selectedDay=null; document.getElementById('dayDetail').style.display='none'; renderCalendar(); });
-        document.getElementById('calNext').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()+1); state.selectedDay=null; document.getElementById('dayDetail').style.display='none'; renderCalendar(); });
+        document.getElementById('calPrev').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()-1); state.selectedDay=null; const dd=document.getElementById('dayDetail'); if(dd) dd.style.display='none'; renderCalendar(); });
+        document.getElementById('calNext').addEventListener('click',()=>{ state.currentMonth.setMonth(state.currentMonth.getMonth()+1); state.selectedDay=null; const dd=document.getElementById('dayDetail'); if(dd) dd.style.display='none'; renderCalendar(); });
 
         // ==================== GANTT ====================
         function renderGantt(){
-            const container=document.getElementById('ganttChart');
-            container.innerHTML='';
-            const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date&&!isNaN(new Date(a.start_date))&&!isNaN(new Date(a.end_date))).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
-            if(validActs.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
-            const allDates=validActs.flatMap(a=>[new Date(a.start_date),new Date(a.end_date)]);
-            const minDate=new Date(Math.min(...allDates));
-            const maxDate=new Date(Math.max(...allDates));
-            const totalDays=Math.max(1,(maxDate-minDate)/86400000);
-            const sMap={executing:'gantt-status-executing',completed:'gantt-status-completed',delayed:'gantt-status-delayed',pending:'gantt-status-pending'};
-            validActs.forEach(a=>{
-                const start=new Date(a.start_date), end=new Date(a.end_date);
-                const so=((start-minDate)/86400000)/totalDays*100;
-                const du=((end-start)/86400000)/totalDays*100;
-                const row=document.createElement('div'); row.className='gantt-row';
-                row.innerHTML=`
-                    <div class="gantt-label" title="${a.title}">${a.title}</div>
-                    <div class="gantt-bar-bg">
-                        <div class="gantt-bar ${sMap[a.status]||'gantt-status-pending'}" style="left:${so}%; width:${Math.max(2,du)}%;"></div>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
+            try{
+                const container=document.getElementById('ganttChart');
+                if(!container) return;
+                container.innerHTML='';
+                const validActs=state.actuacions.filter(a=>a.start_date&&a.end_date&&!isNaN(new Date(a.start_date))&&!isNaN(new Date(a.end_date))).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+                if(validActs.length===0){ container.innerHTML=`<div class="empty-state">No data</div>`; return; }
+                const allDates=validActs.flatMap(a=>[new Date(a.start_date),new Date(a.end_date)]);
+                const minDate=new Date(Math.min(...allDates));
+                const maxDate=new Date(Math.max(...allDates));
+                const totalDays=Math.max(1,(maxDate-minDate)/86400000);
+                const sMap={executing:'gantt-status-executing',completed:'gantt-status-completed',delayed:'gantt-status-delayed',pending:'gantt-status-pending'};
+                validActs.forEach(a=>{
+                    const start=new Date(a.start_date), end=new Date(a.end_date);
+                    const so=((start-minDate)/86400000)/totalDays*100;
+                    const du=((end-start)/86400000)/totalDays*100;
+                    const row=document.createElement('div'); row.className='gantt-row';
+                    row.innerHTML=`
+                        <div class="gantt-label" title="${escapeHtml(a.title)}">${escapeHtml(a.title)}</div>
+                        <div class="gantt-bar-bg">
+                            <div class="gantt-bar ${sMap[a.status]||'gantt-status-pending'}" style="left:${so}%; width:${Math.max(2,du)}%;"></div>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            }catch(e){ console.warn('renderGantt error', e); }
         }
 
         // ==================== REPORTS ====================
         function updateStats(){
-            const totalR=state.rodals.length;
-            const area=state.rodals.reduce((s,r)=>s+(parseFloat(r.area_ha)||0),0);
-            const totalA=state.actuacions.length;
-            const avg=totalA?Math.round(state.actuacions.reduce((s,a)=>s+(a.progress||0),0)/totalA):0;
-            document.getElementById('statRodals').textContent=totalR;
-            document.getElementById('statArea').textContent=area.toFixed(1)+' ha';
-            document.getElementById('statActuacions').textContent=totalA;
-            document.getElementById('statAvgProgress').textContent=avg+'%';
+            try{
+                const totalR=state.rodals.length;
+                const area=state.rodals.reduce((s,r)=>s+(parseFloat(r.area_ha)||0),0);
+                const totalA=state.actuacions.length;
+                const avg=totalA?Math.round(state.actuacions.reduce((s,a)=>s+(a.progress||0),0)/totalA):0;
+                const sr=document.getElementById('statRodals');
+                const sa=document.getElementById('statArea');
+                const sta=document.getElementById('statActuacions');
+                const sap=document.getElementById('statAvgProgress');
+                if(sr) sr.textContent=totalR;
+                if(sa) sa.textContent=area.toFixed(1)+' ha';
+                if(sta) sta.textContent=totalA;
+                if(sap) sap.textContent=avg+'%';
+            }catch(e){ console.warn('updateStats error', e); }
         }
 
         document.getElementById('btnPdf').addEventListener('click',()=>{
-            const {jsPDF}=window.jspdf;
-            const doc=new jsPDF();
-            doc.setFillColor(17,41,29); doc.rect(0,0,210,40,'F');
-            doc.setTextColor(250,250,250); doc.setFontSize(20); doc.text(t('appTitle'),14,20);
-            doc.setFontSize(10); doc.text(new Date().toLocaleDateString(),14,30);
-            doc.setTextColor(50,50,50); doc.setFontSize(12); let y=50;
-            state.rodals.forEach((r,ri)=>{
-                if(y>250){ doc.addPage(); y=20; }
-                doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${parseFloat(r.area_ha).toFixed(2)} ha)`,14,y);
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
-                acts.forEach((a,ai)=>{
-                    if(y>270){ doc.addPage(); y=20; }
-                    doc.setFontSize(10); doc.setTextColor(80,80,80);
-                    doc.text(`  ${ai+1}. ${a.title} — ${a.progress||0}% — ${a.start_date||'-'} → ${a.end_date||'-'}`,14,y+6);
-                    y+=14;
+            try{
+                if(!window.jspdf || !window.jspdf.jsPDF){ showToast('jsPDF no disponible','error'); return; }
+                const {jsPDF}=window.jspdf;
+                const doc=new jsPDF();
+                doc.setFillColor(17,41,29); doc.rect(0,0,210,40,'F');
+                doc.setTextColor(250,250,250); doc.setFontSize(20); doc.text(t('appTitle'),14,20);
+                doc.setFontSize(10); doc.text(new Date().toLocaleDateString(),14,30);
+                doc.setTextColor(50,50,50); doc.setFontSize(12); let y=50;
+                state.rodals.forEach((r,ri)=>{
+                    if(y>250){ doc.addPage(); y=20; }
+                    doc.setFontSize(13); doc.setTextColor(17,41,29); doc.text(`${ri+1}. ${r.name} (${parseFloat(r.area_ha).toFixed(2)} ha)`,14,y);
+                    const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
+                    acts.forEach((a,ai)=>{
+                        if(y>270){ doc.addPage(); y=20; }
+                        doc.setFontSize(10); doc.setTextColor(80,80,80);
+                        doc.text(`  ${ai+1}. ${a.title} — ${a.progress||0}% — ${a.start_date||'-'} → ${a.end_date||'-'}`,14,y+6);
+                        y+=14;
+                    });
+                    y+=10;
                 });
-                y+=10;
-            });
-            doc.save('informe-forestal.pdf');
-            showToast(t('toastSaved'),'info');
+                doc.save('informe-forestal.pdf');
+                showToast(t('toastSaved'),'info');
+            }catch(e){ console.warn('btnPdf error', e); showToast('Error PDF','error'); }
         });
 
         document.getElementById('btnExcel').addEventListener('click',()=>{
-            const data=[];
-            state.rodals.forEach(r=>{
-                const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
-                if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:'-', Estat:'-', Progres:'-', Inici:'-', Fi:'-'});
-                acts.forEach(a=>{
-                    data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:a.title, Estat:a.status, Progres:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
+            try{
+                if(typeof XLSX==='undefined'){ showToast('SheetJS no disponible','error'); return; }
+                const data=[];
+                state.rodals.forEach(r=>{
+                    const acts=state.actuacions.filter(a=>a.rodal_id===r.id).sort((a,b)=>new Date(a.start_date||0)-new Date(b.start_date||0));
+                    if(acts.length===0) data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:'-', Estat:'-', Progres:'-', Inici:'-', Fi:'-'});
+                    acts.forEach(a=>{
+                        data.push({Rodal:r.name, 'Area (ha)':parseFloat(r.area_ha).toFixed(2), Actuacio:a.title, Estat:a.status, Progres:(a.progress||0)+'%', Inici:a.start_date, Fi:a.end_date});
+                    });
                 });
-            });
-            const ws=XLSX.utils.json_to_sheet(data);
-            const wb=XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb,ws,'Programacio');
-            XLSX.writeFile(wb,'programacio-forestal.xlsx');
-            showToast(t('toastSaved'),'info');
+                const ws=XLSX.utils.json_to_sheet(data);
+                const wb=XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb,ws,'Programacio');
+                XLSX.writeFile(wb,'programacio-forestal.xlsx');
+                showToast(t('toastSaved'),'info');
+            }catch(e){ console.warn('btnExcel error', e); showToast('Error Excel','error'); }
         });
 
         // ==================== NAVIGATION ====================
         function showSection(id){
-            document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-            document.getElementById('section-'+id).classList.add('active');
-            document.querySelectorAll('.nav-item, .nav-desktop button').forEach(b=>b.classList.remove('active'));
-            document.querySelectorAll(`[data-section="${id}"]`).forEach(b=>b.classList.add('active'));
-            if(id==='calendar') renderCalendar();
-            if(id==='timeline') renderGantt();
-            if(id==='reports') updateStats();
-            if(id==='rodals') renderRodals();
+            try{
+                document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+                const sec=document.getElementById('section-'+id);
+                if(sec) sec.classList.add('active');
+                document.querySelectorAll('.nav-item, .nav-desktop button').forEach(b=>b.classList.remove('active'));
+                document.querySelectorAll(`[data-section="${id}"]`).forEach(b=>b.classList.add('active'));
+                if(id==='calendar') renderCalendar();
+                if(id==='timeline') renderGantt();
+                if(id==='reports') updateStats();
+                if(id==='rodals') renderRodals();
+            }catch(e){ console.warn('showSection error', e); }
         }
         document.querySelectorAll('.nav-item, .nav-desktop button').forEach(btn=>{
             btn.addEventListener('click',()=>showSection(btn.dataset.section));
@@ -1194,76 +1331,95 @@
 
         // ==================== PUBLIC MODE ====================
         function checkPublicMode(){
-            const p=new URLSearchParams(window.location.search);
-            const id=p.get('tractament_id');
-            if(id){
-                state.isPublicMode=true; state.publicId=id;
-                document.getElementById('publicBanner').style.display='flex';
-                document.getElementById('btnAddActuacio').style.display='none';
-                document.getElementById('btnGeoJSON').style.display='none';
-                document.getElementById('btnHub').style.display='none';
-                document.getElementById('bottomNav').style.display='none';
-                document.querySelectorAll('.section').forEach(s=>s.classList.add('active'));
-                document.querySelectorAll('.section').forEach(s=>s.style.marginBottom='20px');
-                showToast(t('treatmentLoaded'),'info');
-            }
+            try{
+                const p=new URLSearchParams(window.location.search);
+                const id=p.get('tractament_id');
+                if(id){
+                    state.isPublicMode=true; state.publicId=id;
+                    const pb=document.getElementById('publicBanner');
+                    if(pb) pb.style.display='flex';
+                    const ba=document.getElementById('btnAddActuacio');
+                    if(ba) ba.style.display='none';
+                    const bg=document.getElementById('btnGeoJSON');
+                    if(bg) bg.style.display='none';
+                    const bh=document.getElementById('btnHub');
+                    if(bh) bh.style.display='none';
+                    const bn=document.getElementById('bottomNav');
+                    if(bn) bn.style.display='none';
+                    document.querySelectorAll('.section').forEach(s=>s.classList.add('active'));
+                    document.querySelectorAll('.section').forEach(s=>s.style.marginBottom='20px');
+                    showToast(t('treatmentLoaded'),'info');
+                }
+            }catch(e){ console.warn('checkPublicMode error', e); }
         }
 
         // ==================== DEMO DATA ====================
         function loadDemoData(){
-            if(state.rodals.length>0) return;
-            state.rodals=[
-                {id:'demo-r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:{
-                    type:'Feature', properties:{name:'Rodal Nord'},
-                    geometry:{type:'Polygon', coordinates:[[[2.1,41.7],[2.11,41.7],[2.11,41.71],[2.1,41.71],[2.1,41.7]]]}
-                }},
-                {id:'demo-r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:{
-                    type:'Feature', properties:{name:'Rodal Sud'},
-                    geometry:{type:'Polygon', coordinates:[[[2.12,41.68],[2.13,41.68],[2.13,41.69],[2.12,41.69],[2.12,41.68]]]}
-                }}
-            ];
-            state.actuacions=[
-                {id:'demo-a1', rodal_id:'demo-r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
-                {id:'demo-a2', rodal_id:'demo-r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
-                {id:'demo-a3', rodal_id:'demo-r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'}
-            ];
-            persistLocal();
+            try{
+                if(state.rodals.length>0) return;
+                state.rodals=[
+                    {id:'demo-r1', name:'Rodal Nord - Alzinar', area_ha:12.5, geojson_data:{
+                        type:'Feature', properties:{name:'Rodal Nord'},
+                        geometry:{type:'Polygon', coordinates:[[[2.1,41.7],[2.11,41.7],[2.11,41.71],[2.1,41.71],[2.1,41.7]]]}
+                    }},
+                    {id:'demo-r2', name:'Rodal Sud - Pinassa', area_ha:8.3, geojson_data:{
+                        type:'Feature', properties:{name:'Rodal Sud'},
+                        geometry:{type:'Polygon', coordinates:[[[2.12,41.68],[2.13,41.68],[2.13,41.69],[2.12,41.69],[2.12,41.68]]]}
+                    }}
+                ];
+                state.actuacions=[
+                    {id:'demo-a1', rodal_id:'demo-r1', title:'Clariana selectiva', status:'executing', progress:45, start_date:'2026-06-01', end_date:'2026-06-15', photos_before:[], photos_after:[], description:'Primera clariana de manteniment'},
+                    {id:'demo-a2', rodal_id:'demo-r1', title:'Poda', status:'completed', progress:100, start_date:'2026-05-10', end_date:'2026-05-20', photos_before:[], photos_after:[], description:'Poda de branques baixes'},
+                    {id:'demo-a3', rodal_id:'demo-r2', title:'Defensa incendis', status:'delayed', progress:20, start_date:'2026-04-15', end_date:'2026-05-15', photos_before:[], photos_after:[], description:'Franja perimetral de 25m'}
+                ];
+                persistLocal();
+            }catch(e){ console.warn('loadDemoData error', e); }
         }
 
         // ==================== INIT ====================
         async function init(){
-            detectLanguage();
-            updateSyncDot();
-            await initIndexedDB();
-            loadLocal();
-            await loadIndexedDB();
-            initMap();
+            try{
+                detectLanguage();
+                checkOnline();
+                await initIndexedDB();
+                loadLocal();
+                await loadIndexedDB();
+                initProj4();
+                initMap();
 
-            state.supabase=createSupabaseClient();
-            if(state.supabase && state.isOnline && !state.isPublicMode) await loadFromServer();
-
-            if(state.rodals.length>0){
-                state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                const allLayers=Object.values(state.mapLayers);
-                if(allLayers.length>0){
-                    const group=L.featureGroup(allLayers);
-                    state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                state.supabase=createSupabaseClient();
+                if(state.supabase && state.isOnline && !state.isPublicMode){
+                    try{ await loadFromServer(); }catch(e){ console.warn('loadFromServer init error', e); }
                 }
-            }
 
-            checkPublicMode();
-            if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
-            if(!state.isPublicMode && state.rodals.length>0 && Object.values(state.mapLayers).length===0){
-                state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
-                const allLayers=Object.values(state.mapLayers);
-                if(allLayers.length>0){
-                    const group=L.featureGroup(allLayers);
-                    state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                if(state.rodals.length>0){
+                    state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                    const allLayers=Object.values(state.mapLayers);
+                    if(allLayers.length>0 && state.map){
+                        const group=L.featureGroup(allLayers);
+                        state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                    }
                 }
-            }
 
-            renderRodals();
-            showSection('map');
+                checkPublicMode();
+                if(!state.isPublicMode && state.rodals.length===0) loadDemoData();
+                if(!state.isPublicMode && state.rodals.length>0 && Object.values(state.mapLayers).length===0){
+                    state.rodals.forEach(r=>{ if(r.geojson_data) addRodalToMap(r, r.geojson_data); });
+                    const allLayers=Object.values(state.mapLayers);
+                    if(allLayers.length>0 && state.map){
+                        const group=L.featureGroup(allLayers);
+                        state.map.fitBounds(group.getBounds(),{padding:[30,30]});
+                    }
+                }
+
+                renderRodals();
+                showSection('map');
+
+                if(!state.isOnline) showToast(t('toastOffline'),'warning',5000);
+            }catch(e){
+                console.error('INIT ERROR CRÍTIC', e);
+                showToast('Error inicialitzant l'app. Revisa la consola.','error',10000);
+            }
         }
 
         init();
