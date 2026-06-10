@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Disseny de Camins Forestals</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+:root{--bg-primary:#11291d;--bg-secondary:#1a3d2b;--bg-card:#1e4a35;--bg-input:#163828;--accent:#4ade80;--accent-dim:#22c55e;--text-primary:#e8f5e9;--text-secondary:#a7c4b0;--text-muted:#6b9e7c;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--border:#2d5a40;--shadow:rgba(0,0,0,0.4)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.sync-dot{position:fixed;top:12px;right:12px;width:10px;height:10px;border-radius:50%;z-index:10000;transition:all .3s ease}
+.sync-dot.online{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.sync-dot.offline{background:var(--warning);box-shadow:0 0 8px var(--warning)}
+.sync-dot.syncing{background:var(--info);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--danger);box-shadow:0 0 8px var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.toast-container{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10001;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:90%;max-width:400px}
+.toast{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--text-primary);box-shadow:0 4px 20px var(--shadow);animation:slideDown .3s ease;pointer-events:auto;display:flex;align-items:center;gap:10px}
+.toast.success{border-left:3px solid var(--accent)}
+.toast.error{border-left:3px solid var(--danger)}
+.toast.warning{border-left:3px solid var(--warning)}
+.toast.info{border-left:3px solid var(--info)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.app-header{background:linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%);padding:12px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.app-header h1{font-size:16px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn-icon{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s}
+.btn-icon:hover{background:var(--bg-input);color:var(--text-primary)}
+.main-content{padding:12px 16px 100px;max-width:900px;margin:0 auto}
+.card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px var(--shadow)}
+.card-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.btn{padding:10px 18px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent-dim),var(--accent));color:#0a1f15}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(74,222,128,.3)}
+.btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg-input)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:4px}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text-muted)}
+.form-textarea{min-height:60px;resize:vertical}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+#map{width:100%;height:320px;border-radius:12px;border:1px solid var(--border);z-index:1}
+.leaflet-container{background:var(--bg-primary)!important}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:var(--bg-card);color:var(--accent);font-weight:600;text-align:left;padding:8px 10px;position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.data-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary);font-family:'DM Mono',monospace;font-size:12px}
+.data-table tr:hover td{background:rgba(74,222,128,.05)}
+.table-container{max-height:280px;overflow:auto;border-radius:10px;border:1px solid var(--border)}
+.chart-container{background:var(--bg-primary);border-radius:12px;padding:12px;border:1px solid var(--border);position:relative}
+.chart-canvas{width:100%;height:200px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-card{background:var(--bg-primary);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center}
+.stat-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--accent);line-height:1}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-unit{font-size:11px;color:var(--text-secondary);font-family:'DM Mono',monospace}
+.slope-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace}
+.slope-green{background:rgba(74,222,128,.15);color:var(--accent)}
+.slope-yellow{background:rgba(245,158,11,.15);color:var(--warning)}
+.slope-red{background:rgba(239,68,68,.15);color:var(--danger)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(17,41,29,.95) 100%);border-top:1px solid var(--border);padding:8px 16px 20px;display:flex;justify-content:space-around;z-index:100;backdrop-filter:blur(10px)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text-muted);font-size:10px;font-weight:500;border:none;background:none;font-family:'DM Sans',sans-serif}
+.nav-item.active{color:var(--accent);background:rgba(74,222,128,.1)}
+.nav-item svg{width:22px;height:22px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;width:100%;max-width:500px;max-height:85vh;overflow:auto;padding:20px;box-shadow:0 20px 60px var(--shadow)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:700;color:var(--accent)}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.path-item{background:var(--bg-primary);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center}
+.path-item:hover{border-color:var(--accent);background:rgba(74,222,128,.05)}
+.path-item-info h3{font-size:14px;color:var(--text-primary);margin-bottom:2px}
+.path-item-info p{font-size:12px;color:var(--text-muted)}
+.path-item-actions{display:flex;gap:6px}
+.section-canvas{width:100%;height:160px;background:var(--bg-primary);border-radius:10px;border:1px solid var(--border)}
+.file-drop{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;color:var(--text-muted);font-size:13px;cursor:pointer;transition:all .2s;background:var(--bg-primary)}
+.file-drop:hover,.file-drop.dragover{border-color:var(--accent);background:rgba(74,222,128,.05);color:var(--text-primary)}
+.file-drop input{display:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+.hidden{display:none!important}
+@media(min-width:768px){.stat-grid{grid-template-columns:repeat(4,1fr)}#map{height:400px}.grid-2{grid-template-columns:1fr 1fr}}
+</style>
+<base target="_blank">
+</head>
+<body>
+<div id="syncDot" class="sync-dot offline" title="Estat de connexio"></div>
+<div id="toastContainer" class="toast-container"></div>
+
+<header class="app-header">
+<h1 id="appTitle">🌲 Camins Forestals</h1>
+<div class="header-actions">
+<button class="btn-icon" onclick="tornarHub()" title="Tornar al Hub">←</button>
+<button class="btn-icon" onclick="app.saveCurrentPath()" title="Guardar">💾</button>
+</div>
+</header>
+
+<main class="main-content" id="mainContent"></main>
+
+<nav class="bottom-nav">
+<button class="nav-item active" data-view="list" onclick="app.switchView('list')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+<span id="navList">Llistat</span>
+</button>
+<button class="nav-item" data-view="editor" onclick="app.switchView('editor')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 7m0 13V7"/></svg>
+<span id="navEditor">Tracat</span>
+</button>
+<button class="nav-item" data-view="profile" onclick="app.switchView('profile')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+<span id="navProfile">Perfil</span>
+</button>
+<button class="nav-item" data-view="sections" onclick="app.switchView('sections')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+<span id="navSections">Seccions</span>
+</button>
+<button class="nav-item" data-view="calcs" onclick="app.switchView('calcs')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+<span id="navCalcs">Calcs</span>
+</button>
+</nav>
+
+<div class="modal-overlay" id="newPathModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title" id="modalNewPathTitle">Nou Cami</span>
+<button class="modal-close" onclick="app.closeModal('newPathModal')">×</button>
+</div>
+<div class="form-group">
+<label class="form-label" id="labelPathName">Nom del cami</label>
+<input type="text" class="form-input" id="newPathName" placeholder="Ex: Cami de la Serra">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelPathDesc">Descripcio</label>
+<textarea class="form-textarea" id="newPathDesc" placeholder="Descripcio del tracat..."></textarea>
+</div>
+<div style="display:flex;gap:10px;margin-top:16px">
+<button class="btn btn-secondary" style="flex:1" onclick="app.closeModal('newPathModal')" id="btnCancel">Cancelar</button>
+<button class="btn btn-primary" style="flex:1" onclick="app.createNewPath()" id="btnCreate">Crear</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="importModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title" id="modalImportTitle">Importar des de QGIS</span>
+<button class="modal-close" onclick="app.closeModal('importModal')">×</button>
+</div>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px" id="importHelp">Exporta la teva polilinia des de QGIS com a GeoJSON (.geojson) o GPX (.gpx).</p>
+<div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+<input type="file" id="fileInput" accept=".geojson,.gpx,.json" onchange="app.handleFileImport(event)">
+<div style="font-size:28px;margin-bottom:8px">📁</div>
+<div id="dropText">Arrossega un fitxer GeoJSON o GPX<br>o fes clic per seleccionar</div>
+</div>
+<div style="margin-top:12px;padding:10px;background:var(--bg-primary);border-radius:8px;font-size:11px;color:var(--text-muted)">
+<strong style="color:var(--accent)">💡 Consell:</strong> <span id="importTip">A QGIS, selecciona la capa → Guardar entitats com → Format GeoJSON.</span>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="editPointModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title" id="modalEditTitle">Editar Punt</span>
+<button class="modal-close" onclick="app.closeModal('editPointModal')">×</button>
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label" id="labelStation">Estacio</label>
+<input type="text" class="form-input" id="editStation" placeholder="0+000">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelElevation">Cota Z (m)</label>
+<input type="number" class="form-input" id="editElevation" step="0.01" placeholder="450.50">
+</div>
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label" id="labelCoordX">Coordenada X</label>
+<input type="number" class="form-input" id="editCoordX" step="0.000001" placeholder="2.1543">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelCoordY">Coordenada Y</label>
+<input type="number" class="form-input" id="editCoordY" step="0.000001" placeholder="41.3874">
+</div>
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label" id="labelWidth">Ample calcada (m)</label>
+<input type="number" class="form-input" id="editWidth" step="0.1" value="3.5" placeholder="3.5">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelSlopeType">Tipus de seccio</label>
+<select class="form-select" id="editSlopeType">
+<option value="cut">En tall</option>
+<option value="fill">En rebliment</option>
+<option value="mixed">Mixta</option>
+</select>
+</div>
+</div>
+<div style="display:flex;gap:10px;margin-top:16px">
+<button class="btn btn-danger" style="flex:1" onclick="app.deleteCurrentPoint()" id="btnDeletePoint">Eliminar</button>
+<button class="btn btn-primary" style="flex:1" onclick="app.savePointEdit()" id="btnSavePoint">Guardar</button>
+</div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL='https://hkkxgzdopvimgarmxdnj.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+const texts={
+ca:{appTitle:'🌲 Camins Forestals',navList:'Llistat',navEditor:'Tracat',navProfile:'Perfil',navSections:'Seccions',navCalcs:'Calcs',newPath:'Nou Cami',importQGIS:'Importar QGIS',noPaths:'Encara no tens cap cami creat.',pathName:'Nom del cami',pathDesc:'Descripcio',cancel:'Cancelar',create:'Crear',station:'Estacio',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ample calcada (m)',slopeType:'Tipus de seccio',cut:'En tall',fill:'En rebliment',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Afegir punt',calcProfile:'Calcular perfil',importFile:'Importar fitxer',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendent max.',minSlope:'Pendent min.',avgSlope:'Pendent mitj.',cvSlope:'CV Pendents',cutVol:'Vol. tall',fillVol:'Vol. reblim.',balance:'Balanc',points:'Punts',distance:'Distancia',slope:'Pendent',elevationData:'Dades elevacio',elevationAuto:'Auto (API)',elevationManual:'Manual',elevationTip:'Clica al mapa per afegir punts. Les cotes es poden obtenir automaticament de l API d elevacio o introduir-se manualment.',importTitle:'Importar des de QGIS',importHelp:'Exporta la teva polilinia des de QGIS com a GeoJSON (.geojson) o GPX (.gpx).',importTip:'A QGIS, selecciona la capa → Guardar entitats com → Format GeoJSON.',dropText:'Arrossega un fitxer GeoJSON o GPX or fes clic per seleccionar',saved:'Guardat correctament',error:'Error',offline:'Mode offline',online:'Connectat',deleteConfirm:'Eliminar cami?',yes:'Si',no:'No',sectionView:'Vista de seccions',noPoints:'Afegeix punts al tracat primer.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Tornar al Hub',savedLocal:'Guardat en local',gettingElevation:'Obtenint elevacio...',elevationError:'No s ha pogut obtenir l elevacio',km:'km',m:'m',percent:'%',m3:'m3'},
+es:{appTitle:'🌲 Caminos Forestales',navList:'Listado',navEditor:'Trazado',navProfile:'Perfil',navSections:'Secciones',navCalcs:'Calculos',newPath:'Nuevo Camino',importQGIS:'Importar QGIS',noPaths:'Aun no tienes ningun camino creado.',pathName:'Nombre del camino',pathDesc:'Descripcion',cancel:'Cancelar',create:'Crear',station:'Estacion',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ancho calzada (m)',slopeType:'Tipo de seccion',cut:'En corte',fill:'En relleno',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Anadir punto',calcProfile:'Calcular perfil',importFile:'Importar archivo',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendiente max.',minSlope:'Pendiente min.',avgSlope:'Pendiente media',cvSlope:'CV Pendientes',cutVol:'Vol. corte',fillVol:'Vol. relleno',balance:'Balance',points:'Puntos',distance:'Distancia',slope:'Pendiente',elevationData:'Datos elevacion',elevationAuto:'Auto (API)',elevationManual:'Manual',elevationTip:'Clica en el mapa para anadir puntos. Las cotas se pueden obtener automaticamente de la API de elevacion o introducirse manualmente.',importTitle:'Importar desde QGIS',importHelp:'Exporta tu polilinea desde QGIS como GeoJSON (.geojson) o GPX (.gpx).',importTip:'En QGIS, selecciona la capa → Guardar entidades como → Formato GeoJSON.',dropText:'Arrastra un archivo GeoJSON o GPX o haz clic para seleccionar',saved:'Guardado correctamente',error:'Error',offline:'Modo offline',online:'Conectado',deleteConfirm:'Eliminar camino?',yes:'Si',no:'No',sectionView:'Vista de secciones',noPoints:'Anade puntos al trazado primero.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Volver al Hub',savedLocal:'Guardado en local',gettingElevation:'Obteniendo elevacion...',elevationError:'No se pudo obtener la elevacion',km:'km',m:'m',percent:'%',m3:'m3'},
+en:{appTitle:'🌲 Forest Paths',navList:'List',navEditor:'Trace',navProfile:'Profile',navSections:'Sections',navCalcs:'Calculations',newPath:'New Path',importQGIS:'Import QGIS',noPaths:'You have no paths created yet.',pathName:'Path name',pathDesc:'Description',cancel:'Cancel',create:'Create',station:'Station',elevation:'Elevation Z (m)',coordX:'X Coordinate',coordY:'Y Coordinate',width:'Road width (m)',slopeType:'Section type',cut:'Cut',fill:'Fill',mixed:'Mixed',deletePoint:'Delete',savePoint:'Save',addPoint:'+ Add point',calcProfile:'Calculate profile',importFile:'Import file',calculate:'Calculate',exportCSV:'Export CSV',totalLength:'Total length',maxSlope:'Max slope',minSlope:'Min slope',avgSlope:'Avg slope',cvSlope:'Slope CV',cutVol:'Cut vol.',fillVol:'Fill vol.',balance:'Balance',points:'Points',distance:'Distance',slope:'Slope',elevationData:'Elevation data',elevationAuto:'Auto (API)',elevationManual:'Manual',elevationTip:'Click on the map to add points. Elevations can be fetched automatically from the elevation API or entered manually.',importTitle:'Import from QGIS',importHelp:'Export your polyline from QGIS as GeoJSON (.geojson) or GPX (.gpx).',importTip:'In QGIS, select layer → Save Features As → GeoJSON format.',dropText:'Drop a GeoJSON or GPX file here or click to select',saved:'Saved successfully',error:'Error',offline:'Offline mode',online:'Connected',deleteConfirm:'Delete path?',yes:'Yes',no:'No',sectionView:'Section view',noPoints:'Add points to the trace first.',edit:'Edit',duplicate:'Duplicate',delete:'Delete',backToHub:'Back to Hub',savedLocal:'Saved locally',gettingElevation:'Getting elevation...',elevationError:'Could not get elevation',km:'km',m:'m',percent:'%',m3:'m3'}
+};
+
+let T=texts.ca;
+let currentLang='ca';
+
+const app={
+user:null,paths:[],currentPath:null,currentView:'list',map:null,mapMarkers:[],mapPolyline:null,editingPointIndex:-1,isOnline:false,isSyncing:false,
+
+init(){this.detectLanguage();this.setupSupabaseAuth();this.setupOfflineProtocol();this.loadLocalPaths();this.render();},
+
+detectLanguage(){const lang=localStorage.getItem('ptgmf_lang')||'ca';currentLang=['ca','es','en'].includes(lang)?lang:'ca';T=texts[currentLang];document.documentElement.lang=currentLang;this.updateUITexts();},
+
+updateUITexts(){document.getElementById('appTitle').textContent=T.appTitle;document.getElementById('navList').textContent=T.navList;document.getElementById('navEditor').textContent=T.navEditor;document.getElementById('navProfile').textContent=T.navProfile;document.getElementById('navSections').textContent=T.navSections;document.getElementById('navCalcs').textContent=T.navCalcs;document.getElementById('modalNewPathTitle').textContent=T.newPath;document.getElementById('labelPathName').textContent=T.pathName;document.getElementById('labelPathDesc').textContent=T.pathDesc;document.getElementById('btnCancel').textContent=T.cancel;document.getElementById('btnCreate').textContent=T.create;document.getElementById('modalImportTitle').textContent=T.importTitle;document.getElementById('importHelp').textContent=T.importHelp;document.getElementById('importTip').textContent=T.importTip;document.getElementById('dropText').innerHTML=T.dropText.replace(/
+/g,'<br>');document.getElementById('modalEditTitle').textContent=T.edit;document.getElementById('labelStation').textContent=T.station;document.getElementById('labelElevation').textContent=T.elevation;document.getElementById('labelCoordX').textContent=T.coordX;document.getElementById('labelCoordY').textContent=T.coordY;document.getElementById('labelWidth').textContent=T.width;document.getElementById('labelSlopeType').textContent=T.slopeType;document.getElementById('btnDeletePoint').textContent=T.deletePoint;document.getElementById('btnSavePoint').textContent=T.savePoint;const opts=document.getElementById('editSlopeType').options;opts[0].text=T.cut;opts[1].text=T.fill;opts[2].text=T.mixed;},
+
+setupSupabaseAuth(){supabase.auth.onAuthStateChange((event,session)=>{if(session?.user){this.user=session.user;this.isOnline=true;this.updateSyncDot('online');showToast(T.online,'success');this.syncPaths();}else{this.user=null;this.isOnline=false;this.updateSyncDot('offline');}});supabase.auth.getSession().then(({data:{session}})=>{if(session?.user){this.user=session.user;this.isOnline=true;this.updateSyncDot('online');this.syncPaths();}});},
+
+setupOfflineProtocol(){window.addEventListener('online',()=>{this.isOnline=true;this.updateSyncDot('online');showToast(T.online,'success');this.syncPaths();});window.addEventListener('offline',()=>{this.isOnline=false;this.updateSyncDot('offline');showToast(T.offline,'warning');});},
+
+updateSyncDot(state){document.getElementById('syncDot').className='sync-dot '+state;},
+
+async dbOperation(operation,fallback=null){return new Promise((resolve)=>{const timeout=setTimeout(()=>{this.updateSyncDot('offline');resolve(fallback);},8000);operation().then(result=>{clearTimeout(timeout);resolve(result);}).catch(err=>{clearTimeout(timeout);console.error('DB Error:',err);this.updateSyncDot('error');resolve(fallback);});});},
+
+loadLocalPaths(){try{const stored=localStorage.getItem('forest_paths');if(stored)this.paths=JSON.parse(stored);}catch(e){this.paths=[];}},
+
+saveLocalPaths(){try{localStorage.setItem('forest_paths',JSON.stringify(this.paths));}catch(e){console.error('Error saving:',e);}},
+
+async syncPaths(){if(!this.user||!this.isOnline)return;this.updateSyncDot('syncing');for(const path of this.paths){if(!path.synced){await this.dbOperation(async()=>{const{error}=await supabase.from('forest_paths').upsert({id:path.id,user_id:this.user.id,name:path.name,description:path.description,path_data:path.points,cross_sections:path.sections,calculations:path.calculations,updated_at:new Date().toISOString()});if(!error)path.synced=true;});}}const remote=await this.dbOperation(async()=>{const{data}=await supabase.from('forest_paths').select('*').eq('user_id',this.user.id).order('updated_at',{ascending:false});return data||[];},[]);for(const r of remote){if(!this.paths.find(p=>p.id===r.id)){this.paths.push({id:r.id,name:r.name,description:r.description,points:r.path_data||[],sections:r.cross_sections||[],calculations:r.calculations||null,created_at:r.created_at,updated_at:r.updated_at,synced:true});}}this.saveLocalPaths();this.updateSyncDot(this.isOnline?'online':'offline');if(this.currentView==='list')this.renderList();},
+
+createNewPath(){const name=document.getElementById('newPathName').value.trim();const desc=document.getElementById('newPathDesc').value.trim();if(!name){showToast(T.error+': '+T.pathName,'error');return;}const newPath={id:crypto.randomUUID(),name,description:desc,points:[],sections:[],calculations:null,created_at:new Date().toISOString(),updated_at:new Date().toISOString(),synced:false};this.paths.unshift(newPath);this.currentPath=newPath;this.saveLocalPaths();this.closeModal('newPathModal');document.getElementById('newPathName').value='';document.getElementById('newPathDesc').value='';showToast(T.savedLocal,'success');this.switchView('editor');},
+
+deletePath(id){if(!confirm(T.deleteConfirm))return;this.paths=this.paths.filter(p=>p.id!==id);if(this.currentPath?.id===id)this.currentPath=null;this.saveLocalPaths();if(this.isOnline&&this.user){this.dbOperation(async()=>{await supabase.from('forest_paths').delete().eq('id',id);});}showToast(T.delete,'warning');this.renderList();},
+
+duplicatePath(id){const original=this.paths.find(p=>p.id===id);if(!original)return;const copy={...original,id:crypto.randomUUID(),name:original.name+' (copia)',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),synced:false};this.paths.unshift(copy);this.saveLocalPaths();showToast(T.savedLocal,'success');this.renderList();},
+
+openPath(id){this.currentPath=this.paths.find(p=>p.id===id)||null;if(this.currentPath)this.switchView('editor');},
+
+saveCurrentPath(){if(!this.currentPath){showToast('No hi ha cami actiu','warning');return;}this.currentPath.updated_at=new Date().toISOString();this.currentPath.synced=false;this.saveLocalPaths();showToast(T.savedLocal,'success');if(this.isOnline&&this.user)this.syncPaths();},
+
+addPoint(lat,lng,ele=null){if(!this.currentPath)return;const points=this.currentPath.points;const station=this.calculateStation(points.length>0?points[points.length-1]:null,lat,lng);points.push({station:this.formatStation(station),lat,lng,elevation:ele,width:3.5,slopeType:'cut',distance:station,slope:0});this.recalculateDistancesAndSlopes();this.saveLocalPaths();this.renderEditor();},
+
+calculateStation(prevPoint,lat,lng){if(!prevPoint)return 0;return prevPoint.distance+this.haversine(prevPoint.lat,prevPoint.lng,lat,lng);},
+
+haversine(lat1,lng1,lat2,lng2){const R=6371000;const dLat=(lat2-lat1)*Math.PI/180;const dLng=(lng2-lng1)*Math.PI/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));},
+
+formatStation(meters){const km=Math.floor(meters/1000);const m=Math.floor(meters%1000);return`${km}+${String(m).padStart(3,'0')}`;},
+
+recalculateDistancesAndSlopes(){const points=this.currentPath.points;for(let i=0;i<points.length;i++){if(i===0){points[i].distance=0;points[i].slope=0;}else{const dist=this.haversine(points[i-1].lat,points[i-1].lng,points[i].lat,points[i].lng);points[i].distance=points[i-1].distance+dist;const eleDiff=(points[i].elevation||0)-(points[i-1].elevation||0);points[i].slope=dist>0?(eleDiff/dist)*100:0;points[i].station=this.formatStation(points[i].distance);}}},
+
+async fetchElevation(lat,lng){showToast(T.gettingElevation,'info');try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),8000);const response=await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`,{signal:controller.signal});clearTimeout(timeout);if(response.ok){const data=await response.json();if(data.results&&data.results[0])return data.results[0].elevation;}}catch(e){console.warn('Elevation API failed:',e);}showToast(T.elevationError,'warning');return null;},
+
+async fetchElevationsForAll(){if(!this.currentPath)return;this.updateSyncDot('syncing');for(const point of this.currentPath.points){if(point.elevation==null){const ele=await this.fetchElevation(point.lat,point.lng);if(ele!==null)point.elevation=Math.round(ele*100)/100;}}this.recalculateDistancesAndSlopes();this.saveLocalPaths();this.updateSyncDot(this.isOnline?'online':'offline');this.renderEditor();showToast('Elevacions actualitzades','success');},
+
+handleFileImport(event){const file=event.target.files[0];if(!file)return;this.parseFile(file);},
+
+parseFile(file){const reader=new FileReader();reader.onload=(e)=>{try{const content=e.target.result;let points=[];if(file.name.endsWith('.gpx'))points=this.parseGPX(content);else points=this.parseGeoJSON(content);if(points.length===0){showToast("No s'han trobat punts al fitxer",'error');return;}const newPath={id:crypto.randomUUID(),name:file.name.replace(/\.[^/.]+$/,''),description:'Importat des de QGIS',points:points.map(p=>({station:this.formatStation(0),lat:p.lat,lng:p.lng,elevation:p.elevation,width:3.5,slopeType:'cut',distance:0,slope:0})),sections:[],calculations:null,created_at:new Date().toISOString(),updated_at:new Date().toISOString(),synced:false};this.paths.unshift(newPath);this.currentPath=newPath;this.recalculateDistancesAndSlopes();this.saveLocalPaths();this.closeModal('importModal');showToast(`Importats ${points.length} punts`,'success');this.switchView('editor');}catch(err){console.error('Import error:',err);showToast(T.error+': '+err.message,'error');}};reader.readAsText(file);},
+
+parseGeoJSON(content){const geojson=JSON.parse(content);const points=[];if(geojson.type==='FeatureCollection'){geojson.features.forEach(f=>{if(f.geometry.type==='LineString'){f.geometry.coordinates.forEach(c=>{points.push({lng:c[0],lat:c[1],elevation:c.length>=3?c[2]:null});});}else if(f.geometry.type==='MultiLineString'){f.geometry.coordinates.forEach(line=>{line.forEach(c=>{points.push({lng:c[0],lat:c[1],elevation:c.length>=3?c[2]:null});});});}});}return points;},
+
+parseGPX(xmlContent){const parser=new DOMParser();const doc=parser.parseFromString(xmlContent,'text/xml');const trackPoints=doc.querySelectorAll('trkpt');const points=[];trackPoints.forEach(pt=>{const lat=parseFloat(pt.getAttribute('lat'));const lng=parseFloat(pt.getAttribute('lon'));const eleNode=pt.querySelector('ele');const elevation=eleNode?parseFloat(eleNode.textContent):null;points.push({lat,lng,elevation});});return points;},
+
+calculateAll(){if(!this.currentPath||this.currentPath.points.length<2){showToast(T.noPoints,'warning');return;}const points=this.currentPath.points;const slopes=points.slice(1).map(p=>p.slope);const totalLength=points[points.length-1].distance;const maxSlope=Math.max(...slopes.map(Math.abs));const minSlope=Math.min(...slopes.map(Math.abs));const avgSlope=slopes.reduce((a,b)=>a+Math.abs(b),0)/slopes.length;const mean=avgSlope;const variance=slopes.reduce((sum,s)=>sum+(Math.abs(s)-mean)**2,0)/slopes.length;const stdDev=Math.sqrt(variance);const cv=mean>0?(stdDev/mean)*100:0;let cutVol=0,fillVol=0;for(let i=1;i<points.length;i++){const dist=points[i].distance-points[i-1].distance;const avgWidth=(points[i].width+points[i-1].width)/2;const eleDiff=(points[i].elevation||0)-(points[i-1].elevation||0);const area=avgWidth*0.5;const vol=area*dist;if(eleDiff>0)fillVol+=vol;else cutVol+=vol;}this.currentPath.calculations={totalLength,maxSlope,minSlope,avgSlope,cv,cutVol,fillVol,balance:fillVol-cutVol};this.currentPath.synced=false;this.saveLocalPaths();showToast(T.calculate+' OK','success');this.renderCalcs();},
+
+exportCSV(){if(!this.currentPath||this.currentPath.points.length===0)return;let csv='Estacio,Latitud,Longitud,Cota_Z,Distancia_m,Pendent_pct,Ample_m,Tipus
+';for(const p of this.currentPath.points){csv+=`${p.station},${p.lat},${p.lng},${p.elevation||''},${p.distance.toFixed(2)},${p.slope.toFixed(2)},${p.width},${p.slopeType}
+`;}const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`${this.currentPath.name}_punts.csv`;a.click();URL.revokeObjectURL(url);showToast('CSV exportat','success');},
+
+render(){switch(this.currentView){case'list':this.renderList();break;case'editor':this.renderEditor();break;case'profile':this.renderProfile();break;case'sections':this.renderSections();break;case'calcs':this.renderCalcs();break;}this.updateNav();},
+
+switchView(view){this.currentView=view;this.render();},
+
+updateNav(){document.querySelectorAll('.nav-item').forEach(el=>{el.classList.toggle('active',el.dataset.view===this.currentView);});},
+
+renderList(){const container=document.getElementById('mainContent');let html=`<div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn btn-primary" style="flex:1" onclick="app.openModal('newPathModal')"><span>+</span> ${T.newPath}</button><button class="btn btn-secondary" onclick="app.openModal('importModal')">📁 ${T.importQGIS}</button></div>`;if(this.paths.length===0){html+=`<div class="card" style="text-align:center;padding:40px"><div style="font-size:48px;margin-bottom:12px">🛤️</div><p style="color:var(--text-muted);font-size:14px">${T.noPaths}</p></div>`;}else{for(const path of this.paths){const ptCount=path.points?.length||0;const length=path.points?.length>1?(path.points[path.points.length-1].distance/1000).toFixed(2)+' '+T.km:'0 '+T.km;const synced=path.synced?'✓':'○';html+=`<div class="path-item" onclick="app.openPath('${path.id}')"><div class="path-item-info"><h3>${path.name} <span style="font-size:11px;color:var(--text-muted)">${synced}</span></h3><p>${ptCount} ${T.points.toLowerCase()} · ${length}</p></div><div class="path-item-actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-secondary" onclick="app.duplicatePath('${path.id}')">${T.duplicate}</button><button class="btn btn-sm btn-danger" onclick="app.deletePath('${path.id}')">${T.delete}</button></div></div>`;}}container.innerHTML=html;},
+
+renderEditor(){const container=document.getElementById('mainContent');if(!this.currentPath){container.innerHTML=`<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">${T.noPaths}</p><button class="btn btn-primary" style="margin-top:16px" onclick="app.switchView('list')">${T.navList}</button></div>`;return;}const path=this.currentPath;let html=`<div class="card"><div class="card-title">${path.name}</div><div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${path.description||''}</div><div id="map"></div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-sm btn-secondary" onclick="app.fetchElevationsForAll()">🏔️ ${T.elevationAuto}</button><button class="btn btn-sm btn-secondary" onclick="document.getElementById('fileInput').click()">📁 ${T.importFile}</button><button class="btn btn-sm btn-danger" onclick="app.clearAllPoints()">🗑️ Esborrar punts</button></div><p style="font-size:11px;color:var(--text-muted);margin-top:8px">${T.elevationTip}</p></div><div class="card"><div class="card-title">📍 ${T.points} (${path.points.length})</div><div class="table-container"><table class="data-table"><thead><tr><th>#</th><th>${T.station}</th><th>${T.elevation}</th><th>${T.distance}</th><th>${T.slope}</th><th></th></tr></thead><tbody>`;path.points.forEach((p,i)=>{const slopeClass=Math.abs(p.slope)>12?'slope-red':Math.abs(p.slope)>8?'slope-yellow':'slope-green';html+=`<tr onclick="app.editPoint(${i})"><td>${i+1}</td><td>${p.station}</td><td>${p.elevation!=null?p.elevation.toFixed(2):'-'}</td><td>${(p.distance/1000).toFixed(3)} ${T.km}</td><td><span class="slope-badge ${slopeClass}">${p.slope.toFixed(1)}${T.percent}</span></td><td style="text-align:right">✏️</td></tr>`;});html+=`</tbody></table></div></div>`;container.innerHTML=html;this.initMap();},
+
+initMap(){if(!this.currentPath)return;const mapEl=document.getElementById('map');if(!mapEl)return;this.map=L.map('map').setView([41.7,1.8],8);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(this.map);this.mapMarkers.forEach(m=>this.map.removeLayer(m));this.mapMarkers=[];if(this.mapPolyline)this.map.removeLayer(this.mapPolyline);const latlngs=[];this.currentPath.points.forEach((p,i)=>{const marker=L.marker([p.lat,p.lng]).addTo(this.map);marker.bindPopup(`${T.station}: ${p.station}<br>Cota: ${p.elevation||'-'}m`);this.mapMarkers.push(marker);latlngs.push([p.lat,p.lng]);});if(latlngs.length>1){this.mapPolyline=L.polyline(latlngs,{color:'#4ade80',weight:4}).addTo(this.map);this.map.fitBounds(this.mapPolyline.getBounds().pad(0.1));}else if(latlngs.length===1){this.map.setView(latlngs[0],16);}this.map.on('click',async(e)=>{const{lat,lng}=e.latlng;let ele=null;if(this.isOnline)ele=await this.fetchElevation(lat,lng);this.addPoint(lat,lng,ele);showToast(`${T.station}: ${this.currentPath.points[this.currentPath.points.length-1].station}`,'success');});},
+
+clearAllPoints(){if(!this.currentPath)return;if(!confirm('Eliminar tots els punts?'))return;this.currentPath.points=[];this.saveLocalPaths();this.renderEditor();},
+
+editPoint(index){this.editingPointIndex=index;const p=this.currentPath.points[index];document.getElementById('editStation').value=p.station;document.getElementById('editElevation').value=p.elevation!=null?p.elevation:'';document.getElementById('editCoordX').value=p.lng;document.getElementById('editCoordY').value=p.lat;document.getElementById('editWidth').value=p.width;document.getElementById('editSlopeType').value=p.slopeType;this.openModal('editPointModal');},
+
+savePointEdit(){if(this.editingPointIndex<0)return;const p=this.currentPath.points[this.editingPointIndex];p.station=document.getElementById('editStation').value;p.elevation=parseFloat(document.getElementById('editElevation').value)||null;p.lng=parseFloat(document.getElementById('editCoordX').value);p.lat=parseFloat(document.getElementById('editCoordY').value);p.width=parseFloat(document.getElementById('editWidth').value)||3.5;p.slopeType=document.getElementById('editSlopeType').value;this.recalculateDistancesAndSlopes();this.saveLocalPaths();this.closeModal('editPointModal');this.renderEditor();showToast(T.saved,'success');},
+
+deleteCurrentPoint(){if(this.editingPointIndex<0)return;this.currentPath.points.splice(this.editingPointIndex,1);this.recalculateDistancesAndSlopes();this.saveLocalPaths();this.closeModal('editPointModal');this.renderEditor();},
+
+renderProfile(){const container=document.getElementById('mainContent');if(!this.currentPath||this.currentPath.points.length<2){container.innerHTML=`<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">${T.noPoints}</p></div>`;return;}const points=this.currentPath.points;const canvasId='profileCanvas';container.innerHTML=`<div class="card"><div class="card-title">📈 Perfil Longitudinal</div><div class="chart-container"><canvas id="${canvasId}" class="chart-canvas"></canvas></div><div style="display:flex;gap:12px;margin-top:12px;justify-content:center;flex-wrap:wrap"><span class="slope-badge slope-green">&lt;8% OK</span><span class="slope-badge slope-yellow">8-12% ⚠️</span><span class="slope-badge slope-red">&gt;12% ❌</span></div></div><div class="card"><div class="card-title">📊 Taula de Pendents</div><div class="table-container"><table class="data-table"><thead><tr><th>Tram</th><th>${T.distance}</th><th>Desnivell</th><th>${T.slope}</th><th>Estat</th></tr></thead><tbody>${points.slice(1).map((p,i)=>{const prev=points[i];const dist=p.distance-prev.distance;const desn=(p.elevation||0)-(prev.elevation||0);const slope=p.slope;const status=Math.abs(slope)>12?'<span class="slope-badge slope-red">❌</span>':Math.abs(slope)>8?'<span class="slope-badge slope-yellow">⚠️</span>':'<span class="slope-badge slope-green">✓</span>';return`<tr><td>${prev.station} → ${p.station}</td><td>${dist.toFixed(1)} m</td><td>${desn>0?'+':''}${desn.toFixed(2)} m</td><td><span class="slope-badge ${Math.abs(slope)>12?'slope-red':Math.abs(slope)>8?'slope-yellow':'slope-green'}">${slope.toFixed(1)}%</span></td><td>${status}</td></tr>`;}).join('')}</tbody></table></div></div>`;setTimeout(()=>this.drawProfileChart(canvasId),100);},
+
+drawProfileChart(canvasId){const canvas=document.getElementById(canvasId);if(!canvas)return;const ctx=canvas.getContext('2d');const points=this.currentPath.points;const rect=canvas.parentElement.getBoundingClientRect();canvas.width=rect.width*2;canvas.height=400;canvas.style.width=rect.width+'px';canvas.style.height='200px';ctx.scale(2,2);const w=rect.width,h=200;const padding={top:20,right:20,bottom:30,left:40};const chartW=w-padding.left-padding.right;const chartH=h-padding.top-padding.bottom;const eles=points.map(p=>p.elevation).filter(e=>e!=null);if(eles.length===0)return;const minEle=Math.min(...eles)-5;const maxEle=Math.max(...eles)+5;const maxDist=points[points.length-1].distance;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#2d5a40';ctx.lineWidth=0.5;ctx.setLineDash([3,3]);for(let i=0;i<=5;i++){const y=padding.top+(chartH*i/5);ctx.beginPath();ctx.moveTo(padding.left,y);ctx.lineTo(w-padding.right,y);ctx.stroke();const eleVal=maxEle-((maxEle-minEle)*i/5);ctx.fillStyle='#6b9e7c';ctx.font='10px DM Mono';ctx.textAlign='right';ctx.fillText(eleVal.toFixed(0)+'m',padding.left-5,y+3);}ctx.setLineDash([]);ctx.beginPath();ctx.strokeStyle='#4ade80';ctx.lineWidth=2;points.forEach((p,i)=>{if(p.elevation==null)return;const x=padding.left+(p.distance/maxDist)*chartW;const y=padding.top+((maxEle-p.elevation)/(maxEle-minEle))*chartH;if(i===0||points[i-1].elevation==null)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();ctx.beginPath();points.forEach((p,i)=>{if(p.elevation==null)return;const x=padding.left+(p.distance/maxDist)*chartW;const y=padding.top+((maxEle-p.elevation)/(maxEle-minEle))*chartH;if(i===0||points[i-1].elevation==null)ctx.moveTo(x,y);else ctx.lineTo(x,y);});const lastX=padding.left+chartW;const lastY=padding.top+chartH;ctx.lineTo(lastX,lastY);ctx.lineTo(padding.left,lastY);ctx.closePath();ctx.fillStyle='rgba(74,222,128,0.1)';ctx.fill();points.forEach((p,i)=>{if(p.elevation==null)return;const x=padding.left+(p.distance/maxDist)*chartW;const y=padding.top+((maxEle-p.elevation)/(maxEle-minEle))*chartH;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle='#4ade80';ctx.fill();ctx.strokeStyle='#11291d';ctx.lineWidth=1.5;ctx.stroke();});ctx.fillStyle='#6b9e7c';ctx.font='10px DM Mono';ctx.textAlign='center';for(let i=0;i<=4;i++){const dist=(maxDist*i/4)/1000;const x=padding.left+(chartW*i/4);ctx.fillText(dist.toFixed(2)+'km',x,h-10);}},
+
+renderSections(){const container=document.getElementById('mainContent');if(!this.currentPath||this.currentPath.points.length===0){container.innerHTML=`<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">${T.noPoints}</p></div>`;return;}let html=`<div class="card"><div class="card-title">🔲 ${T.sectionView}</div>`;this.currentPath.points.forEach((p,i)=>{const canvasId=`sectionCanvas_${i}`;html+=`<div style="margin-bottom:16px;padding:12px;background:var(--bg-primary);border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:600;color:var(--accent);font-size:13px">${T.station}: ${p.station}</span><span class="slope-badge ${p.slopeType==='cut'?'slope-green':p.slopeType==='fill'?'slope-yellow':'slope-red'}">${p.slopeType==='cut'?T.cut:p.slopeType==='fill'?T.fill:T.mixed}</span></div><canvas id="${canvasId}" style="width:100%;height:120px;background:var(--bg-secondary);border-radius:8px"></canvas><div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text-muted)"><span>Ample: ${p.width}m</span><span>Cota: ${p.elevation!=null?p.elevation.toFixed(2)+'m':'-'}</span><span>Pendent: ${p.slope.toFixed(1)}%</span></div></div>`;});html+=`</div>`;container.innerHTML=html;setTimeout(()=>{this.currentPath.points.forEach((p,i)=>{this.drawSectionCanvas(`sectionCanvas_${i}`,p);});},100);},
+
+drawSectionCanvas(canvasId,point){const canvas=document.getElementById(canvasId);if(!canvas)return;const ctx=canvas.getContext('2d');const rect=canvas.parentElement.getBoundingClientRect();canvas.width=rect.width*2;canvas.height=240;canvas.style.width=rect.width+'px';canvas.style.height='120px';ctx.scale(2,2);const w=rect.width,h=120;const centerY=h*0.6;const roadWidth=Math.min(point.width*8,w*0.5);const roadHalf=roadWidth/2;const centerX=w/2;ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.moveTo(0,centerY+20);ctx.lineTo(centerX-roadHalf-30,centerY);ctx.lineTo(centerX+roadHalf+30,centerY);ctx.lineTo(w,centerY+20);ctx.strokeStyle='#6b9e7c';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(0,centerY+20);ctx.lineTo(centerX-roadHalf-30,centerY);ctx.lineTo(centerX+roadHalf+30,centerY);ctx.lineTo(w,centerY+20);ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle=point.slopeType==='fill'?'rgba(245,158,11,0.2)':'rgba(74,222,128,0.1)';ctx.fill();ctx.beginPath();ctx.moveTo(centerX-roadHalf,centerY-5);ctx.lineTo(centerX+roadHalf,centerY-5);ctx.strokeStyle='#a7c4b0';ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.setLineDash([5,5]);ctx.moveTo(centerX,centerY-5);ctx.lineTo(centerX,centerY-5);ctx.strokeStyle='#f59e0b';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#a7c4b0';ctx.font='10px DM Sans';ctx.textAlign='center';ctx.fillText(`${point.width}m`,centerX,centerY-12);ctx.fillStyle='#6b9e7c';ctx.font='9px DM Mono';ctx.fillText(`Z=${point.elevation!=null?point.elevation.toFixed(1):'?'}`,centerX,centerY+35);},
+
+renderCalcs(){const container=document.getElementById('mainContent');if(!this.currentPath||this.currentPath.points.length<2){container.innerHTML=`<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">${T.noPoints}</p></div>`;return;}if(!this.currentPath.calculations)this.calculateAll();const c=this.currentPath.calculations||{};const pts=this.currentPath.points;container.innerHTML=`<div class="card"><div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn btn-primary" style="flex:1" onclick="app.calculateAll()">🧮 ${T.calculate}</button><button class="btn btn-secondary" onclick="app.exportCSV()">📄 ${T.exportCSV}</button></div><div class="stat-grid"><div class="stat-card"><div class="stat-value">${(c.totalLength/1000||0).toFixed(2)}</div><div class="stat-unit">${T.km}</div><div class="stat-label">${T.totalLength}</div></div><div class="stat-card"><div class="stat-value" style="color:var(--danger)">${(c.maxSlope||0).toFixed(1)}</div><div class="stat-unit">${T.percent}</div><div class="stat-label">${T.maxSlope}</div></div><div class="stat-card"><div class="stat-value">${(c.minSlope||0).toFixed(1)}</div><div class="stat-unit">${T.percent}</div><div class="stat-label">${T.minSlope}</div></div><div class="stat-card"><div class="stat-value" style="color:var(--accent)">${(c.avgSlope||0).toFixed(1)}</div><div class="stat-unit">${T.percent}</div><div class="stat-label">${T.avgSlope}</div></div><div class="stat-card"><div class="stat-value" style="color:var(--info)">${(c.cv||0).toFixed(1)}</div><div class="stat-unit">${T.percent}</div><div class="stat-label">${T.cvSlope}</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning)">${(c.cutVol||0).toFixed(0)}</div><div class="stat-unit">${T.m3}</div><div class="stat-label">${T.cutVol}</div></div><div class="stat-card"><div class="stat-value" style="color:var(--accent-dim)">${(c.fillVol||0).toFixed(0)}</div><div class="stat-unit">${T.m3}</div><div class="stat-label">${T.fillVol}</div></div><div class="stat-card"><div class="stat-value" style="color:${(c.balance||0)>=0?'var(--accent)':'var(--danger)'}">${(c.balance||0)>=0?'+':''}${(c.balance||0).toFixed(0)}</div><div class="stat-unit">${T.m3}</div><div class="stat-label">${T.balance}</div></div></div></div><div class="card"><div class="card-title">📋 Resum del cami</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.8"><p><strong style="color:var(--accent)">Nom:</strong> ${this.currentPath.name}</p><p><strong style="color:var(--accent)">Descripcio:</strong> ${this.currentPath.description||'-'}</p><p><strong style="color:var(--accent)">Punts:</strong> ${pts.length}</p><p><strong style="color:var(--accent)">Data creacio:</strong> ${new Date(this.currentPath.created_at).toLocaleDateString()}</p><p><strong style="color:var(--accent)">Sincronitzat:</strong> ${this.currentPath.synced?'✓ Si':'○ Pendent'}</p></div></div>`;},
+
+openModal(id){document.getElementById(id).classList.add('open');},
+closeModal(id){document.getElementById(id).classList.remove('open');},
+
+setupDragDrop(){const dropZone=document.getElementById('fileDrop');if(!dropZone)return;['dragenter','dragover','dragleave','drop'].forEach(eventName=>{dropZone.addEventListener(eventName,(e)=>{e.preventDefault();e.stopPropagation();},false);});['dragenter','dragover'].forEach(eventName=>{dropZone.addEventListener(eventName,()=>dropZone.classList.add('dragover'),false);});['dragleave','drop'].forEach(eventName=>{dropZone.addEventListener(eventName,()=>dropZone.classList.remove('dragover'),false);});dropZone.addEventListener('drop',(e)=>{const files=e.dataTransfer.files;if(files.length>0)this.parseFile(files[0]);},false);}
+};
+
+function showToast(message,type='info',duration=3000){const container=document.getElementById('toastContainer');const toast=document.createElement('div');toast.className=`toast ${type}`;const icons={success:'✓',error:'✗',warning:'⚠',info:'ℹ'};toast.innerHTML=`<span style="font-size:16px">${icons[type]}</span> <span>${message}</span>`;container.appendChild(toast);setTimeout(()=>{toast.style.opacity='0';toast.style.transform='translateY(-20px)';setTimeout(()=>toast.remove(),300);},duration);}
+
+function tornarHub(){if(app.currentPath)app.saveCurrentPath();window.location.href='/';}
+
+document.addEventListener('DOMContentLoaded',()=>{app.init();const observer=new MutationObserver((mutations)=>{mutations.forEach((mutation)=>{if(mutation.target.id==='importModal'&&mutation.target.classList.contains('open'))app.setupDragDrop();});});observer.observe(document.getElementById('importModal'),{attributes:true,attributeFilter:['class']});});
+</script>
+</body>
+</html>
