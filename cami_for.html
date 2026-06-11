@@ -214,17 +214,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--t
 <div class="modal-overlay" id="mdtModal">
 <div class="modal">
 <div class="modal-header">
-<span class="modal-title">&#128208; Carregar MDT local (ASCII Grid)</span>
+<span class="modal-title">&#128208; Carregar MDT local</span>
 <button class="modal-close" onclick="app.closeModal('mdtModal')">&times;</button>
 </div>
 <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
-Puja un fitxer MDT de l'ICGC en format ASCII Grid (.asc) per obtenir elevacions locals sense connexio.
-El fitxer ha de tenir coordenades geografiques (lat/lng) o UTM.
+Puja un fitxer MDT local per obtenir elevacions sense connexio a internet.
+
 </p>
 <div class="file-drop" id="mdtDrop" onclick="document.getElementById('mdtInput').click()">
-<input type="file" id="mdtInput" accept=".asc,.txt" onchange="app.handleMDTUpload(event)">
+<input type="file" id="mdtInput" accept=".asc,.txt,.tif,.tiff,.img,.dem,.xyz,.csv,.hgt,.bil,.flt" onchange="app.handleMDTUpload(event)">
 <div style="font-size:28px;margin-bottom:8px">&#9968;&#65039;</div>
-<div>Arrossega un fitxer MDT (.asc)<br>o fes clic per seleccionar</div>
+<div>Arrossega un fitxer MDT<br><span style="font-size:11px;color:var(--text-muted)">.asc .txt .xyz .csv .dem .hgt .bil .flt .tif .tiff .img</span><br>o fes clic per seleccionar</div>
 </div>
 <div id="mdtInfo" style="margin-top:12px;font-size:12px;color:var(--text-secondary)"></div>
 </div>
@@ -232,9 +232,9 @@ El fitxer ha de tenir coordenades geografiques (lat/lng) o UTM.
 
 <script>
 const texts={
-ca:{appTitle:'\ud83c\udf32 Camins Forestals',navList:'Llistat',navEditor:'Tracat',navProfile:'Perfil',navSections:'Seccions',navCalcs:'Calcs',newPath:'Nou Cami',importQGIS:'Importar QGIS',noPaths:'Encara no tens cap cami creat.',pathName:'Nom del cami',pathDesc:'Descripcio',cancel:'Cancelar',create:'Crear',station:'Estacio',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ample calcada (m)',slopeType:'Tipus de seccio',cut:'En tall',fill:'En rebliment',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Afegir punt',calcProfile:'Calcular perfil',importFile:'Importar fitxer',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendent max.',minSlope:'Pendent min.',avgSlope:'Pendent mitj.',cvSlope:'CV Pendents',cutVol:'Vol. tall',fillVol:'Vol. reblim.',balance:'Balanc',points:'Punts',distance:'Distancia',slope:'Pendent',elevationData:'Dades elevacio',elevationAuto:'Auto (API)',elevationManual:'Manual',elevationTip:'Clica al mapa per afegir punts. Les cotes es poden obtenir automaticament de l API d elevacio o introduir-se manualment.',importTitle:'Importar des de QGIS',importHelp:'Exporta la teva polilinia des de QGIS com a GeoJSON (.geojson) o GPX (.gpx).',importTip:"A QGIS, selecciona la capa \u2192 Guardar entitats com \u2192 Format GeoJSON.",dropText:'Arrossega un fitxer GeoJSON o GPX<br>o fes clic per seleccionar',saved:'Guardat correctament',error:'Error',offline:'Mode offline',online:'Connectat',deleteConfirm:'Eliminar cami?',yes:'Si',no:'No',sectionView:'Vista de seccions',noPoints:'Afegeix punts al tracat primer.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Tornar al Hub',savedLocal:'Guardat en local',gettingElevation:'Obtenint elevacio...',elevationError:'No s ha pogut obtenir l elevacio',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Carregar MDT local',mdtLoaded:'MDT carregat',mdtError:'Error carregant MDT'},
-es:{appTitle:'\ud83c\udf32 Caminos Forestales',navList:'Listado',navEditor:'Trazado',navProfile:'Perfil',navSections:'Secciones',navCalcs:'Calculos',newPath:'Nuevo Camino',importQGIS:'Importar QGIS',noPaths:'Aun no tienes ningun camino creado.',pathName:'Nombre del camino',pathDesc:'Descripcion',cancel:'Cancelar',create:'Crear',station:'Estacion',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ancho calzada (m)',slopeType:'Tipo de seccion',cut:'En corte',fill:'En relleno',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Anadir punto',calcProfile:'Calcular perfil',importFile:'Importar archivo',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendiente max.',minSlope:'Pendiente min.',avgSlope:'Pendiente media',cvSlope:'CV Pendientes',cutVol:'Vol. corte',fillVol:'Vol. relleno',balance:'Balance',points:'Puntos',distance:'Distancia',slope:'Pendiente',elevationData:'Datos elevacion',elevationAuto:'Auto (API)',elevationManual:'Manual',elevationTip:'Clica en el mapa para anadir puntos. Las cotas se pueden obtener automaticamente de la API de elevacion o introducirse manualmente.',importTitle:'Importar desde QGIS',importHelp:'Exporta tu polilinea desde QGIS como GeoJSON (.geojson) o GPX (.gpx).',importTip:"En QGIS, selecciona la capa \u2192 Guardar entidades como \u2192 Formato GeoJSON.",dropText:'Arrastra un archivo GeoJSON o GPX<br>o haz clic para seleccionar',saved:'Guardado correctamente',error:'Error',offline:'Modo offline',online:'Conectado',deleteConfirm:'Eliminar camino?',yes:'Si',no:'No',sectionView:'Vista de secciones',noPoints:'Anade puntos al trazado primero.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Volver al Hub',savedLocal:'Guardado en local',gettingElevation:'Obteniendo elevacion...',elevationError:'No se pudo obtener la elevacion',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Cargar MDT local',mdtLoaded:'MDT cargado',mdtError:'Error cargando MDT'},
-en:{appTitle:'\ud83c\udf32 Forest Paths',navList:'List',navEditor:'Trace',navProfile:'Profile',navSections:'Sections',navCalcs:'Calculations',newPath:'New Path',importQGIS:'Import QGIS',noPaths:'You have no paths created yet.',pathName:'Path name',pathDesc:'Description',cancel:'Cancel',create:'Create',station:'Station',elevation:'Elevation Z (m)',coordX:'X Coordinate',coordY:'Y Coordinate',width:'Road width (m)',slopeType:'Section type',cut:'Cut',fill:'Fill',mixed:'Mixed',deletePoint:'Delete',savePoint:'Save',addPoint:'+ Add point',calcProfile:'Calculate profile',importFile:'Import file',calculate:'Calculate',exportCSV:'Export CSV',totalLength:'Total length',maxSlope:'Max slope',minSlope:'Min slope',avgSlope:'Avg slope',cvSlope:'Slope CV',cutVol:'Cut vol.',fillVol:'Fill vol.',balance:'Balance',points:'Points',distance:'Distance',slope:'Slope',elevationData:'Elevation data',elevationAuto:'Auto (API)',elevationManual:'Manual',elevationTip:'Click on the map to add points. Elevations can be fetched automatically from the elevation API or entered manually.',importTitle:'Import from QGIS',importHelp:'Export your polyline from QGIS as GeoJSON (.geojson) or GPX (.gpx).',importTip:"In QGIS, select layer \u2192 Save Features As \u2192 GeoJSON format.",dropText:'Drop a GeoJSON or GPX file here<br>or click to select',saved:'Saved successfully',error:'Error',offline:'Offline mode',online:'Connected',deleteConfirm:'Delete path?',yes:'Yes',no:'No',sectionView:'Section view',noPoints:'Add points to the trace first.',edit:'Edit',duplicate:'Duplicate',delete:'Delete',backToHub:'Back to Hub',savedLocal:'Saved locally',gettingElevation:'Getting elevation...',elevationError:'Could not get elevation',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Load local DTM',mdtLoaded:'DTM loaded',mdtError:'Error loading DTM'}
+ca:{appTitle:'\ud83c\udf32 Camins Forestals',navList:'Llistat',navEditor:'Tracat',navProfile:'Perfil',navSections:'Seccions',navCalcs:'Calcs',newPath:'Nou Cami',importQGIS:'Importar QGIS',noPaths:'Encara no tens cap cami creat.',pathName:'Nom del cami',pathDesc:'Descripcio',cancel:'Cancelar',create:'Crear',station:'Estacio',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ample calcada (m)',slopeType:'Tipus de seccio',cut:'En tall',fill:'En rebliment',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Afegir punt',calcProfile:'Calcular perfil',importFile:'Importar fitxer',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendent max.',minSlope:'Pendent min.',avgSlope:'Pendent mitj.',cvSlope:'CV Pendents',cutVol:'Vol. tall',fillVol:'Vol. reblim.',balance:'Balanc',points:'Punts',distance:'Distancia',slope:'Pendent',elevationData:'Dades elevacio',elevationAuto:'Auto (ICGC/API)',elevationManual:'Manual',elevationTip:'Clica al mapa per afegir punts. Les cotes es poden obtenir automaticament via WCS de l ICGC (MDT 2m) o introduir-se manualment.',importTitle:'Importar des de QGIS',importHelp:'Exporta la teva polilinia des de QGIS com a GeoJSON (.geojson) o GPX (.gpx).',importTip:"A QGIS, selecciona la capa \u2192 Guardar entitats com \u2192 Format GeoJSON.",dropText:'Arrossega un fitxer GeoJSON o GPX<br>o fes clic per seleccionar',saved:'Guardat correctament',error:'Error',offline:'Mode offline',online:'Connectat',deleteConfirm:'Eliminar cami?',yes:'Si',no:'No',sectionView:'Vista de seccions',noPoints:'Afegeix punts al tracat primer.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Tornar al Hub',savedLocal:'Guardat en local',gettingElevation:'Obtenint elevacio...',elevationError:'No s ha pogut obtenir l elevacio',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Carregar MDT local',mdtLoaded:'MDT carregat',mdtError:'Error carregant MDT'},
+es:{appTitle:'\ud83c\udf32 Caminos Forestales',navList:'Listado',navEditor:'Trazado',navProfile:'Perfil',navSections:'Secciones',navCalcs:'Calculos',newPath:'Nuevo Camino',importQGIS:'Importar QGIS',noPaths:'Aun no tienes ningun camino creado.',pathName:'Nombre del camino',pathDesc:'Descripcion',cancel:'Cancelar',create:'Crear',station:'Estacion',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ancho calzada (m)',slopeType:'Tipo de seccion',cut:'En corte',fill:'En relleno',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Anadir punto',calcProfile:'Calcular perfil',importFile:'Importar archivo',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendiente max.',minSlope:'Pendiente min.',avgSlope:'Pendiente media',cvSlope:'CV Pendientes',cutVol:'Vol. corte',fillVol:'Vol. relleno',balance:'Balance',points:'Puntos',distance:'Distancia',slope:'Pendiente',elevationData:'Datos elevacion',elevationAuto:'Auto (ICGC/API)',elevationManual:'Manual',elevationTip:'Clica en el mapa para anadir puntos. Las cotas se pueden obtener automaticamente via WCS del ICGC (MDT 2m) o introducirse manualmente.',importTitle:'Importar desde QGIS',importHelp:'Exporta tu polilinea desde QGIS como GeoJSON (.geojson) o GPX (.gpx).',importTip:"En QGIS, selecciona la capa \u2192 Guardar entidades como \u2192 Formato GeoJSON.",dropText:'Arrastra un archivo GeoJSON o GPX<br>o haz clic para seleccionar',saved:'Guardado correctamente',error:'Error',offline:'Modo offline',online:'Conectado',deleteConfirm:'Eliminar camino?',yes:'Si',no:'No',sectionView:'Vista de secciones',noPoints:'Anade puntos al trazado primero.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Volver al Hub',savedLocal:'Guardado en local',gettingElevation:'Obteniendo elevacion...',elevationError:'No se pudo obtener la elevacion',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Cargar MDT local',mdtLoaded:'MDT cargado',mdtError:'Error cargando MDT'},
+en:{appTitle:'\ud83c\udf32 Forest Paths',navList:'List',navEditor:'Trace',navProfile:'Profile',navSections:'Sections',navCalcs:'Calculations',newPath:'New Path',importQGIS:'Import QGIS',noPaths:'You have no paths created yet.',pathName:'Path name',pathDesc:'Description',cancel:'Cancel',create:'Create',station:'Station',elevation:'Elevation Z (m)',coordX:'X Coordinate',coordY:'Y Coordinate',width:'Road width (m)',slopeType:'Section type',cut:'Cut',fill:'Fill',mixed:'Mixed',deletePoint:'Delete',savePoint:'Save',addPoint:'+ Add point',calcProfile:'Calculate profile',importFile:'Import file',calculate:'Calculate',exportCSV:'Export CSV',totalLength:'Total length',maxSlope:'Max slope',minSlope:'Min slope',avgSlope:'Avg slope',cvSlope:'Slope CV',cutVol:'Cut vol.',fillVol:'Fill vol.',balance:'Balance',points:'Points',distance:'Distance',slope:'Slope',elevationData:'Elevation data',elevationAuto:'Auto (ICGC/API)',elevationManual:'Manual',elevationTip:'Click on the map to add points. Elevations are fetched automatically via ICGC WCS service (MDT 2m) or entered manually.',importTitle:'Import from QGIS',importHelp:'Export your polyline from QGIS as GeoJSON (.geojson) or GPX (.gpx).',importTip:"In QGIS, select layer \u2192 Save Features As \u2192 GeoJSON format.",dropText:'Drop a GeoJSON or GPX file here<br>or click to select',saved:'Saved successfully',error:'Error',offline:'Offline mode',online:'Connected',deleteConfirm:'Delete path?',yes:'Yes',no:'No',sectionView:'Section view',noPoints:'Add points to the trace first.',edit:'Edit',duplicate:'Duplicate',delete:'Delete',backToHub:'Back to Hub',savedLocal:'Saved locally',gettingElevation:'Getting elevation...',elevationError:'Could not get elevation',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Load local DTM',mdtLoaded:'DTM loaded',mdtError:'Error loading DTM'}
 };
 
 let T=texts.ca;
@@ -421,22 +421,102 @@ fetchElevation:function(lat,lng){
     if(ele!==null) return Promise.resolve(ele);
   }
   showToast(T.gettingElevation,'info');
-  return fetch('https://api.opentopodata.org/v1/srtm90m?locations='+lat+','+lng,{signal:AbortSignal.timeout(6000)})
-    .then(function(response){
-      if(response.ok) return response.json();
-      throw new Error('API error');
-    })
-    .then(function(data){
-      if(data.results && data.results[0] && data.results[0].elevation!==null){
-        return Math.round(data.results[0].elevation*100)/100;
-      }
-      throw new Error('No elevation data');
+  // Primer intentem l'API d'elevació de l'ICGC (servei oficial Catalunya)
+  var self=this;
+  return self.fetchElevationICGC(lat,lng)
+    .then(function(ele){
+      if(ele!==null) return ele;
+      // Fallback: opentopodata SRTM
+      return fetch('https://api.opentopodata.org/v1/srtm90m?locations='+lat+','+lng,{signal:AbortSignal.timeout(8000)})
+        .then(function(response){
+          if(response.ok) return response.json();
+          throw new Error('API error');
+        })
+        .then(function(data){
+          if(data.results && data.results[0] && data.results[0].elevation!==null){
+            return Math.round(data.results[0].elevation*100)/100;
+          }
+          throw new Error('No elevation data');
+        });
     })
     .catch(function(e){
-      console.warn('OpenTopoData failed:',e);
+      console.warn('Elevation fetch failed:',e);
       showToast(T.elevationError+' - Introdueix la cota manualment','warning');
       return null;
     });
+},
+
+fetchElevationICGC:function(lat,lng){
+  // Servei WCS de l'ICGC per obtenir elevació del MDT 2m
+  // Convertim lat/lng (EPSG:4326) a UTM ETRS89 zona 31N (EPSG:25831)
+  var utm=this.latLngToUTM31N(lat,lng);
+  var delta=1; // 1 metre de marge al bbox
+  var bbox=[(utm.x-delta),(utm.y-delta),(utm.x+delta),(utm.y+delta)].join(',');
+  // WCS 1.0.0 GetCoverage del servei MDT de l'ICGC
+  var url='https://geoserveis.icgc.cat/icgc_mdt2m/wcs/service?'+
+    'SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage'+
+    '&COVERAGE=MDS_2m'+
+    '&CRS=EPSG:25831'+
+    '&BBOX='+bbox+
+    '&WIDTH=3&HEIGHT=3'+
+    '&FORMAT=ArcGrid';
+  return fetch(url,{signal:AbortSignal.timeout(8000)})
+    .then(function(response){
+      if(!response.ok) throw new Error('ICGC WCS error '+response.status);
+      return response.text();
+    })
+    .then(function(text){
+      // Parsejar ASCII Grid de resposta
+      var lines=text.trim().split('\n');
+      var ncols,nrows,nodata,dataStart=0;
+      for(var i=0;i<lines.length;i++){
+        var l=lines[i].trim().toLowerCase();
+        if(l.startsWith('ncols')) ncols=parseInt(l.split(/\s+/)[1]);
+        else if(l.startsWith('nrows')) nrows=parseInt(l.split(/\s+/)[1]);
+        else if(l.startsWith('nodata')) nodata=parseFloat(l.split(/\s+/)[1]);
+        else if(!isNaN(parseFloat(l.split(/\s+/)[0]))){ dataStart=i; break; }
+      }
+      var vals=[];
+      for(var i=dataStart;i<lines.length;i++){
+        lines[i].trim().split(/\s+/).forEach(function(v){
+          var f=parseFloat(v);
+          if(!isNaN(f) && f!==nodata) vals.push(f);
+        });
+      }
+      if(vals.length===0) return null;
+      // Agafem el valor central (píxel del centre)
+      var centerIdx=Math.floor(vals.length/2);
+      return Math.round(vals[centerIdx]*100)/100;
+    })
+    .catch(function(e){
+      console.warn('ICGC WCS failed:',e);
+      return null;
+    });
+},
+
+latLngToUTM31N:function(lat,lng){
+  // Conversió aproximada WGS84 a UTM zona 31N (ETRS89 compatible per Catalunya)
+  var a=6378137.0;
+  var f=1/298.257223563;
+  var b=a*(1-f);
+  var e2=(a*a-b*b)/(a*a);
+  var k0=0.9996;
+  var lon0=3*Math.PI/180; // Meridià central zona 31N = 3°E
+  var latR=lat*Math.PI/180;
+  var lngR=lng*Math.PI/180;
+  var N=a/Math.sqrt(1-e2*Math.sin(latR)*Math.sin(latR));
+  var T=Math.tan(latR)*Math.tan(latR);
+  var C=e2/(1-e2)*Math.cos(latR)*Math.cos(latR);
+  var A=Math.cos(latR)*(lngR-lon0);
+  var e4=e2*e2; var e6=e2*e2*e2;
+  var M=a*((1-e2/4-3*e4/64-5*e6/256)*latR
+    -(3*e2/8+3*e4/32+45*e6/1024)*Math.sin(2*latR)
+    +(15*e4/256+45*e6/1024)*Math.sin(4*latR)
+    -(35*e6/3072)*Math.sin(6*latR));
+  var x=k0*N*(A+(1-T+C)*A*A*A/6+(5-18*T+T*T+72*C-58*e2/(1-e2))*A*A*A*A*A/120)+500000;
+  var y=k0*(M+N*Math.tan(latR)*(A*A/2+(5-T+9*C+4*C*C)*A*A*A*A/24+(61-58*T+T*T+600*C-330*e2/(1-e2))*A*A*A*A*A*A/720));
+  if(lat<0) y+=10000000;
+  return {x:Math.round(x*100)/100, y:Math.round(y*100)/100};
 },
 
 fetchElevationsForAll:function(){
@@ -466,20 +546,164 @@ fetchElevationsForAll:function(){
 handleMDTUpload:function(event){
   var file=event.target.files[0];
   if(!file) return;
-  var reader=new FileReader();
   var self=this;
-  reader.onload=function(e){
-    try{
-      if(file.name.endsWith('.asc')||file.name.endsWith('.txt')){
-        self.parseASC(e.target.result);
-      }else{
-        showToast(T.mdtError+': Format no suportat. Usa .asc','error');
+  var name=file.name.toLowerCase();
+  // Formats binaris: GeoTIFF (.tif/.tiff), ESRI BIL (.bil), ERDAS .img, BIL float (.flt)
+  var binaryFormats=['.tif','.tiff','.img','.bil','.flt','.hgt'];
+  var isBinary=binaryFormats.some(function(ext){return name.endsWith(ext);});
+  // Formats text: ASCII Grid, XYZ, CSV, DEM, HGT (text)
+  var textFormats=['.asc','.txt','.xyz','.csv','.dem'];
+  var isText=textFormats.some(function(ext){return name.endsWith(ext);});
+  var reader=new FileReader();
+  if(isBinary){
+    // Per formats binaris, intentem llegir-los i alertem l'usuari
+    reader.onload=function(e){
+      try{
+        self.parseBinaryRaster(e.target.result,file.name);
+      }catch(err){
+        showToast(T.mdtError+': '+err.message,'error');
       }
-    }catch(err){
-      showToast(T.mdtError+': '+err.message,'error');
+    };
+    reader.readAsArrayBuffer(file);
+  }else if(isText||name.endsWith('.hgt')){
+    reader.onload=function(e){
+      try{
+        if(name.endsWith('.xyz')||name.endsWith('.csv')){
+          self.parseXYZ(e.target.result);
+        }else{
+          self.parseASC(e.target.result);
+        }
+      }catch(err){
+        showToast(T.mdtError+': '+err.message,'error');
+      }
+    };
+    reader.readAsText(file);
+  }else{
+    // Intentem com a text (fallback)
+    reader.onload=function(e){
+      try{
+        self.parseASC(e.target.result);
+      }catch(err){
+        showToast(T.mdtError+': Format no reconegut. Formats suportats: .asc .txt .xyz .csv .dem .tif .tiff .img .hgt .bil .flt','error');
+      }
+    };
+    reader.readAsText(file);
+  }
+},
+
+parseXYZ:function(content){
+  // Format XYZ: X Y Z per fila (separades per espai o coma)
+  var lines=content.trim().split('\n');
+  var points=[];
+  var sep=/[,;\s]+/;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line||line.startsWith('#')) continue;
+    var parts=line.split(sep);
+    if(parts.length>=3){
+      var x=parseFloat(parts[0]);
+      var y=parseFloat(parts[1]);
+      var z=parseFloat(parts[2]);
+      if(!isNaN(x)&&!isNaN(y)&&!isNaN(z)) points.push({x:x,y:y,z:z});
     }
-  };
-  reader.readAsText(file);
+  }
+  if(points.length===0){ showToast(T.mdtError+': Cap punt vàlid al fitxer XYZ','error'); return; }
+  // Construïm grid a partir dels punts XYZ
+  var xs=points.map(function(p){return p.x;});
+  var ys=points.map(function(p){return p.y;});
+  var xmin=Math.min.apply(null,xs); var xmax=Math.max.apply(null,xs);
+  var ymin=Math.min.apply(null,ys); var ymax=Math.max.apply(null,ys);
+  var xVals=[...new Set(xs)].sort(function(a,b){return a-b;});
+  var yVals=[...new Set(ys)].sort(function(a,b){return a-b;});
+  var cellsize=xVals.length>1?(xVals[xVals.length-1]-xVals[0])/(xVals.length-1):1;
+  var ncols=xVals.length; var nrows=yVals.length;
+  var grid=[];
+  for(var r=0;r<nrows;r++) grid.push(new Array(ncols).fill(null));
+  for(var i=0;i<points.length;i++){
+    var col=Math.round((points[i].x-xmin)/cellsize);
+    var row=nrows-1-Math.round((points[i].y-ymin)/cellsize);
+    if(row>=0&&row<nrows&&col>=0&&col<ncols) grid[row][col]=points[i].z;
+  }
+  this.mdtData={ncols:ncols,nrows:nrows,xllcorner:xmin,yllcorner:ymin,cellsize:cellsize,nodata:-9999,grid:grid};
+  var info=document.getElementById('mdtInfo');
+  if(info){
+    info.innerHTML='<strong style="color:var(--accent)">✓ '+T.mdtLoaded+' (XYZ)</strong><br>'+
+      'Punts: '+points.length+'<br>Cel·la: '+cellsize.toFixed(2)+'m<br>Origen: '+xmin.toFixed(2)+', '+ymin.toFixed(2);
+  }
+  showToast(T.mdtLoaded+' (XYZ: '+points.length+' punts)','success');
+},
+
+parseBinaryRaster:function(buffer,filename){
+  // Llegim GeoTIFF/BIL/FLT/IMG com a buffer binari
+  // Detectem tipus per extensió i intentem extreure els valors
+  var name=filename.toLowerCase();
+  var view=new DataView(buffer);
+  var self=this;
+  if(name.endsWith('.hgt')){
+    // Format SRTM HGT: matriu de int16 big-endian, 3601x3601 (1") o 1201x1201 (3")
+    var totalVals=buffer.byteLength/2;
+    var size=Math.round(Math.sqrt(totalVals));
+    if(size!==3601&&size!==1201) size=Math.round(Math.sqrt(totalVals));
+    var ncols=size; var nrows=size;
+    var grid=[];
+    for(var r=0;r<nrows;r++){
+      var row=[];
+      for(var c=0;c<ncols;c++){
+        var offset=(r*ncols+c)*2;
+        var val=view.getInt16(offset,false); // big-endian
+        row.push(val===-32768?null:val);
+      }
+      grid.push(row);
+    }
+    // Inferim coordenades del nom del fitxer (ex: N41E002.hgt)
+    var match=filename.match(/([NS])(\d+)([EW])(\d+)/i);
+    var lat0=0,lng0=0;
+    if(match){
+      lat0=(match[1].toUpperCase()==='N'?1:-1)*parseInt(match[2]);
+      lng0=(match[3].toUpperCase()==='E'?1:-1)*parseInt(match[4]);
+    }
+    var cellsize=1/(size-1);
+    this.mdtData={ncols:ncols,nrows:nrows,xllcorner:lng0,yllcorner:lat0,cellsize:cellsize,nodata:null,grid:grid};
+    var info=document.getElementById('mdtInfo');
+    if(info) info.innerHTML='<strong style="color:var(--accent)">✓ '+T.mdtLoaded+' (HGT SRTM)</strong><br>Mida: '+size+'x'+size+'<br>Origen: '+lat0+'°, '+lng0+'°';
+    showToast(T.mdtLoaded+' (SRTM HGT)','success');
+    return;
+  }
+  if(name.endsWith('.flt')||name.endsWith('.bil')){
+    // Format Float32 binari. Necessita fitxer .hdr associat (no disponible aquí)
+    // Intentem inferir dimensions del tamany del fitxer
+    var totalFloats=buffer.byteLength/4;
+    var sqrtSize=Math.round(Math.sqrt(totalFloats));
+    var ncols=sqrtSize; var nrows=Math.round(totalFloats/sqrtSize);
+    var grid=[];
+    var littleEndian=true;
+    for(var r=0;r<nrows;r++){
+      var row=[];
+      for(var c=0;c<ncols;c++){
+        var offset=(r*ncols+c)*4;
+        if(offset+4<=buffer.byteLength){
+          var val=view.getFloat32(offset,littleEndian);
+          row.push(isFinite(val)?Math.round(val*100)/100:null);
+        }else{ row.push(null); }
+      }
+      grid.push(row);
+    }
+    this.mdtData={ncols:ncols,nrows:nrows,xllcorner:0,yllcorner:0,cellsize:1,nodata:null,grid:grid};
+    var info=document.getElementById('mdtInfo');
+    if(info) info.innerHTML='<strong style="color:var(--accent)">✓ '+T.mdtLoaded+' (FLT/BIL)</strong><br>'+
+      '<span style="color:var(--warning)">⚠ Sense fitxer .hdr: coordenades relatives. Edita manualment si cal.</span><br>Mida: '+ncols+'x'+nrows;
+    showToast(T.mdtLoaded+' (FLT/BIL - sense georeferència exacta)','warning');
+    return;
+  }
+  if(name.endsWith('.tif')||name.endsWith('.tiff')||name.endsWith('.img')){
+    // GeoTIFF: format complex. Informem l'usuari que cal convertir-lo a .asc
+    showToast('GeoTIFF detectat. Converteix-lo a .asc amb QGIS (Raster → Guardar com → ASCII Grid) per usar-lo aquí.','warning');
+    var info=document.getElementById('mdtInfo');
+    if(info) info.innerHTML='<strong style="color:var(--warning)">⚠ GeoTIFF/IMG no suportat directament</strong><br>'+
+      'Converteix a .asc amb QGIS:<br>Raster → Guardar com → Format: ASCII Grid (.asc)';
+    return;
+  }
+  showToast(T.mdtError+': Format binari no reconegut','error');
 },
 
 parseASC:function(content){
