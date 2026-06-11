@@ -93,7 +93,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--t
 <div id="toastContainer" class="toast-container"></div>
 
 <header class="app-header">
-  <h1 id="appTitle">🌲 Camins Forestals</h1>
+  <h1 id="appTitle">🌲 Camins Forestals v3</h1>
   <div class="header-actions">
     <button class="btn-icon" onclick="app.saveCurrentPath()" title="Guardar">💾</button>
   </div>
@@ -343,7 +343,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--t
       <span class="modal-title">📐 Carregar MDT local</span>
       <button class="modal-close" onclick="app.closeModal('mdtModal')">&times;</button>
     </div>
-    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Fitxer MDT en format ASCII Grid (.asc) de l'ICGC.</p>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Opcional: Fitxer MDT en format ASCII Grid (.asc) de l'ICGC per a zones sense cobertura del servei automàtic. Per defecte, les cotes s'obtenen automàticament via ICGC (2m, Catalunya) o OpenTopoData.</p>
     <div class="file-drop" onclick="document.getElementById('mdtInput').click()">
       <input type="file" id="mdtInput" accept=".asc,.txt" onchange="app.handleMDTUpload(event)">
       <div style="font-size:28px;margin-bottom:8px">⛰️</div>
@@ -446,6 +446,67 @@ var Geo = {
     }
     return curves;
   },
+  // Generate arc polyline between TC and CT points (approx with N segments)
+  arcPoints: function(PI, tc, ct, R, delta, nSeg){
+    nSeg = nSeg || Math.max(8, Math.round(Math.abs(delta)*R/5));
+    // Find center of arc
+    var a1 = this.bearing(PI.lat, PI.lng, tc.lat, tc.lng);
+    var a2 = this.bearing(PI.lat, PI.lng, ct.lat, ct.lng);
+    // Perpendicular from TC toward center
+    var perpTC = a1 + (delta > 0 ? Math.PI/2 : -Math.PI/2);
+    var center = this.pointAt(tc.lat, tc.lng, perpTC, R);
+    // Bearing from center to TC and CT
+    var bStart = this.bearing(center.lat, center.lng, tc.lat, tc.lng);
+    var bEnd   = this.bearing(center.lat, center.lng, ct.lat, ct.lng);
+    var pts = [];
+    for(var i=0; i<=nSeg; i++){
+      var t = i/nSeg;
+      var db = bEnd - bStart;
+      while(db >  Math.PI) db -= 2*Math.PI;
+      while(db < -Math.PI) db += 2*Math.PI;
+      var b = bStart + db*t;
+      pts.push(this.pointAt(center.lat, center.lng, b, R));
+    }
+    return pts;
+  },
+
+  // Build corrected route: straight segments with circular arc transitions
+  // Returns array of {lat,lng} points for polyline
+  buildCorrectedRoute: function(controlPts, Rdef, Rmin){
+    if(controlPts.length < 2) return controlPts.slice();
+    var self = this;
+    var result = [];
+    // Calculate curves for all PI points
+    var curves = [];
+    for(var i=1; i<controlPts.length-1; i++){
+      var c = self.calcCurve(controlPts[i-1], controlPts[i], controlPts[i+1], Rdef, Rmin);
+      curves.push({idx:i, curve:c});
+    }
+    // Build: start point, then for each segment, go to TC, then arc, then continue
+    result.push({lat:controlPts[0].lat, lng:controlPts[0].lng});
+    for(var i=0; i<controlPts.length-1; i++){
+      var nextCurve = curves.find(function(ci){return ci.idx===i+1;});
+      var prevCurve = curves.find(function(ci){return ci.idx===i;});
+      var segEnd = controlPts[i+1];
+      // If there's a curve at the end of this segment (at point i+1), go to TC first
+      if(nextCurve && nextCurve.curve){
+        var nc = nextCurve.curve;
+        result.push({lat:nc.tc.lat, lng:nc.tc.lng});
+        // Draw arc TC→CT
+        var arcPts = self.arcPoints(nc.PI, nc.tc, nc.ct, nc.R, nc.delta);
+        arcPts.forEach(function(p){result.push({lat:p.lat, lng:p.lng});});
+        // Next iteration will start from CT implicitly (last result point)
+        // But we need to skip to CT for segment after this
+      } else {
+        // Last segment: go to end point
+        if(i === controlPts.length-2){
+          result.push({lat:segEnd.lat, lng:segEnd.lng});
+        }
+      }
+    }
+    return result;
+  },
+
   // KV auto calculation
   calcKVauto: function(Vd){
     return {
@@ -528,7 +589,7 @@ var DEFAULT_PARAMS = {
 // =========================================================
 var app = {
   paths: [], currentPath: null, currentView: 'list',
-  map: null, mapMarkers: [], mapPolyline: null, mapCurveLines: [],
+  map: null, mapMarkers: [], mapPolyline: null, mapCurveLines: [], mapCorrectedLine: null,
   editingPointIndex: -1, mdtData: null,
 
   init: function(){
@@ -707,22 +768,68 @@ var app = {
 
   fetchElevation: function(lat,lng){
     if(this.mdtData){ var e=this.getElevationFromMDT(lat,lng); if(e!==null) return Promise.resolve(e); }
-    return fetch('https://api.opentopodata.org/v1/srtm90m?locations='+lat+','+lng,{signal:AbortSignal.timeout(6000)})
-      .then(function(r){return r.ok?r.json():Promise.reject();})
-      .then(function(d){return d.results&&d.results[0]&&d.results[0].elevation!==null?Math.round(d.results[0].elevation*100)/100:null;})
-      .catch(function(){ showToast('No s\'ha pogut obtenir la cota','warning'); return null; });
+    // Intentem primer ICGC (2m resolució, Catalunya) via WCS
+    var isCatalunya = lat>=40.5&&lat<=42.9&&lng>=0.15&&lng<=3.35;
+    if(isCatalunya){
+      return fetch('https://geoserveis.icgc.cat/icgc_mdt2m/wcs/service?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=MDS2M&CRS=EPSG:4326&BBOX='+(lng-0.0001)+','+(lat-0.0001)+','+(lng+0.0001)+','+(lat+0.0001)+'&WIDTH=3&HEIGHT=3&FORMAT=AsciiGrid',{signal:AbortSignal.timeout(8000)})
+        .then(function(r){return r.ok?r.text():Promise.reject('ICGC error');})
+        .then(function(txt){
+          var lines=txt.trim().split('\n');
+          var dataStart=0;
+          for(var i=0;i<lines.length;i++){if(/^\s*-?\d/.test(lines[i])){dataStart=i;break;}}
+          var nodata=-9999;
+          for(var i=0;i<lines.length;i++){var m=lines[i].match(/nodata_value\s+(\S+)/i);if(m)nodata=parseFloat(m[1]);}
+          var vals=[];
+          for(var i=dataStart;i<lines.length;i++){
+            lines[i].trim().split(/\s+/).forEach(function(v){var n=parseFloat(v);if(!isNaN(n)&&n!==nodata)vals.push(n);});
+          }
+          if(!vals.length) return Promise.reject('no vals');
+          return Math.round(vals[Math.floor(vals.length/2)]*100)/100;
+        })
+        .catch(function(){
+          // Fallback: ICGC REST per al·titud (també gratuit)
+          return fetch('https://eines.icgc.cat/geocodificador/rest/services/Geocodificador/ICGC/GeocodeServer/reverseGeocode?location={"x":'+lng+',"y":'+lat+'}&distance=1&outSR=4326&f=json',{signal:AbortSignal.timeout(5000)})
+            .then(function(r){return r.ok?r.json():Promise.reject();})
+            .then(function(d){ return null; }) // No dona alçada, passem al OpenTopoData
+            .catch(function(){return null;})
+            .then(function(e){
+              if(e!==null) return e;
+              return fetch('https://api.opentopodata.org/v1/eudem25m?locations='+lat+','+lng,{signal:AbortSignal.timeout(8000)})
+                .then(function(r){return r.ok?r.json():Promise.reject();})
+                .then(function(d){return d.results&&d.results[0]&&d.results[0].elevation!==null?Math.round(d.results[0].elevation*100)/100:null;})
+                .catch(function(){
+                  return fetch('https://api.opentopodata.org/v1/srtm90m?locations='+lat+','+lng,{signal:AbortSignal.timeout(6000)})
+                    .then(function(r){return r.ok?r.json():Promise.reject();})
+                    .then(function(d){return d.results&&d.results[0]&&d.results[0].elevation!==null?Math.round(d.results[0].elevation*100)/100:null;})
+                    .catch(function(){showToast('No s\'ha pogut obtenir la cota','warning');return null;});
+                });
+            });
+        });
+    } else {
+      // Fora de Catalunya: OpenTopoData EUDEM (EU 25m) o SRTM
+      return fetch('https://api.opentopodata.org/v1/eudem25m?locations='+lat+','+lng,{signal:AbortSignal.timeout(8000)})
+        .then(function(r){return r.ok?r.json():Promise.reject();})
+        .then(function(d){return d.results&&d.results[0]&&d.results[0].elevation!==null?Math.round(d.results[0].elevation*100)/100:null;})
+        .catch(function(){
+          return fetch('https://api.opentopodata.org/v1/srtm90m?locations='+lat+','+lng,{signal:AbortSignal.timeout(6000)})
+            .then(function(r){return r.ok?r.json():Promise.reject();})
+            .then(function(d){return d.results&&d.results[0]&&d.results[0].elevation!==null?Math.round(d.results[0].elevation*100)/100:null;})
+            .catch(function(){showToast('No s\'ha pogut obtenir la cota','warning');return null;});
+        });
+    }
   },
 
   fetchElevationsForAll: function(){
     if(!this.currentPath) return;
     var self=this, i=0, updated=0;
+    var total=self.currentPath.points.length;
+    showToast('Obtenint cotes ('+total+' punts)...', 'info', 8000);
     function next(){
       if(i>=self.currentPath.points.length){
         self.recalc(); self.saveLocalPaths(); self.renderEditor();
-        showToast('Elevacions: '+updated+' punts actualitzats','success'); return;
+        showToast('Cotes actualitzades: '+updated+'/'+total+' punts (ICGC/OpenTopoData)','success'); return;
       }
       var p=self.currentPath.points[i]; i++;
-      if(p.elevation!=null){next();return;}
       self.fetchElevation(p.lat,p.lng).then(function(e){ if(e!==null){p.elevation=e;updated++;} next(); });
     }
     next();
@@ -977,13 +1084,17 @@ var app = {
       '</div>'+
       '<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vd='+par.vel+'km/h · Rmin='+par.radiMin+'m · Pmàx='+par.pendMax+'% · Amplada='+par.amplada+'m</div>'+
       '<div id="map"></div>'+
-      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
-      '<button class="btn btn-sm btn-secondary" onclick="app.fetchElevationsForAll()">⛰️ Auto cotes</button>'+
-      '<button class="btn btn-sm btn-secondary" onclick="app.openModal(\'mdtModal\')">🔐 MDT local</button>'+
-      '<button class="btn btn-sm btn-secondary" onclick="document.getElementById(\'fileInput\').click()">📁 Importar</button>'+
-      '<button class="btn btn-sm btn-danger" onclick="app.clearAllPoints()">🗑️ Esborrar</button>'+
+      '<div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--text-muted);align-items:center">'+
+      '<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:24px;height:2px;border-top:2px dashed #6b9e7c;margin-top:1px"></span>Línies de control</span>'+
+      '<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:24px;height:3px;background:#4ade80;border-radius:2px"></span>Traçat corregit (R='+par.radiDef+'m)</span>'+
       '</div>'+
-      '<p style="font-size:11px;color:var(--text-muted);margin-top:8px">Clica al mapa per afegir punts · Toca un punt per editar-lo</p>'+
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      '<button class="btn btn-sm btn-secondary" onclick="app.fetchElevationsForAll()">⛰️ Recalcular cotes (ICGC)</button>'+
+      '<button class="btn btn-sm btn-secondary" onclick="app.openModal(\'mdtModal\')" title="MDT local .asc per zones sense cobertura">🗂️ MDT local</button>'+
+      '<button class="btn btn-sm btn-secondary" onclick="document.getElementById(\'fileInput\').click()">📁 Importar GPX/GeoJSON</button>'+
+      '<button class="btn btn-sm btn-danger" onclick="app.clearAllPoints()">🗑️ Esborrar tot</button>'+
+      '</div>'+
+      '<p style="font-size:11px;color:var(--text-muted);margin-top:8px">📍 Clica al mapa per afegir punts · Les cotes s\'obtenen automàticament (ICGC 2m per Catalunya) · Toca un punt per editar-lo</p>'+
       '</div>';
 
     // Points table
@@ -1024,18 +1135,23 @@ var app = {
       latlngs.push([p.lat,p.lng]);
     }
     if(latlngs.length>1){
-      this.mapPolyline=L.polyline(latlngs,{color:'#4ade80',weight:3,opacity:0.9}).addTo(this.map);
+      // Línia de control (punts que l'usuari ha marcat) — discontinua, grisa
+      this.mapPolyline=L.polyline(latlngs,{color:'#6b9e7c',weight:2,opacity:0.6,dashArray:'8,6'}).addTo(this.map);
       this.map.fitBounds(this.mapPolyline.getBounds().pad(0.1));
-      // Draw curve arcs on map
+      // Traçat corregit amb arcs reals — verd sòlid
+      var corrected = Geo.buildCorrectedRoute(pts, par.radiDef, par.radiMin);
+      if(corrected.length>1){
+        var corrLL = corrected.map(function(p){return [p.lat,p.lng];});
+        this.mapCorrectedLine = L.polyline(corrLL,{color:'#4ade80',weight:3.5,opacity:0.95}).addTo(this.map);
+      }
+      // Draw curve markers (TC, CT, PI)
       var curves=Geo.calcAllCurves(pts, par.radiDef, par.radiMin);
       curves.forEach(function(ci){
         if(!ci.curve) return;
         var c=ci.curve;
         var color=c.tooSmall?'#ef4444':'#3b82f6';
-        // Draw TC and CT markers
         L.circleMarker([c.tc.lat,c.tc.lng],{radius:4,color:color,fillColor:color,fillOpacity:1}).addTo(app.map).bindPopup('TC · R='+c.R.toFixed(0)+'m');
         L.circleMarker([c.ct.lat,c.ct.lng],{radius:4,color:color,fillColor:color,fillOpacity:1}).addTo(app.map).bindPopup('CT · R='+c.R.toFixed(0)+'m');
-        // Draw PI label
         L.circleMarker([c.PI.lat,c.PI.lng],{radius:5,color:color,fillColor:'transparent',weight:2}).addTo(app.map).bindPopup('PI · Δ='+c.deltaDeg.toFixed(1)+'° · R='+c.R.toFixed(0)+'m'+(c.tooSmall?' ⚠ RADI INSUFICIENT':''));
       });
     } else if(latlngs.length===1){
@@ -1056,7 +1172,7 @@ var app = {
   },
 
   destroyMap: function(){
-    if(this.map){ this.map.remove(); this.map=null; this.mapMarkers=[]; this.mapPolyline=null; this.mapCurveLines=[]; }
+    if(this.map){ this.map.remove(); this.map=null; this.mapMarkers=[]; this.mapPolyline=null; this.mapCurveLines=[]; this.mapCorrectedLine=null; }
   },
 
   // =========================================================
