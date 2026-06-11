@@ -1,1135 +1,1453 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disseny de Camins Forestals - Eina Completa</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/turf/6.5.0/turf.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #eee; }
-
-        .container { display: flex; height: 100vh; }
-
-        /* Sidebar */
-        .sidebar { width: 380px; background: #16213e; border-right: 2px solid #0f3460; overflow-y: auto; padding: 15px; }
-        .sidebar h1 { font-size: 1.2em; color: #e94560; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #e94560; padding-bottom: 10px; }
-
-        .panel { background: #0f3460; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-        .panel h3 { color: #e94560; font-size: 0.95em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .panel h3::before { content: "▸"; }
-
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 0.82em; color: #a0a0a0; margin-bottom: 4px; }
-        .form-group input, .form-group select { width: 100%; padding: 6px 10px; border: 1px solid #1a1a2e; border-radius: 4px; background: #1a1a2e; color: #fff; font-size: 0.9em; }
-        .form-group input:focus { outline: none; border-color: #e94560; }
-
-        .row { display: flex; gap: 8px; }
-        .row .form-group { flex: 1; }
-
-        .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; transition: all 0.2s; margin-bottom: 8px; }
-        .btn-primary { background: #e94560; color: white; }
-        .btn-primary:hover { background: #c73e54; }
-        .btn-secondary { background: #0f3460; color: #fff; border: 1px solid #e94560; }
-        .btn-secondary:hover { background: #e94560; }
-        .btn-success { background: #2ecc71; color: #1a1a2e; }
-        .btn-danger { background: #e74c3c; color: white; }
-        .btn-warning { background: #f39c12; color: #1a1a2e; }
-
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-box { background: #1a1a2e; padding: 10px; border-radius: 6px; text-align: center; border-left: 3px solid #e94560; }
-        .stat-box .value { font-size: 1.3em; font-weight: bold; color: #e94560; }
-        .stat-box .label { font-size: 0.75em; color: #888; margin-top: 2px; }
-
-        .alert { padding: 8px 12px; border-radius: 4px; font-size: 0.82em; margin-bottom: 8px; display: none; }
-        .alert-danger { background: rgba(231,76,60,0.2); border-left: 3px solid #e74c3c; color: #ff6b6b; }
-        .alert-warning { background: rgba(243,156,18,0.2); border-left: 3px solid #f39c12; color: #f39c12; }
-        .alert-success { background: rgba(46,204,113,0.2); border-left: 3px solid #2ecc71; color: #2ecc71; }
-
-        .legend { font-size: 0.8em; }
-        .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-        .legend-color { width: 20px; height: 4px; border-radius: 2px; }
-
-        /* Map */
-        .map-container { flex: 1; position: relative; }
-        #map { width: 100%; height: 100%; }
-
-        .map-controls { position: absolute; top: 10px; right: 10px; z-index: 1000; background: rgba(22,33,62,0.95); padding: 10px; border-radius: 8px; }
-        .map-controls button { display: block; width: 100%; margin-bottom: 5px; }
-
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
-        .modal { background: #16213e; padding: 25px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .modal h2 { color: #e94560; margin-bottom: 15px; }
-        .modal-close { float: right; font-size: 1.5em; cursor: pointer; color: #e94560; }
-
-        .section-table { width: 100%; border-collapse: collapse; font-size: 0.85em; margin-top: 10px; }
-        .section-table th, .section-table td { padding: 6px; text-align: center; border: 1px solid #0f3460; }
-        .section-table th { background: #0f3460; color: #e94560; }
-        .section-table tr:nth-child(even) { background: rgba(15,52,96,0.3); }
-
-        .kv-bar { height: 6px; border-radius: 3px; background: #333; position: relative; overflow: hidden; }
-        .kv-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-        .kv-fill.green { background: #2ecc71; }
-        .kv-fill.yellow { background: #f39c12; }
-        .kv-fill.red { background: #e74c3c; }
-
-        .file-input-wrapper { position: relative; overflow: hidden; }
-        .file-input-wrapper input[type=file] { position: absolute; left: -9999px; }
-        .file-input-label { display: block; padding: 10px; background: #0f3460; border: 2px dashed #e94560; border-radius: 6px; text-align: center; cursor: pointer; font-size: 0.85em; }
-        .file-input-label:hover { background: rgba(233,69,96,0.1); }
-
-        .mode-indicator { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; margin-bottom: 10px; }
-        .mode-draw { background: #e94560; color: white; }
-        .mode-edit { background: #3498db; color: white; }
-        .mode-view { background: #2ecc71; color: #1a1a2e; }
-
-        .vertex-list { max-height: 150px; overflow-y: auto; font-size: 0.78em; }
-        .vertex-item { display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(15,52,96,0.3); margin-bottom: 3px; border-radius: 3px; }
-        .vertex-item:hover { background: rgba(233,69,96,0.2); }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1a1a2e; }
-        ::-webkit-scrollbar-thumb { background: #e94560; border-radius: 3px; }
-    </style>
-<base target="_blank">
-</head>
-<body>
-    <div class="container">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <h1>🌲 Disseny de Camins Forestals</h1>
-
-            <!-- Mode -->
-            <div class="panel">
-                <span id="modeIndicator" class="mode-indicator mode-view">Mode: Visualització</span>
-                <div class="row">
-                    <button class="btn btn-primary" onclick="setMode('draw')">✏️ Dibuixar</button>
-                    <button class="btn btn-secondary" onclick="setMode('edit')">✋ Editar</button>
-                    <button class="btn btn-secondary" onclick="clearAll()">🗑️ Netejar</button>
-                </div>
-            </div>
-
-            <!-- Alerts -->
-            <div id="alertsContainer"></div>
-
-            <!-- Paràmetres Geomètrics -->
-            <div class="panel">
-                <h3>Paràmetres Geomètrics</h3>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Radi mínim corba (m)</label>
-                        <input type="number" id="minRadius" value="16" min="5" max="200" step="1">
-                    </div>
-                    <div class="form-group">
-                        <label>Radi màxim corba (m)</label>
-                        <input type="number" id="maxRadius" value="100" min="10" max="500" step="1">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>KV màxim admissible (%)</label>
-                        <input type="number" id="maxKV" value="12" min="5" max="25" step="0.5">
-                    </div>
-                    <div class="form-group">
-                        <label>KV màxim sostingut (%)</label>
-                        <input type="number" id="maxKVSustained" value="8" min="3" max="20" step="0.5">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Ample de via (m)</label>
-                        <input type="number" id="roadWidth" value="3.5" min="2.5" max="8" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Velocitat disseny (km/h)</label>
-                        <input type="number" id="designSpeed" value="20" min="10" max="50" step="5">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Paràmetres de Secció -->
-            <div class="panel">
-                <h3>Paràmetres de Secció Transversal</h3>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Gruix capa vegetal (m)</label>
-                        <input type="number" id="vegDepth" value="0.3" min="0" max="2" step="0.05">
-                    </div>
-                    <div class="form-group">
-                        <label>Pendent talús (1:n)</label>
-                        <input type="number" id="slopeRatio" value="1.5" min="0.5" max="3" step="0.1">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Seccions cada (m)</label>
-                        <input type="number" id="sectionInterval" value="20" min="5" max="100" step="5">
-                    </div>
-                    <div class="form-group">
-                        <label>Coef. fregament</label>
-                        <input type="number" id="friction" value="0.4" min="0.2" max="0.8" step="0.05">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Estadístiques -->
-            <div class="panel">
-                <h3>Estadístiques del Traçat</h3>
-                <div class="stats">
-                    <div class="stat-box">
-                        <div class="value" id="statLength">0</div>
-                        <div class="label">Longitud (m)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="statSegments">0</div>
-                        <div class="label">Segments</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="statCurves">0</div>
-                        <div class="label">Corbes</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="statMaxKV">0</div>
-                        <div class="label">KV màxim (%)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="statMinRadius">-</div>
-                        <div class="label">Radi mínim (m)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="statArea">0</div>
-                        <div class="label">Àrea corona (m²)</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Volums -->
-            <div class="panel">
-                <h3>Volums de Moviment de Terres</h3>
-                <div class="stats">
-                    <div class="stat-box">
-                        <div class="value" id="volClearing">0</div>
-                        <div class="label">Desbrossament (m³)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="volCut">0</div>
-                        <div class="label">Desmont (m³)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="volFill">0</div>
-                        <div class="label">Terraplè (m³)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value" id="volTotal">0</div>
-                        <div class="label">Total (m³)</div>
-                    </div>
-                </div>
-                <button class="btn btn-success" onclick="showSectionsModal()" style="margin-top:10px;">📊 Veure Seccions Transversals</button>
-            </div>
-
-            <!-- Import/Export -->
-            <div class="panel">
-                <h3>Importar / Exportar</h3>
-                <div class="file-input-wrapper">
-                    <input type="file" id="fileInput" accept=".geojson,.gpx,.json" onchange="handleFileImport(event)">
-                    <label for="fileInput" class="file-input-label">📁 Arrossega o clica per importar GeoJSON/GPX</label>
-                </div>
-                <div class="row" style="margin-top:8px;">
-                    <button class="btn btn-secondary" onclick="exportGeoJSON()">📤 GeoJSON</button>
-                    <button class="btn btn-secondary" onclick="exportCSV()">📄 CSV Seccions</button>
-                </div>
-                <button class="btn btn-warning" onclick="exportReport()">📋 Informe PDF (HTML)</button>
-            </div>
-
-            <!-- Llegenda -->
-            <div class="panel">
-                <h3>Llegenda</h3>
-                <div class="legend">
-                    <div class="legend-item"><div class="legend-color" style="background:#e94560;"></div> Eix del camí</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#3498db;"></div> Corona (ample de via)</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#2ecc71;"></div> Corba amb radi OK</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#f39c12;"></div> Corba amb radi alerta</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#e74c3c;"></div> Corba amb radi perill</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#9b59b6;"></div> Vèrtex editable</div>
-                </div>
-            </div>
-
-            <!-- Vèrtexs -->
-            <div class="panel">
-                <h3>Vèrtexs del Traçat</h3>
-                <div id="vertexList" class="vertex-list"></div>
-            </div>
-        </div>
-
-        <!-- MAP -->
-        <div class="map-container">
-            <div id="map"></div>
-            <div class="map-controls">
-                <button class="btn btn-primary" onclick="fitBounds()">🔍 Ajustar vista</button>
-                <button class="btn btn-secondary" onclick="toggleLayer('axis')">👁️ Eix</button>
-                <button class="btn btn-secondary" onclick="toggleLayer('crown')">👁️ Corona</button>
-                <button class="btn btn-secondary" onclick="toggleLayer('curves')">👁️ Corbes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Seccions -->
-    <div class="modal-overlay" id="sectionsModal">
-        <div class="modal">
-            <span class="modal-close" onclick="closeModal()">&times;</span>
-            <h2>📊 Seccions Transversals</h2>
-            <div id="sectionsContent"></div>
-        </div>
-    </div>
-
-<script>
-// ==================== VARIABLES GLOBALS ====================
-let map;
-let axisLayer, crownLayer, curvesLayer, vertexLayer, segmentsLayer;
-let axisPoints = []; // {lat, lng, elev}
-let mode = 'view'; // 'view', 'draw', 'edit'
-let selectedVertex = null;
-let dragMarker = null;
-let tempLine = null;
-
-// ==================== INICIALITZACIÓ ====================
-document.addEventListener('DOMContentLoaded', function() {
-    initMap();
-    setupEventListeners();
-});
-
-function initMap() {
-    map = L.map('map').setView([41.5, 1.5], 8);
-
-    // Capa base
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
-
-    // Capes
-    segmentsLayer = L.layerGroup().addTo(map);
-    curvesLayer = L.layerGroup().addTo(map);
-    axisLayer = L.layerGroup().addTo(map);
-    crownLayer = L.layerGroup().addTo(map);
-    vertexLayer = L.layerGroup().addTo(map);
-
-    // Events del mapa
-    map.on('click', onMapClick);
-}
-
-function setupEventListeners() {
-    document.getElementById('minRadius').addEventListener('change', updateAll);
-    document.getElementById('maxRadius').addEventListener('change', updateAll);
-    document.getElementById('maxKV').addEventListener('change', updateAll);
-    document.getElementById('roadWidth').addEventListener('change', updateAll);
-    document.getElementById('designSpeed').addEventListener('change', updateAll);
-    document.getElementById('vegDepth').addEventListener('change', updateAll);
-    document.getElementById('slopeRatio').addEventListener('change', updateAll);
-    document.getElementById('sectionInterval').addEventListener('change', updateAll);
-}
-
-// ==================== MODES ====================
-function setMode(newMode) {
-    mode = newMode;
-    const indicator = document.getElementById('modeIndicator');
-    indicator.className = 'mode-indicator mode-' + newMode;
-    indicator.textContent = 'Mode: ' + (newMode === 'draw' ? 'Dibuixar' : newMode === 'edit' ? 'Editar' : 'Visualització');
-
-    if (mode === 'draw') {
-        map.getContainer().style.cursor = 'crosshair';
-    } else if (mode === 'edit') {
-        map.getContainer().style.cursor = 'pointer';
-    } else {
-        map.getContainer().style.cursor = '';
-    }
-
-    updateVertexMarkers();
-}
-
-// ==================== DIBUIXAR / EDITAR ====================
-function onMapClick(e) {
-    if (mode !== 'draw') return;
-
-    const point = { lat: e.latlng.lat, lng: e.latlng.lng, elev: null };
-    axisPoints.push(point);
-
-    updateAll();
-    updateVertexList();
-}
-
-function updateVertexMarkers() {
-    vertexLayer.clearLayers();
-
-    axisPoints.forEach((pt, idx) => {
-        const marker = L.circleMarker([pt.lat, pt.lng], {
-            radius: mode === 'edit' ? 8 : 5,
-            fillColor: mode === 'edit' ? '#e94560' : '#9b59b6',
-            color: '#fff',
-            weight: 2,
-            fillOpacity: 0.9,
-            draggable: mode === 'edit'
-        }).addTo(vertexLayer);
-
-        marker.bindPopup(`Vèrtex ${idx + 1}<br>Lat: ${pt.lat.toFixed(5)}<br>Lng: ${pt.lng.toFixed(5)}`);
-
-        if (mode === 'edit') {
-            marker.on('drag', function(e) {
-                axisPoints[idx].lat = e.latlng.lat;
-                axisPoints[idx].lng = e.latlng.lng;
-                updateAll();
-            });
-            marker.on('dragend', updateVertexList);
-            marker.on('contextmenu', function(e) {
-                L.DomEvent.stopPropagation(e);
-                removeVertex(idx);
-            });
-        }
-    });
-}
-
-function removeVertex(idx) {
-    axisPoints.splice(idx, 1);
-    updateAll();
-    updateVertexList();
-}
-
-function updateVertexList() {
-    const container = document.getElementById('vertexList');
-    if (axisPoints.length === 0) {
-        container.innerHTML = '<div style="color:#888;text-align:center;padding:10px;">Cap vèrtex</div>';
-        return;
-    }
-
-    container.innerHTML = axisPoints.map((pt, i) => `
-        <div class="vertex-item">
-            <span>#${i+1} (${pt.lat.toFixed(4)}, ${pt.lng.toFixed(4)})</span>
-            <span style="color:#e94560;cursor:pointer;" onclick="removeVertex(${i})">✕</span>
-        </div>
-    `).join('');
-}
-
-// ==================== CÀLCULS GEOMÈTRICS ====================
-function updateAll() {
-    if (axisPoints.length < 2) {
-        clearLayers();
-        resetStats();
-        return;
-    }
-
-    drawAxis();
-    drawCurves();
-    drawCrown();
-    updateStats();
-    updateAlerts();
-    updateVertexMarkers();
-}
-
-function clearLayers() {
-    axisLayer.clearLayers();
-    curvesLayer.clearLayers();
-    crownLayer.clearLayers();
-    segmentsLayer.clearLayers();
-}
-
-function resetStats() {
-    document.getElementById('statLength').textContent = '0';
-    document.getElementById('statSegments').textContent = '0';
-    document.getElementById('statCurves').textContent = '0';
-    document.getElementById('statMaxKV').textContent = '0';
-    document.getElementById('statMinRadius').textContent = '-';
-    document.getElementById('statArea').textContent = '0';
-    document.getElementById('volClearing').textContent = '0';
-    document.getElementById('volCut').textContent = '0';
-    document.getElementById('volFill').textContent = '0';
-    document.getElementById('volTotal').textContent = '0';
-}
-
-// Dibuixar l'eix amb corbes
-function drawAxis() {
-    axisLayer.clearLayers();
-    segmentsLayer.clearLayers();
-
-    const minR = parseFloat(document.getElementById('minRadius').value);
-    const maxR = parseFloat(document.getElementById('maxRadius').value);
-
-    // Dibuixar segments rectes
-    for (let i = 0; i < axisPoints.length - 1; i++) {
-        const p1 = axisPoints[i];
-        const p2 = axisPoints[i+1];
-
-        const line = L.polyline([[p1.lat, p1.lng], [p2.lat, p2.lng]], {
-            color: '#e94560',
-            weight: 3,
-            opacity: 0.8,
-            dashArray: '5, 5'
-        }).addTo(axisLayer);
-
-        // Distància del segment
-        const dist = haversine(p1.lat, p1.lng, p2.lat, p2.lng);
-        line.bindPopup(`Segment ${i+1}<br>Longitud: ${dist.toFixed(1)} m`);
-    }
-
-    // Dibuixar corbes als vèrtexs interns
-    for (let i = 1; i < axisPoints.length - 1; i++) {
-        drawCurveAtVertex(i, minR, maxR);
-    }
-}
-
-function drawCurveAtVertex(idx, minR, maxR) {
-    const pPrev = axisPoints[idx - 1];
-    const pCurr = axisPoints[idx];
-    const pNext = axisPoints[idx + 1];
-
-    // Calcular angle entre segments
-    const angle = calculateAngle(pPrev, pCurr, pNext);
-
-    if (angle < 5) return; // Angle massa petit, no cal corba
-
-    // Calcular radi òptim basat en l'angle
-    const optimalRadius = Math.max(minR, Math.min(maxR, 50 / Math.sin(angle * Math.PI / 360)));
-
-    // Generar punts de l'arc
-    const arcPoints = generateArcPoints(pPrev, pCurr, pNext, optimalRadius);
-
-    if (arcPoints.length < 3) return;
-
-    // Color segons si el radi és adequat
-    let color = '#2ecc71'; // OK
-    let status = 'OK';
-    if (optimalRadius < minR * 0.8) {
-        color = '#e74c3c'; // Perill
-        status = 'PERILL';
-    } else if (optimalRadius < minR) {
-        color = '#f39c12'; // Alerta
-        status = 'ALERTA';
-    }
-
-    const curve = L.polyline(arcPoints, {
-        color: color,
-        weight: 4,
-        opacity: 0.9
-    }).addTo(curvesLayer);
-
-    curve.bindPopup(`Corba al vèrtex ${idx}<br>Radi: ${optimalRadius.toFixed(1)} m<br>Angle: ${angle.toFixed(1)}°<br>Estat: ${status}`);
-
-    // Dibuixar radi visual
-    const center = findArcCenter(pPrev, pCurr, pNext, optimalRadius);
-    if (center) {
-        L.circle([center.lat, center.lng], {
-            radius: optimalRadius,
-            color: color,
-            weight: 1,
-            fill: false,
-            opacity: 0.3,
-            dashArray: '3, 3'
-        }).addTo(curvesLayer);
-    }
-}
-
-function generateArcPoints(p1, p2, p3, radius) {
-    // Convertir a sistema local per càlculs
-    const x1 = 0, y1 = 0;
-    const x2 = haversine(p1.lat, p1.lng, p2.lat, p2.lng);
-    const y2 = 0;
-
-    // Vector p2->p3
-    const d23 = haversine(p2.lat, p2.lng, p3.lat, p3.lng);
-    const bearing12 = calculateBearing(p1.lat, p1.lng, p2.lat, p2.lng);
-    const bearing23 = calculateBearing(p2.lat, p2.lng, p3.lat, p3.lng);
-    const turnAngle = ((bearing23 - bearing12 + 540) % 360) - 180;
-
-    const x3 = x2 + d23 * Math.cos(turnAngle * Math.PI / 180);
-    const y3 = d23 * Math.sin(turnAngle * Math.PI / 180);
-
-    // Trobar centre de l'arc (intersecció de perpendiculars)
-    const mid12x = x1 / 2 + x2 / 2;
-    const mid12y = y1 / 2 + y2 / 2;
-    const mid23x = x2 / 2 + x3 / 2;
-    const mid23y = y2 / 2 + y3 / 2;
-
-    const perp12x = -(y2 - y1);
-    const perp12y = (x2 - x1);
-    const perp23x = -(y3 - y2);
-    const perp23y = (x3 - x2);
-
-    const denom = perp12x * perp23y - perp12y * perp23x;
-    if (Math.abs(denom) < 0.001) return [];
-
-    const t = ((mid23x - mid12x) * perp23y - (mid23y - mid12y) * perp23x) / denom;
-    const cx = mid12x + t * perp12x;
-    const cy = mid12y + t * perp12y;
-
-    // Verificar radi
-    const actualRadius = Math.sqrt((cx - x2) ** 2 + (cy - y2) ** 2);
-    if (actualRadius < 1) return [];
-
-    // Generar punts de l'arc
-    const startAngle = Math.atan2(y1 - cy, x1 - cx);
-    const endAngle = Math.atan2(y3 - cy, x3 - cx);
-
-    let deltaAngle = endAngle - startAngle;
-    if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
-    if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
-
-    const numPoints = Math.max(10, Math.ceil(Math.abs(deltaAngle) * actualRadius / 2));
-    const points = [];
-
-    for (let i = 0; i <= numPoints; i++) {
-        const angle = startAngle + deltaAngle * (i / numPoints);
-        const lx = cx + actualRadius * Math.cos(angle);
-        const ly = cy + actualRadius * Math.sin(angle);
-
-        // Convertir de local a lat/lng
-        const lat = p1.lat + (lx / 111320);
-        const lng = p1.lng + (ly / (111320 * Math.cos(p1.lat * Math.PI / 180)));
-        points.push([lat, lng]);
-    }
-
-    return points;
-}
-
-function findArcCenter(p1, p2, p3, radius) {
-    // Simplificació: retornar punt aproximat
-    const bearing12 = calculateBearing(p1.lat, p1.lng, p2.lat, p2.lng);
-    const bearing23 = calculateBearing(p2.lat, p2.lng, p3.lat, p3.lng);
-    const bisector = (bearing12 + bearing23) / 2;
-
-    const dist = radius * 0.3; // Aproximació
-    const center = destinationPoint(p2.lat, p2.lng, dist, bisector + 90);
-    return center;
-}
-
-// Dibuixar corona (ample de via)
-function drawCrown() {
-    crownLayer.clearLayers();
-
-    if (axisPoints.length < 2) return;
-
-    const width = parseFloat(document.getElementById('roadWidth').value);
-    const halfWidth = width / 2;
-
-    // Crear línia completa amb corbes
-    const fullPath = buildFullPath();
-    if (fullPath.length < 2) return;
-
-    // Usar Turf.js per offset
-    try {
-        const lineCoords = fullPath.map(p => [p.lng, p.lat]);
-        const lineString = turf.lineString(lineCoords);
-
-        // Offset dret i esquerre
-        const rightOffset = turf.lineOffset(lineString, halfWidth, {units: 'meters'});
-        const leftOffset = turf.lineOffset(lineString, -halfWidth, {units: 'meters'});
-
-        // Crear polígon de corona
-        const rightCoords = rightOffset.geometry.coordinates;
-        const leftCoords = leftOffset.geometry.coordinates;
-
-        if (rightCoords.length > 1 && leftCoords.length > 1) {
-            const polygonCoords = [
-                ...rightCoords.map(c => [c[1], c[0]]),
-                ...leftCoords.reverse().map(c => [c[1], c[0]]),
-                [rightCoords[0][1], rightCoords[0][0]]
-            ];
-
-            L.polygon(polygonCoords, {
-                color: '#3498db',
-                weight: 1,
-                fillColor: '#3498db',
-                fillOpacity: 0.15
-            }).addTo(crownLayer);
-
-            // Línies de vora
-            L.polyline(rightCoords.map(c => [c[1], c[0]]), {
-                color: '#3498db', weight: 2, opacity: 0.7
-            }).addTo(crownLayer);
-
-            L.polyline(leftCoords.map(c => [c[1], c[0]]), {
-                color: '#3498db', weight: 2, opacity: 0.7
-            }).addTo(crownLayer);
-        }
-    } catch (e) {
-        console.warn('Error drawing crown:', e);
-    }
-}
-
-function buildFullPath() {
-    if (axisPoints.length < 2) return axisPoints;
-
-    const minR = parseFloat(document.getElementById('minRadius').value);
-    const maxR = parseFloat(document.getElementById('maxRadius').value);
-    const path = [axisPoints[0]];
-
-    for (let i = 1; i < axisPoints.length - 1; i++) {
-        const arcPoints = generateArcPoints(axisPoints[i-1], axisPoints[i], axisPoints[i+1], 
-            Math.max(minR, 50));
-
-        if (arcPoints.length > 2) {
-            // Afegir punts de l'arc (excloent primers i últims per evitar duplicats)
-            for (let j = 1; j < arcPoints.length - 1; j++) {
-                path.push({ lat: arcPoints[j][0], lng: arcPoints[j][1] });
-            }
-        }
-        path.push(axisPoints[i]);
-    }
-
-    path.push(axisPoints[axisPoints.length - 1]);
-    return path;
-}
-
-// ==================== CÀLCULS KV ====================
-function calculateKV(p1, p2) {
-    // Si no tenim elevació, estimar-la (simulació)
-    const elev1 = p1.elev !== null ? p1.elev : estimateElevation(p1.lat, p1.lng);
-    const elev2 = p2.elev !== null ? p2.elev : estimateElevation(p2.lat, p2.lng);
-
-    const dist = haversine(p1.lat, p1.lng, p2.lat, p2.lng);
-    if (dist < 0.1) return 0;
-
-    const deltaElev = Math.abs(elev2 - elev1);
-    return (deltaElev / dist) * 100;
-}
-
-function estimateElevation(lat, lng) {
-    // Simulació d'elevació basada en posició (per demostració)
-    // En producció, això vindria d'un DEM
-    return Math.sin(lat * 0.1) * Math.cos(lng * 0.1) * 100 + 500;
-}
-
-// ==================== ESTADÍSTIQUES ====================
-function updateStats() {
-    if (axisPoints.length < 2) return;
-
-    const fullPath = buildFullPath();
-    let totalLength = 0;
-    let maxKV = 0;
-    let numCurves = 0;
-    let minRadiusFound = Infinity;
-
-    // Longitud total
-    for (let i = 0; i < fullPath.length - 1; i++) {
-        totalLength += haversine(fullPath[i].lat, fullPath[i].lng, fullPath[i+1].lat, fullPath[i+1].lng);
-    }
-
-    // KV màxim
-    for (let i = 0; i < axisPoints.length - 1; i++) {
-        const kv = calculateKV(axisPoints[i], axisPoints[i+1]);
-        if (kv > maxKV) maxKV = kv;
-    }
-
-    // Corbes i radis
-    const minR = parseFloat(document.getElementById('minRadius').value);
-    for (let i = 1; i < axisPoints.length - 1; i++) {
-        const angle = calculateAngle(axisPoints[i-1], axisPoints[i], axisPoints[i+1]);
-        if (angle > 5) {
-            numCurves++;
-            const radius = Math.max(minR, 50 / Math.sin(angle * Math.PI / 360));
-            if (radius < minRadiusFound) minRadiusFound = radius;
-        }
-    }
-
-    // Àrea de corona
-    const width = parseFloat(document.getElementById('roadWidth').value);
-    const crownArea = totalLength * width;
-
-    // Volums
-    const vegDepth = parseFloat(document.getElementById('vegDepth').value);
-    const volClearing = crownArea * vegDepth;
-    const volCut = crownArea * 0.5 * 0.3; // Estimació simplificada
-    const volFill = crownArea * 0.3 * 0.2;
-    const volTotal = volClearing + volCut + volFill;
-
-    // Actualitzar DOM
-    document.getElementById('statLength').textContent = totalLength.toFixed(1);
-    document.getElementById('statSegments').textContent = axisPoints.length - 1;
-    document.getElementById('statCurves').textContent = numCurves;
-    document.getElementById('statMaxKV').textContent = maxKV.toFixed(1);
-    document.getElementById('statMinRadius').textContent = minRadiusFound === Infinity ? '-' : minRadiusFound.toFixed(1);
-    document.getElementById('statArea').textContent = crownArea.toFixed(1);
-
-    document.getElementById('volClearing').textContent = volClearing.toFixed(1);
-    document.getElementById('volCut').textContent = volCut.toFixed(1);
-    document.getElementById('volFill').textContent = volFill.toFixed(1);
-    document.getElementById('volTotal').textContent = volTotal.toFixed(1);
-}
-
-// ==================== ALERTES ====================
-function updateAlerts() {
-    const container = document.getElementById('alertsContainer');
-    container.innerHTML = '';
-
-    const maxKV = parseFloat(document.getElementById('maxKV').value);
-    const maxKVSustained = parseFloat(document.getElementById('maxKVSustained').value);
-    const minR = parseFloat(document.getElementById('minRadius').value);
-
-    // Comprovar KV
-    for (let i = 0; i < axisPoints.length - 1; i++) {
-        const kv = calculateKV(axisPoints[i], axisPoints[i+1]);
-        if (kv > maxKV) {
-            addAlert(`danger`, `KV excessiu al segment ${i+1}: ${kv.toFixed(1)}% (màx: ${maxKV}%)`);
-        } else if (kv > maxKVSustained) {
-            addAlert(`warning`, `KV elevat al segment ${i+1}: ${kv.toFixed(1)}% (sostingut: ${maxKVSustained}%)`);
-        }
-    }
-
-    // Comprovar radis
-    for (let i = 1; i < axisPoints.length - 1; i++) {
-        const angle = calculateAngle(axisPoints[i-1], axisPoints[i], axisPoints[i+1]);
-        if (angle > 5) {
-            const radius = Math.max(minR, 50 / Math.sin(angle * Math.PI / 360));
-            if (radius < minR) {
-                addAlert(`danger`, `Radi insuficient al vèrtex ${i}: ${radius.toFixed(1)}m (mín: ${minR}m)`);
-            }
-        }
-    }
-}
-
-function addAlert(type, message) {
-    const container = document.getElementById('alertsContainer');
-    const div = document.createElement('div');
-    div.className = `alert alert-${type}`;
-    div.style.display = 'block';
-    div.innerHTML = message;
-    container.appendChild(div);
-}
-
-// ==================== IMPORT/EXPORT ====================
-function handleFileImport(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const content = e.target.result;
-
-            if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) {
-                const geojson = JSON.parse(content);
-                importGeoJSON(geojson);
-            } else if (file.name.endsWith('.gpx')) {
-                importGPX(content);
-            }
-        } catch (err) {
-            alert('Error important fitxer: ' + err.message);
-        }
-    };
-    reader.readAsText(file);
-}
-
-function importGeoJSON(geojson) {
-    axisPoints = [];
-
-    if (geojson.type === 'FeatureCollection') {
-        geojson.features.forEach(feature => {
-            if (feature.geometry.type === 'LineString') {
-                feature.geometry.coordinates.forEach(coord => {
-                    axisPoints.push({
-                        lat: coord[1],
-                        lng: coord[0],
-                        elev: coord[2] || null
-                    });
-                });
-            }
-        });
-    } else if (geojson.type === 'Feature' && geojson.geometry.type === 'LineString') {
-        geojson.geometry.coordinates.forEach(coord => {
-            axisPoints.push({
-                lat: coord[1],
-                lng: coord[0],
-                elev: coord[2] || null
-            });
-        });
-    }
-
-    updateAll();
-    updateVertexList();
-    fitBounds();
-}
-
-function importGPX(gpxContent) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(gpxContent, "text/xml");
-    const trkpts = xmlDoc.getElementsByTagName('trkpt');
-
-    axisPoints = [];
-    for (let pt of trkpts) {
-        axisPoints.push({
-            lat: parseFloat(pt.getAttribute('lat')),
-            lng: parseFloat(pt.getAttribute('lon')),
-            elev: pt.getElementsByTagName('ele')[0]?.textContent ? parseFloat(pt.getElementsByTagName('ele')[0].textContent) : null
-        });
-    }
-
-    updateAll();
-    updateVertexList();
-    fitBounds();
-}
-
-function exportGeoJSON() {
-    if (axisPoints.length < 2) {
-        alert('No hi ha traçat per exportar');
-        return;
-    }
-
-    const geojson = {
-        type: 'FeatureCollection',
-        features: [{
-            type: 'Feature',
-            properties: {
-                name: 'Camí forestal',
-                width: parseFloat(document.getElementById('roadWidth').value),
-                maxKV: parseFloat(document.getElementById('maxKV').value),
-                minRadius: parseFloat(document.getElementById('minRadius').value),
-                designSpeed: parseFloat(document.getElementById('designSpeed').value)
-            },
-            geometry: {
-                type: 'LineString',
-                coordinates: axisPoints.map(p => [p.lng, p.lat, p.elev || 0])
-            }
-        }]
-    };
-
-    downloadFile(JSON.stringify(geojson, null, 2), 'cami_forestal.geojson', 'application/json');
-}
-
-function exportCSV() {
-    if (axisPoints.length < 2) {
-        alert('No hi ha traçat per exportar');
-        return;
-    }
-
-    const width = parseFloat(document.getElementById('roadWidth').value);
-    const vegDepth = parseFloat(document.getElementById('vegDepth').value);
-    const slopeRatio = parseFloat(document.getElementById('slopeRatio').value);
-    const interval = parseFloat(document.getElementById('sectionInterval').value);
-
-    let csv = 'PK,Lat,Lng,Elevacio,Distancia_cumulada,KV_percent,Ample_via_m,Desbrossament_m3,Desmont_m3,Terraple_m3\n';
-
-    let cumDist = 0;
-    for (let i = 0; i < axisPoints.length; i++) {
-        if (i > 0) {
-            cumDist += haversine(axisPoints[i-1].lat, axisPoints[i-1].lng, axisPoints[i].lat, axisPoints[i].lng);
-        }
-
-        const kv = i > 0 ? calculateKV(axisPoints[i-1], axisPoints[i]) : 0;
-        const segLength = i > 0 ? haversine(axisPoints[i-1].lat, axisPoints[i-1].lng, axisPoints[i].lat, axisPoints[i].lng) : 0;
-        const clearing = segLength * width * vegDepth;
-        const cut = segLength * width * 0.5 * 0.3;
-        const fill = segLength * width * 0.3 * 0.2;
-
-        csv += `${cumDist.toFixed(2)},${axisPoints[i].lat.toFixed(6)},${axisPoints[i].lng.toFixed(6)},${axisPoints[i].elev || 0},${cumDist.toFixed(2)},${kv.toFixed(2)},${width},${clearing.toFixed(2)},${cut.toFixed(2)},${fill.toFixed(2)}\n`;
-    }
-
-    downloadFile(csv, 'seccions_transversals.csv', 'text/csv');
-}
-
-function exportReport() {
-    const width = parseFloat(document.getElementById('roadWidth').value);
-    const totalLength = parseFloat(document.getElementById('statLength').textContent);
-    const maxKV = parseFloat(document.getElementById('statMaxKV').textContent);
-    const volTotal = parseFloat(document.getElementById('volTotal').textContent);
-
-    const report = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Informe Camí Forestal</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Disseny de Camins Forestals</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-body{font-family:Arial;margin:40px;color:#333}
-h1{color:#2c3e50;border-bottom:3px solid #e94560;padding-bottom:10px}
-.table{width:100%;border-collapse:collapse;margin:20px 0}
-.table th,.table td{border:1px solid #ddd;padding:10px;text-align:left}
-.table th{background:#f8f9fa}
-.highlight{background:#fff3cd;padding:15px;border-left:4px solid #f39c12;margin:15px 0}
+:root{--bg-primary:#11291d;--bg-secondary:#1a3d2b;--bg-card:#1e4a35;--bg-input:#163828;--accent:#4ade80;--accent-dim:#22c55e;--text-primary:#e8f5e9;--text-secondary:#a7c4b0;--text-muted:#6b9e7c;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--border:#2d5a40;--shadow:rgba(0,0,0,0.4)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.toast-container{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10001;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:90%;max-width:400px}
+.toast{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--text-primary);box-shadow:0 4px 20px var(--shadow);animation:slideDown .3s ease;pointer-events:auto;display:flex;align-items:center;gap:10px}
+.toast.success{border-left:3px solid var(--accent)}
+.toast.error{border-left:3px solid var(--danger)}
+.toast.warning{border-left:3px solid var(--warning)}
+.toast.info{border-left:3px solid var(--info)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.app-header{background:linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%);padding:12px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.app-header h1{font-size:16px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn-icon{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s}
+.btn-icon:hover{background:var(--bg-input);color:var(--text-primary)}
+.main-content{padding:12px 16px 100px;max-width:900px;margin:0 auto}
+.card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px var(--shadow)}
+.card-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.btn{padding:10px 18px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent-dim),var(--accent));color:#0a1f15}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(74,222,128,.3)}
+.btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg-input)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:4px}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text-muted)}
+.form-textarea{min-height:60px;resize:vertical}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+#map{width:100%;height:320px;border-radius:12px;border:1px solid var(--border);z-index:1}
+.leaflet-container{background:var(--bg-primary)!important}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:var(--bg-card);color:var(--accent);font-weight:600;text-align:left;padding:8px 10px;position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.data-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary);font-family:'DM Mono',monospace;font-size:12px}
+.data-table tr:hover td{background:rgba(74,222,128,.05)}
+.table-container{max-height:280px;overflow:auto;border-radius:10px;border:1px solid var(--border)}
+.chart-container{background:var(--bg-primary);border-radius:12px;padding:12px;border:1px solid var(--border);position:relative}
+.chart-canvas{width:100%;height:200px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-card{background:var(--bg-primary);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center}
+.stat-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--accent);line-height:1}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-unit{font-size:11px;color:var(--text-secondary);font-family:'DM Mono',monospace}
+.slope-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace}
+.slope-green{background:rgba(74,222,128,.15);color:var(--accent)}
+.slope-yellow{background:rgba(245,158,11,.15);color:var(--warning)}
+.slope-red{background:rgba(239,68,68,.15);color:var(--danger)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(17,41,29,.95) 100%);border-top:1px solid var(--border);padding:8px 16px 20px;display:flex;justify-content:space-around;z-index:100;backdrop-filter:blur(10px)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text-muted);font-size:10px;font-weight:500;border:none;background:none;font-family:'DM Sans',sans-serif}
+.nav-item.active{color:var(--accent);background:rgba(74,222,128,.1)}
+.nav-item svg{width:22px;height:22px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;width:100%;max-width:500px;max-height:85vh;overflow:auto;padding:20px;box-shadow:0 20px 60px var(--shadow)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:700;color:var(--accent)}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.path-item{background:var(--bg-primary);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center}
+.path-item:hover{border-color:var(--accent);background:rgba(74,222,128,.05)}
+.path-item-info h3{font-size:14px;color:var(--text-primary);margin-bottom:2px}
+.path-item-info p{font-size:12px;color:var(--text-muted)}
+.path-item-actions{display:flex;gap:6px}
+.file-drop{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;color:var(--text-muted);font-size:13px;cursor:pointer;transition:all .2s;background:var(--bg-primary)}
+.file-drop:hover,.file-drop.dragover{border-color:var(--accent);background:rgba(74,222,128,.05);color:var(--text-primary)}
+.file-drop input{display:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+.hidden{display:none!important}
+@media(min-width:768px){.stat-grid{grid-template-columns:repeat(4,1fr)}#map{height:400px}.grid-2{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<h1>📋 Informe de Disseny de Camí Forestal</h1>
-<p><strong>Data:</strong> ${new Date().toLocaleDateString('ca-ES')}</p>
+<div id="toastContainer" class="toast-container"></div>
 
-<h2>1. Paràmetres de Disseny</h2>
-<table class="table">
-<tr><th>Paràmetre</th><th>Valor</th></tr>
-<tr><td>Ample de via</td><td>${width} m</td></tr>
-<tr><td>KV màxim admissible</td><td>${document.getElementById('maxKV').value}%</td></tr>
-<tr><td>Radi mínim corba</td><td>${document.getElementById('minRadius').value} m</td></tr>
-<tr><td>Velocitat de disseny</td><td>${document.getElementById('designSpeed').value} km/h</td></tr>
-<tr><td>Coeficient de fregament</td><td>${document.getElementById('friction').value}</td></tr>
-</table>
+<header class="app-header">
+<h1 id="appTitle">&#127794; Camins Forestals</h1>
+<div class="header-actions">
+<button class="btn-icon" onclick="app.saveCurrentPath()" title="Guardar">&#128190;</button>
+</div>
+</header>
 
-<h2>2. Estadístiques del Traçat</h2>
-<table class="table">
-<tr><th>Mètrica</th><th>Valor</th></tr>
-<tr><td>Longitud total</td><td>${totalLength.toFixed(1)} m</td></tr>
-<tr><td>Nombre de segments</td><td>${axisPoints.length - 1}</td></tr>
-<tr><td>Nombre de corbes</td><td>${document.getElementById('statCurves').textContent}</td></tr>
-<tr><td>KV màxim</td><td>${maxKV.toFixed(1)}%</td></tr>
-<tr><td>Àrea de corona</td><td>${document.getElementById('statArea').textContent} m²</td></tr>
-</table>
+<main class="main-content" id="mainContent"></main>
 
-<h2>3. Volums de Moviment de Terres</h2>
-<table class="table">
-<tr><th>Concepte</th><th>Volum (m³)</th></tr>
-<tr><td>Desbrossament</td><td>${document.getElementById('volClearing').textContent}</td></tr>
-<tr><td>Desmont</td><td>${document.getElementById('volCut').textContent}</td></tr>
-<tr><td>Terraplè</td><td>${document.getElementById('volFill').textContent}</td></tr>
-<tr><td><strong>Total</strong></td><td><strong>${volTotal.toFixed(1)}</strong></td></tr>
-</table>
+<nav class="bottom-nav">
+<button class="nav-item active" data-view="list" onclick="app.switchView('list')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+<span id="navList">Llistat</span>
+</button>
+<button class="nav-item" data-view="editor" onclick="app.switchView('editor')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 7m0 13V7"/></svg>
+<span id="navEditor">Tracat</span>
+</button>
+<button class="nav-item" data-view="profile" onclick="app.switchView('profile')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+<span id="navProfile">Perfil</span>
+</button>
+<button class="nav-item" data-view="sections" onclick="app.switchView('sections')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+<span id="navSections">Seccions</span>
+</button>
+<button class="nav-item" data-view="calcs" onclick="app.switchView('calcs')">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+<span id="navCalcs">Calcs</span>
+</button>
+</nav>
 
-<div class="highlight">
-<strong>Nota:</strong> Aquest informe és una estimació preliminar. Per a càlculs precisos de moviment de terres es recomana utilitzar un Model Digital del Terreny (MDT) de resolució adequada.
+<!-- Modal Nou Cami -->
+<div class="modal-overlay" id="newPathModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title" id="modalNewPathTitle">Nou Cami</span>
+<button class="modal-close" onclick="app.closeModal('newPathModal')">&times;</button>
+</div>
+<div class="form-group">
+<label class="form-label" id="labelPathName">Nom del cami</label>
+<input type="text" class="form-input" id="newPathName" placeholder="Ex: Cami de la Serra">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelPathDesc">Descripcio</label>
+<textarea class="form-textarea" id="newPathDesc" placeholder="Descripcio del tracat..."></textarea>
+</div>
+<div style="display:flex;gap:10px;margin-top:16px">
+<button class="btn btn-secondary" style="flex:1" onclick="app.closeModal('newPathModal')" id="btnCancel">Cancelar</button>
+<button class="btn btn-primary" style="flex:1" onclick="app.createNewPath()" id="btnCreate">Crear</button>
+</div>
+</div>
 </div>
 
-<h2>4. Coordenades del Traçat</h2>
-<table class="table">
-<tr><th>PK</th><th>Latitud</th><th>Longitud</th><th>Elevació</th></tr>
-${axisPoints.map((p, i) => `<tr><td>${i+1}</td><td>${p.lat.toFixed(6)}</td><td>${p.lng.toFixed(6)}</td><td>${p.elev || 'N/A'}</td></tr>`).join('')}
-</table>
-</body>
-</html>`;
+<!-- Modal Importar -->
+<div class="modal-overlay" id="importModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title" id="modalImportTitle">Importar des de QGIS</span>
+<button class="modal-close" onclick="app.closeModal('importModal')">&times;</button>
+</div>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px" id="importHelp">Exporta la teva polilinia des de QGIS com a GeoJSON (.geojson) o GPX (.gpx).</p>
+<div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+<input type="file" id="fileInput" accept=".geojson,.gpx,.json" onchange="app.handleFileImport(event)">
+<div style="font-size:28px;margin-bottom:8px">&#128193;</div>
+<div id="dropText">Arrossega un fitxer GeoJSON o GPX<br>o fes clic per seleccionar</div>
+</div>
+<div style="margin-top:12px;padding:10px;background:var(--bg-primary);border-radius:8px;font-size:11px;color:var(--text-muted)">
+<strong style="color:var(--accent)">&#128161; Consell:</strong> <span id="importTip">A QGIS, selecciona la capa &rarr; Guardar entitats com &rarr; Format GeoJSON.</span>
+</div>
+</div>
+</div>
 
-    downloadFile(report, 'informe_cami_forestal.html', 'text/html');
-}
+<!-- Modal Editar Punt -->
+<div class="modal-overlay" id="editPointModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title" id="modalEditTitle">Editar Punt</span>
+<button class="modal-close" onclick="app.closeModal('editPointModal')">&times;</button>
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label" id="labelStation">Estacio</label>
+<input type="text" class="form-input" id="editStation" placeholder="0+000">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelElevation">Cota Z (m)</label>
+<input type="number" class="form-input" id="editElevation" step="0.01" placeholder="450.50">
+</div>
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label" id="labelCoordX">Coordenada X (Long)</label>
+<input type="number" class="form-input" id="editCoordX" step="0.000001" placeholder="2.1543">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelCoordY">Coordenada Y (Lat)</label>
+<input type="number" class="form-input" id="editCoordY" step="0.000001" placeholder="41.3874">
+</div>
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label class="form-label" id="labelWidth">Ample calcada (m)</label>
+<input type="number" class="form-input" id="editWidth" step="0.1" value="3.5" placeholder="3.5">
+</div>
+<div class="form-group">
+<label class="form-label" id="labelSlopeType">Tipus de seccio</label>
+<select class="form-select" id="editSlopeType">
+<option value="cut">En tall</option>
+<option value="fill">En rebliment</option>
+<option value="mixed">Mixta</option>
+</select>
+</div>
+</div>
+<div style="display:flex;gap:10px;margin-top:16px">
+<button class="btn btn-danger" style="flex:1" onclick="app.deleteCurrentPoint()" id="btnDeletePoint">Eliminar</button>
+<button class="btn btn-primary" style="flex:1" onclick="app.savePointEdit()" id="btnSavePoint">Guardar</button>
+</div>
+</div>
+</div>
 
-function downloadFile(content, filename, mimeType) {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+<!-- Modal MDT Local -->
+<div class="modal-overlay" id="mdtModal">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-title">&#128208; Carregar MDT local</span>
+<button class="modal-close" onclick="app.closeModal('mdtModal')">&times;</button>
+</div>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+Puja un fitxer MDT local per obtenir elevacions sense connexio a internet.
 
-// ==================== UTILITATS ====================
-function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
+</p>
+<div class="file-drop" id="mdtDrop" onclick="document.getElementById('mdtInput').click()">
+<input type="file" id="mdtInput" accept=".asc,.txt,.tif,.tiff,.img,.dem,.xyz,.csv,.hgt,.bil,.flt" onchange="app.handleMDTUpload(event)">
+<div style="font-size:28px;margin-bottom:8px">&#9968;&#65039;</div>
+<div>Arrossega un fitxer MDT<br><span style="font-size:11px;color:var(--text-muted)">.asc .txt .xyz .csv .dem .hgt .bil .flt .tif .tiff .img</span><br>o fes clic per seleccionar</div>
+</div>
+<div id="mdtInfo" style="margin-top:12px;font-size:12px;color:var(--text-secondary)"></div>
+</div>
+</div>
 
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const lat1Rad = lat1 * Math.PI / 180;
-    const lat2Rad = lat2 * Math.PI / 180;
-    const y = Math.sin(dLon) * Math.cos(lat2Rad);
-    const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
-    let bearing = Math.atan2(y, x) * 180 / Math.PI;
-    return (bearing + 360) % 360;
-}
+<script>
+const texts={
+ca:{appTitle:'\ud83c\udf32 Camins Forestals',navList:'Llistat',navEditor:'Tracat',navProfile:'Perfil',navSections:'Seccions',navCalcs:'Calcs',newPath:'Nou Cami',importQGIS:'Importar QGIS',noPaths:'Encara no tens cap cami creat.',pathName:'Nom del cami',pathDesc:'Descripcio',cancel:'Cancelar',create:'Crear',station:'Estacio',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ample calcada (m)',slopeType:'Tipus de seccio',cut:'En tall',fill:'En rebliment',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Afegir punt',calcProfile:'Calcular perfil',importFile:'Importar fitxer',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendent max.',minSlope:'Pendent min.',avgSlope:'Pendent mitj.',cvSlope:'CV Pendents',cutVol:'Vol. tall',fillVol:'Vol. reblim.',balance:'Balanc',points:'Punts',distance:'Distancia',slope:'Pendent',elevationData:'Dades elevacio',elevationAuto:'Auto (ICGC/API)',elevationManual:'Manual',elevationTip:'Clica al mapa per afegir punts. Les cotes es poden obtenir automaticament via WCS de l ICGC (MDT 2m) o introduir-se manualment.',importTitle:'Importar des de QGIS',importHelp:'Exporta la teva polilinia des de QGIS com a GeoJSON (.geojson) o GPX (.gpx).',importTip:"A QGIS, selecciona la capa \u2192 Guardar entitats com \u2192 Format GeoJSON.",dropText:'Arrossega un fitxer GeoJSON o GPX<br>o fes clic per seleccionar',saved:'Guardat correctament',error:'Error',offline:'Mode offline',online:'Connectat',deleteConfirm:'Eliminar cami?',yes:'Si',no:'No',sectionView:'Vista de seccions',noPoints:'Afegeix punts al tracat primer.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Tornar al Hub',savedLocal:'Guardat en local',gettingElevation:'Obtenint elevacio...',elevationError:'No s ha pogut obtenir l elevacio',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Carregar MDT local',mdtLoaded:'MDT carregat',mdtError:'Error carregant MDT'},
+es:{appTitle:'\ud83c\udf32 Caminos Forestales',navList:'Listado',navEditor:'Trazado',navProfile:'Perfil',navSections:'Secciones',navCalcs:'Calculos',newPath:'Nuevo Camino',importQGIS:'Importar QGIS',noPaths:'Aun no tienes ningun camino creado.',pathName:'Nombre del camino',pathDesc:'Descripcion',cancel:'Cancelar',create:'Crear',station:'Estacion',elevation:'Cota Z (m)',coordX:'Coordenada X',coordY:'Coordenada Y',width:'Ancho calzada (m)',slopeType:'Tipo de seccion',cut:'En corte',fill:'En relleno',mixed:'Mixta',deletePoint:'Eliminar',savePoint:'Guardar',addPoint:'+ Anadir punto',calcProfile:'Calcular perfil',importFile:'Importar archivo',calculate:'Calcular',exportCSV:'Exportar CSV',totalLength:'Longitud total',maxSlope:'Pendiente max.',minSlope:'Pendiente min.',avgSlope:'Pendiente media',cvSlope:'CV Pendientes',cutVol:'Vol. corte',fillVol:'Vol. relleno',balance:'Balance',points:'Puntos',distance:'Distancia',slope:'Pendiente',elevationData:'Datos elevacion',elevationAuto:'Auto (ICGC/API)',elevationManual:'Manual',elevationTip:'Clica en el mapa para anadir puntos. Las cotas se pueden obtener automaticamente via WCS del ICGC (MDT 2m) o introducirse manualmente.',importTitle:'Importar desde QGIS',importHelp:'Exporta tu polilinea desde QGIS como GeoJSON (.geojson) o GPX (.gpx).',importTip:"En QGIS, selecciona la capa \u2192 Guardar entidades como \u2192 Formato GeoJSON.",dropText:'Arrastra un archivo GeoJSON o GPX<br>o haz clic para seleccionar',saved:'Guardado correctamente',error:'Error',offline:'Modo offline',online:'Conectado',deleteConfirm:'Eliminar camino?',yes:'Si',no:'No',sectionView:'Vista de secciones',noPoints:'Anade puntos al trazado primero.',edit:'Editar',duplicate:'Duplicar',delete:'Eliminar',backToHub:'Volver al Hub',savedLocal:'Guardado en local',gettingElevation:'Obteniendo elevacion...',elevationError:'No se pudo obtener la elevacion',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Cargar MDT local',mdtLoaded:'MDT cargado',mdtError:'Error cargando MDT'},
+en:{appTitle:'\ud83c\udf32 Forest Paths',navList:'List',navEditor:'Trace',navProfile:'Profile',navSections:'Sections',navCalcs:'Calculations',newPath:'New Path',importQGIS:'Import QGIS',noPaths:'You have no paths created yet.',pathName:'Path name',pathDesc:'Description',cancel:'Cancel',create:'Create',station:'Station',elevation:'Elevation Z (m)',coordX:'X Coordinate',coordY:'Y Coordinate',width:'Road width (m)',slopeType:'Section type',cut:'Cut',fill:'Fill',mixed:'Mixed',deletePoint:'Delete',savePoint:'Save',addPoint:'+ Add point',calcProfile:'Calculate profile',importFile:'Import file',calculate:'Calculate',exportCSV:'Export CSV',totalLength:'Total length',maxSlope:'Max slope',minSlope:'Min slope',avgSlope:'Avg slope',cvSlope:'Slope CV',cutVol:'Cut vol.',fillVol:'Fill vol.',balance:'Balance',points:'Points',distance:'Distance',slope:'Slope',elevationData:'Elevation data',elevationAuto:'Auto (ICGC/API)',elevationManual:'Manual',elevationTip:'Click on the map to add points. Elevations are fetched automatically via ICGC WCS service (MDT 2m) or entered manually.',importTitle:'Import from QGIS',importHelp:'Export your polyline from QGIS as GeoJSON (.geojson) or GPX (.gpx).',importTip:"In QGIS, select layer \u2192 Save Features As \u2192 GeoJSON format.",dropText:'Drop a GeoJSON or GPX file here<br>or click to select',saved:'Saved successfully',error:'Error',offline:'Offline mode',online:'Connected',deleteConfirm:'Delete path?',yes:'Yes',no:'No',sectionView:'Section view',noPoints:'Add points to the trace first.',edit:'Edit',duplicate:'Duplicate',delete:'Delete',backToHub:'Back to Hub',savedLocal:'Saved locally',gettingElevation:'Getting elevation...',elevationError:'Could not get elevation',km:'km',m:'m',percent:'%',m3:'m3',mdtLoad:'Load local DTM',mdtLoaded:'DTM loaded',mdtError:'Error loading DTM'}
+};
 
-function calculateAngle(p1, p2, p3) {
-    const b1 = calculateBearing(p1.lat, p1.lng, p2.lat, p2.lng);
-    const b2 = calculateBearing(p2.lat, p2.lng, p3.lat, p3.lng);
-    let angle = Math.abs(b2 - b1);
-    if (angle > 180) angle = 360 - angle;
-    return angle;
-}
+let T=texts.ca;
+let currentLang='ca';
 
-function destinationPoint(lat, lon, distance, bearing) {
-    const R = 6371000;
-    const latRad = lat * Math.PI / 180;
-    const lonRad = lon * Math.PI / 180;
-    const bearingRad = bearing * Math.PI / 180;
-    const dR = distance / R;
+const app={
+paths:[],currentPath:null,currentView:'list',map:null,mapMarkers:[],mapPolyline:null,editingPointIndex:-1,mdtData:null,
 
-    const lat2 = Math.asin(Math.sin(latRad) * Math.cos(dR) + Math.cos(latRad) * Math.sin(dR) * Math.cos(bearingRad));
-    const lon2 = lonRad + Math.atan2(Math.sin(bearingRad) * Math.sin(dR) * Math.cos(latRad), Math.cos(dR) - Math.sin(latRad) * Math.sin(lat2));
+init:function(){
+  this.detectLanguage();
+  this.loadLocalPaths();
+  this.updateUITexts();
+  this.render();
+  this.setupDragDrop();
+  showToast(T.savedLocal+' ('+this.paths.length+' camins)','info',2000);
+},
 
-    return { lat: lat2 * 180 / Math.PI, lng: lon2 * 180 / Math.PI };
-}
+detectLanguage:function(){
+  var lang=localStorage.getItem('ptgmf_lang')||'ca';
+  currentLang=['ca','es','en'].includes(lang)?lang:'ca';
+  T=texts[currentLang];
+  document.documentElement.lang=currentLang;
+},
 
-function clearAll() {
-    if (confirm('Vols esborrar tot el traçat?')) {
-        axisPoints = [];
-        updateAll();
-        updateVertexList();
+updateUITexts:function(){
+  document.getElementById('appTitle').textContent=T.appTitle;
+  document.getElementById('navList').textContent=T.navList;
+  document.getElementById('navEditor').textContent=T.navEditor;
+  document.getElementById('navProfile').textContent=T.navProfile;
+  document.getElementById('navSections').textContent=T.navSections;
+  document.getElementById('navCalcs').textContent=T.navCalcs;
+  document.getElementById('modalNewPathTitle').textContent=T.newPath;
+  document.getElementById('labelPathName').textContent=T.pathName;
+  document.getElementById('labelPathDesc').textContent=T.pathDesc;
+  document.getElementById('btnCancel').textContent=T.cancel;
+  document.getElementById('btnCreate').textContent=T.create;
+  document.getElementById('modalImportTitle').textContent=T.importTitle;
+  document.getElementById('importHelp').textContent=T.importHelp;
+  document.getElementById('importTip').textContent=T.importTip;
+  document.getElementById('dropText').innerHTML=T.dropText;
+  document.getElementById('modalEditTitle').textContent=T.edit;
+  document.getElementById('labelStation').textContent=T.station;
+  document.getElementById('labelElevation').textContent=T.elevation;
+  document.getElementById('labelCoordX').textContent=T.coordX;
+  document.getElementById('labelCoordY').textContent=T.coordY;
+  document.getElementById('labelWidth').textContent=T.width;
+  document.getElementById('labelSlopeType').textContent=T.slopeType;
+  document.getElementById('btnDeletePoint').textContent=T.deletePoint;
+  document.getElementById('btnSavePoint').textContent=T.savePoint;
+  var opts=document.getElementById('editSlopeType').options;
+  opts[0].text=T.cut; opts[1].text=T.fill; opts[2].text=T.mixed;
+},
+
+loadLocalPaths:function(){
+  try{
+    var stored=localStorage.getItem('forest_paths_v2');
+    if(stored) this.paths=JSON.parse(stored);
+  }catch(e){ this.paths=[]; }
+},
+
+saveLocalPaths:function(){
+  try{
+    localStorage.setItem('forest_paths_v2',JSON.stringify(this.paths));
+  }catch(e){ console.error('Error saving:',e); }
+},
+
+createNewPath:function(){
+  var name=document.getElementById('newPathName').value.trim();
+  var desc=document.getElementById('newPathDesc').value.trim();
+  if(!name){ showToast(T.error+': '+T.pathName,'error'); return; }
+  var newPath={
+    id:crypto.randomUUID(),
+    name:name,description:desc,
+    points:[],sections:[],calculations:null,
+    created_at:new Date().toISOString(),
+    updated_at:new Date().toISOString()
+  };
+  this.paths.unshift(newPath);
+  this.currentPath=newPath;
+  this.saveLocalPaths();
+  this.closeModal('newPathModal');
+  document.getElementById('newPathName').value='';
+  document.getElementById('newPathDesc').value='';
+  showToast(T.savedLocal,'success');
+  this.switchView('editor');
+},
+
+deletePath:function(id){
+  if(!confirm(T.deleteConfirm)) return;
+  this.paths=this.paths.filter(function(p){return p.id!==id;});
+  if(this.currentPath && this.currentPath.id===id) this.currentPath=null;
+  this.saveLocalPaths();
+  showToast(T.delete,'warning');
+  this.renderList();
+},
+
+duplicatePath:function(id){
+  var original=this.paths.find(function(p){return p.id===id;});
+  if(!original) return;
+  var copy={
+    id:crypto.randomUUID(),
+    name:original.name+' (copia)',
+    description:original.description,
+    points:JSON.parse(JSON.stringify(original.points)),
+    sections:JSON.parse(JSON.stringify(original.sections)),
+    calculations:original.calculations?JSON.parse(JSON.stringify(original.calculations)):null,
+    created_at:new Date().toISOString(),
+    updated_at:new Date().toISOString()
+  };
+  this.paths.unshift(copy);
+  this.saveLocalPaths();
+  showToast(T.savedLocal,'success');
+  this.renderList();
+},
+
+openPath:function(id){
+  this.currentPath=this.paths.find(function(p){return p.id===id;})||null;
+  if(this.currentPath) this.switchView('editor');
+},
+
+saveCurrentPath:function(){
+  if(!this.currentPath){ showToast('No hi ha cami actiu','warning'); return; }
+  this.currentPath.updated_at=new Date().toISOString();
+  this.saveLocalPaths();
+  showToast(T.savedLocal,'success');
+},
+
+addPoint:function(lat,lng,ele){
+  if(!this.currentPath) return;
+  var points=this.currentPath.points;
+  var station=this.calculateStation(points.length>0?points[points.length-1]:null,lat,lng);
+  points.push({
+    station:this.formatStation(station),
+    lat:lat,lng:lng,
+    elevation:ele,
+    width:3.5,
+    slopeType:'cut',
+    distance:station,
+    slope:0
+  });
+  this.recalculateDistancesAndSlopes();
+  this.saveLocalPaths();
+  this.renderEditor();
+},
+
+calculateStation:function(prevPoint,lat,lng){
+  if(!prevPoint) return 0;
+  return prevPoint.distance+this.haversine(prevPoint.lat,prevPoint.lng,lat,lng);
+},
+
+haversine:function(lat1,lng1,lat2,lng2){
+  var R=6371000;
+  var dLat=(lat2-lat1)*Math.PI/180;
+  var dLng=(lng2-lng1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+},
+
+formatStation:function(meters){
+  var km=Math.floor(meters/1000);
+  var m=Math.floor(meters%1000);
+  return km+'+'+String(m).padStart(3,'0');
+},
+
+recalculateDistancesAndSlopes:function(){
+  var points=this.currentPath.points;
+  for(var i=0;i<points.length;i++){
+    if(i===0){
+      points[i].distance=0;
+      points[i].slope=0;
+    }else{
+      var dist=this.haversine(points[i-1].lat,points[i-1].lng,points[i].lat,points[i].lng);
+      points[i].distance=points[i-1].distance+dist;
+      var eleDiff=(points[i].elevation||0)-(points[i-1].elevation||0);
+      points[i].slope=dist>0?(eleDiff/dist)*100:0;
+      points[i].station=this.formatStation(points[i].distance);
     }
-}
+  }
+},
 
-function fitBounds() {
-    if (axisPoints.length === 0) return;
-    const bounds = L.latLngBounds(axisPoints.map(p => [p.lat, p.lng]));
-    map.fitBounds(bounds, { padding: [50, 50] });
-}
+fetchElevation:function(lat,lng){
+  if(this.mdtData){
+    var ele=this.getElevationFromMDT(lat,lng);
+    if(ele!==null) return Promise.resolve(ele);
+  }
+  showToast(T.gettingElevation,'info');
+  // Primer intentem l'API d'elevació de l'ICGC (servei oficial Catalunya)
+  var self=this;
+  return self.fetchElevationICGC(lat,lng)
+    .then(function(ele){
+      if(ele!==null) return ele;
+      // Fallback: opentopodata SRTM
+      return fetch('https://api.opentopodata.org/v1/srtm90m?locations='+lat+','+lng,{signal:AbortSignal.timeout(8000)})
+        .then(function(response){
+          if(response.ok) return response.json();
+          throw new Error('API error');
+        })
+        .then(function(data){
+          if(data.results && data.results[0] && data.results[0].elevation!==null){
+            return Math.round(data.results[0].elevation*100)/100;
+          }
+          throw new Error('No elevation data');
+        });
+    })
+    .catch(function(e){
+      console.warn('Elevation fetch failed:',e);
+      showToast(T.elevationError+' - Introdueix la cota manualment','warning');
+      return null;
+    });
+},
 
-function toggleLayer(layerName) {
-    const layers = {
-        'axis': axisLayer,
-        'crown': crownLayer,
-        'curves': curvesLayer
+fetchElevationICGC:function(lat,lng){
+  // Servei WCS de l'ICGC per obtenir elevació del MDT 2m
+  // Convertim lat/lng (EPSG:4326) a UTM ETRS89 zona 31N (EPSG:25831)
+  var utm=this.latLngToUTM31N(lat,lng);
+  var delta=1; // 1 metre de marge al bbox
+  var bbox=[(utm.x-delta),(utm.y-delta),(utm.x+delta),(utm.y+delta)].join(',');
+  // WCS 1.0.0 GetCoverage del servei MDT de l'ICGC
+  var url='https://geoserveis.icgc.cat/icgc_mdt2m/wcs/service?'+
+    'SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage'+
+    '&COVERAGE=MDS_2m'+
+    '&CRS=EPSG:25831'+
+    '&BBOX='+bbox+
+    '&WIDTH=3&HEIGHT=3'+
+    '&FORMAT=ArcGrid';
+  return fetch(url,{signal:AbortSignal.timeout(8000)})
+    .then(function(response){
+      if(!response.ok) throw new Error('ICGC WCS error '+response.status);
+      return response.text();
+    })
+    .then(function(text){
+      // Parsejar ASCII Grid de resposta
+      var lines=text.trim().split('\n');
+      var ncols,nrows,nodata,dataStart=0;
+      for(var i=0;i<lines.length;i++){
+        var l=lines[i].trim().toLowerCase();
+        if(l.startsWith('ncols')) ncols=parseInt(l.split(/\s+/)[1]);
+        else if(l.startsWith('nrows')) nrows=parseInt(l.split(/\s+/)[1]);
+        else if(l.startsWith('nodata')) nodata=parseFloat(l.split(/\s+/)[1]);
+        else if(!isNaN(parseFloat(l.split(/\s+/)[0]))){ dataStart=i; break; }
+      }
+      var vals=[];
+      for(var i=dataStart;i<lines.length;i++){
+        lines[i].trim().split(/\s+/).forEach(function(v){
+          var f=parseFloat(v);
+          if(!isNaN(f) && f!==nodata) vals.push(f);
+        });
+      }
+      if(vals.length===0) return null;
+      // Agafem el valor central (píxel del centre)
+      var centerIdx=Math.floor(vals.length/2);
+      return Math.round(vals[centerIdx]*100)/100;
+    })
+    .catch(function(e){
+      console.warn('ICGC WCS failed:',e);
+      return null;
+    });
+},
+
+latLngToUTM31N:function(lat,lng){
+  // Conversió aproximada WGS84 a UTM zona 31N (ETRS89 compatible per Catalunya)
+  var a=6378137.0;
+  var f=1/298.257223563;
+  var b=a*(1-f);
+  var e2=(a*a-b*b)/(a*a);
+  var k0=0.9996;
+  var lon0=3*Math.PI/180; // Meridià central zona 31N = 3°E
+  var latR=lat*Math.PI/180;
+  var lngR=lng*Math.PI/180;
+  var N=a/Math.sqrt(1-e2*Math.sin(latR)*Math.sin(latR));
+  var T=Math.tan(latR)*Math.tan(latR);
+  var C=e2/(1-e2)*Math.cos(latR)*Math.cos(latR);
+  var A=Math.cos(latR)*(lngR-lon0);
+  var e4=e2*e2; var e6=e2*e2*e2;
+  var M=a*((1-e2/4-3*e4/64-5*e6/256)*latR
+    -(3*e2/8+3*e4/32+45*e6/1024)*Math.sin(2*latR)
+    +(15*e4/256+45*e6/1024)*Math.sin(4*latR)
+    -(35*e6/3072)*Math.sin(6*latR));
+  var x=k0*N*(A+(1-T+C)*A*A*A/6+(5-18*T+T*T+72*C-58*e2/(1-e2))*A*A*A*A*A/120)+500000;
+  var y=k0*(M+N*Math.tan(latR)*(A*A/2+(5-T+9*C+4*C*C)*A*A*A*A/24+(61-58*T+T*T+600*C-330*e2/(1-e2))*A*A*A*A*A*A/720));
+  if(lat<0) y+=10000000;
+  return {x:Math.round(x*100)/100, y:Math.round(y*100)/100};
+},
+
+fetchElevationsForAll:function(){
+  if(!this.currentPath) return;
+  var self=this;
+  var updated=0;
+  var i=0;
+  function processNext(){
+    if(i>=self.currentPath.points.length){
+      self.recalculateDistancesAndSlopes();
+      self.saveLocalPaths();
+      self.renderEditor();
+      showToast('Elevacions actualitzades: '+updated+' punts','success');
+      return;
+    }
+    var point=self.currentPath.points[i];
+    i++;
+    if(point.elevation!=null){ processNext(); return; }
+    self.fetchElevation(point.lat,point.lng).then(function(ele){
+      if(ele!==null){ point.elevation=ele; updated++; }
+      processNext();
+    });
+  }
+  processNext();
+},
+
+handleMDTUpload:function(event){
+  var file=event.target.files[0];
+  if(!file) return;
+  var self=this;
+  var name=file.name.toLowerCase();
+  // Formats binaris: GeoTIFF (.tif/.tiff), ESRI BIL (.bil), ERDAS .img, BIL float (.flt)
+  var binaryFormats=['.tif','.tiff','.img','.bil','.flt','.hgt'];
+  var isBinary=binaryFormats.some(function(ext){return name.endsWith(ext);});
+  // Formats text: ASCII Grid, XYZ, CSV, DEM, HGT (text)
+  var textFormats=['.asc','.txt','.xyz','.csv','.dem'];
+  var isText=textFormats.some(function(ext){return name.endsWith(ext);});
+  var reader=new FileReader();
+  if(isBinary){
+    // Per formats binaris, intentem llegir-los i alertem l'usuari
+    reader.onload=function(e){
+      try{
+        self.parseBinaryRaster(e.target.result,file.name);
+      }catch(err){
+        showToast(T.mdtError+': '+err.message,'error');
+      }
     };
-    const layer = layers[layerName];
-    if (map.hasLayer(layer)) {
-        map.removeLayer(layer);
-    } else {
-        map.addLayer(layer);
-    }
-}
-
-// ==================== SECCIONS TRANSVERSALS ====================
-function showSectionsModal() {
-    if (axisPoints.length < 2) {
-        alert('No hi ha traçat');
-        return;
-    }
-
-    const width = parseFloat(document.getElementById('roadWidth').value);
-    const vegDepth = parseFloat(document.getElementById('vegDepth').value);
-    const slopeRatio = parseFloat(document.getElementById('slopeRatio').value);
-    const interval = parseFloat(document.getElementById('sectionInterval').value);
-
-    let html = '<table class="section-table"><tr><th>PK</th><th>Dist (m)</th><th>KV (%)</th><th>Ample (m)</th><th>Desbross. (m³)</th><th>Desmont (m³)</th><th>Terraplè (m³)</th><th>Barra KV</th></tr>';
-
-    let cumDist = 0;
-    for (let i = 0; i < axisPoints.length; i++) {
-        if (i > 0) {
-            cumDist += haversine(axisPoints[i-1].lat, axisPoints[i-1].lng, axisPoints[i].lat, axisPoints[i].lng);
+    reader.readAsArrayBuffer(file);
+  }else if(isText||name.endsWith('.hgt')){
+    reader.onload=function(e){
+      try{
+        if(name.endsWith('.xyz')||name.endsWith('.csv')){
+          self.parseXYZ(e.target.result);
+        }else{
+          self.parseASC(e.target.result);
         }
+      }catch(err){
+        showToast(T.mdtError+': '+err.message,'error');
+      }
+    };
+    reader.readAsText(file);
+  }else{
+    // Intentem com a text (fallback)
+    reader.onload=function(e){
+      try{
+        self.parseASC(e.target.result);
+      }catch(err){
+        showToast(T.mdtError+': Format no reconegut. Formats suportats: .asc .txt .xyz .csv .dem .tif .tiff .img .hgt .bil .flt','error');
+      }
+    };
+    reader.readAsText(file);
+  }
+},
 
-        const kv = i > 0 ? calculateKV(axisPoints[i-1], axisPoints[i]) : 0;
-        const segLength = i > 0 ? haversine(axisPoints[i-1].lat, axisPoints[i-1].lng, axisPoints[i].lat, axisPoints[i].lng) : 0;
-        const clearing = segLength * width * vegDepth;
-        const cut = segLength * width * 0.5 * 0.3;
-        const fill = segLength * width * 0.3 * 0.2;
-
-        const kvClass = kv > 12 ? 'red' : kv > 8 ? 'yellow' : 'green';
-        const kvPercent = Math.min(kv / 20 * 100, 100);
-
-        html += `<tr>
-            <td>${i+1}</td>
-            <td>${cumDist.toFixed(1)}</td>
-            <td>${kv.toFixed(1)}</td>
-            <td>${width}</td>
-            <td>${clearing.toFixed(2)}</td>
-            <td>${cut.toFixed(2)}</td>
-            <td>${fill.toFixed(2)}</td>
-            <td><div class="kv-bar"><div class="kv-fill ${kvClass}" style="width:${kvPercent}%"></div></div></td>
-        </tr>`;
+parseXYZ:function(content){
+  // Format XYZ: X Y Z per fila (separades per espai o coma)
+  var lines=content.trim().split('\n');
+  var points=[];
+  var sep=/[,;\s]+/;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line||line.startsWith('#')) continue;
+    var parts=line.split(sep);
+    if(parts.length>=3){
+      var x=parseFloat(parts[0]);
+      var y=parseFloat(parts[1]);
+      var z=parseFloat(parts[2]);
+      if(!isNaN(x)&&!isNaN(y)&&!isNaN(z)) points.push({x:x,y:y,z:z});
     }
+  }
+  if(points.length===0){ showToast(T.mdtError+': Cap punt vàlid al fitxer XYZ','error'); return; }
+  // Construïm grid a partir dels punts XYZ
+  var xs=points.map(function(p){return p.x;});
+  var ys=points.map(function(p){return p.y;});
+  var xmin=Math.min.apply(null,xs); var xmax=Math.max.apply(null,xs);
+  var ymin=Math.min.apply(null,ys); var ymax=Math.max.apply(null,ys);
+  var xVals=[...new Set(xs)].sort(function(a,b){return a-b;});
+  var yVals=[...new Set(ys)].sort(function(a,b){return a-b;});
+  var cellsize=xVals.length>1?(xVals[xVals.length-1]-xVals[0])/(xVals.length-1):1;
+  var ncols=xVals.length; var nrows=yVals.length;
+  var grid=[];
+  for(var r=0;r<nrows;r++) grid.push(new Array(ncols).fill(null));
+  for(var i=0;i<points.length;i++){
+    var col=Math.round((points[i].x-xmin)/cellsize);
+    var row=nrows-1-Math.round((points[i].y-ymin)/cellsize);
+    if(row>=0&&row<nrows&&col>=0&&col<ncols) grid[row][col]=points[i].z;
+  }
+  this.mdtData={ncols:ncols,nrows:nrows,xllcorner:xmin,yllcorner:ymin,cellsize:cellsize,nodata:-9999,grid:grid};
+  var info=document.getElementById('mdtInfo');
+  if(info){
+    info.innerHTML='<strong style="color:var(--accent)">✓ '+T.mdtLoaded+' (XYZ)</strong><br>'+
+      'Punts: '+points.length+'<br>Cel·la: '+cellsize.toFixed(2)+'m<br>Origen: '+xmin.toFixed(2)+', '+ymin.toFixed(2);
+  }
+  showToast(T.mdtLoaded+' (XYZ: '+points.length+' punts)','success');
+},
 
-    html += '</table>';
-    document.getElementById('sectionsContent').innerHTML = html;
-    document.getElementById('sectionsModal').style.display = 'flex';
+parseBinaryRaster:function(buffer,filename){
+  // Llegim GeoTIFF/BIL/FLT/IMG com a buffer binari
+  // Detectem tipus per extensió i intentem extreure els valors
+  var name=filename.toLowerCase();
+  var view=new DataView(buffer);
+  var self=this;
+  if(name.endsWith('.hgt')){
+    // Format SRTM HGT: matriu de int16 big-endian, 3601x3601 (1") o 1201x1201 (3")
+    var totalVals=buffer.byteLength/2;
+    var size=Math.round(Math.sqrt(totalVals));
+    if(size!==3601&&size!==1201) size=Math.round(Math.sqrt(totalVals));
+    var ncols=size; var nrows=size;
+    var grid=[];
+    for(var r=0;r<nrows;r++){
+      var row=[];
+      for(var c=0;c<ncols;c++){
+        var offset=(r*ncols+c)*2;
+        var val=view.getInt16(offset,false); // big-endian
+        row.push(val===-32768?null:val);
+      }
+      grid.push(row);
+    }
+    // Inferim coordenades del nom del fitxer (ex: N41E002.hgt)
+    var match=filename.match(/([NS])(\d+)([EW])(\d+)/i);
+    var lat0=0,lng0=0;
+    if(match){
+      lat0=(match[1].toUpperCase()==='N'?1:-1)*parseInt(match[2]);
+      lng0=(match[3].toUpperCase()==='E'?1:-1)*parseInt(match[4]);
+    }
+    var cellsize=1/(size-1);
+    this.mdtData={ncols:ncols,nrows:nrows,xllcorner:lng0,yllcorner:lat0,cellsize:cellsize,nodata:null,grid:grid};
+    var info=document.getElementById('mdtInfo');
+    if(info) info.innerHTML='<strong style="color:var(--accent)">✓ '+T.mdtLoaded+' (HGT SRTM)</strong><br>Mida: '+size+'x'+size+'<br>Origen: '+lat0+'°, '+lng0+'°';
+    showToast(T.mdtLoaded+' (SRTM HGT)','success');
+    return;
+  }
+  if(name.endsWith('.flt')||name.endsWith('.bil')){
+    // Format Float32 binari. Necessita fitxer .hdr associat (no disponible aquí)
+    // Intentem inferir dimensions del tamany del fitxer
+    var totalFloats=buffer.byteLength/4;
+    var sqrtSize=Math.round(Math.sqrt(totalFloats));
+    var ncols=sqrtSize; var nrows=Math.round(totalFloats/sqrtSize);
+    var grid=[];
+    var littleEndian=true;
+    for(var r=0;r<nrows;r++){
+      var row=[];
+      for(var c=0;c<ncols;c++){
+        var offset=(r*ncols+c)*4;
+        if(offset+4<=buffer.byteLength){
+          var val=view.getFloat32(offset,littleEndian);
+          row.push(isFinite(val)?Math.round(val*100)/100:null);
+        }else{ row.push(null); }
+      }
+      grid.push(row);
+    }
+    this.mdtData={ncols:ncols,nrows:nrows,xllcorner:0,yllcorner:0,cellsize:1,nodata:null,grid:grid};
+    var info=document.getElementById('mdtInfo');
+    if(info) info.innerHTML='<strong style="color:var(--accent)">✓ '+T.mdtLoaded+' (FLT/BIL)</strong><br>'+
+      '<span style="color:var(--warning)">⚠ Sense fitxer .hdr: coordenades relatives. Edita manualment si cal.</span><br>Mida: '+ncols+'x'+nrows;
+    showToast(T.mdtLoaded+' (FLT/BIL - sense georeferència exacta)','warning');
+    return;
+  }
+  if(name.endsWith('.tif')||name.endsWith('.tiff')||name.endsWith('.img')){
+    // GeoTIFF: format complex. Informem l'usuari que cal convertir-lo a .asc
+    showToast('GeoTIFF detectat. Converteix-lo a .asc amb QGIS (Raster → Guardar com → ASCII Grid) per usar-lo aquí.','warning');
+    var info=document.getElementById('mdtInfo');
+    if(info) info.innerHTML='<strong style="color:var(--warning)">⚠ GeoTIFF/IMG no suportat directament</strong><br>'+
+      'Converteix a .asc amb QGIS:<br>Raster → Guardar com → Format: ASCII Grid (.asc)';
+    return;
+  }
+  showToast(T.mdtError+': Format binari no reconegut','error');
+},
+
+parseASC:function(content){
+  var lines=content.trim().split('\n');
+  var ncols,nrows,xllcorner,yllcorner,cellsize,nodata;
+  var dataStart=0;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    var parts=line.split(/\s+/);
+    if(line.toLowerCase().startsWith('ncols')) ncols=parseInt(parts[1]);
+    else if(line.toLowerCase().startsWith('nrows')) nrows=parseInt(parts[1]);
+    else if(line.toLowerCase().startsWith('xllcorner')) xllcorner=parseFloat(parts[1]);
+    else if(line.toLowerCase().startsWith('yllcorner')) yllcorner=parseFloat(parts[1]);
+    else if(line.toLowerCase().startsWith('cellsize')) cellsize=parseFloat(parts[1]);
+    else if(line.toLowerCase().startsWith('nodata')) nodata=parseFloat(parts[1]);
+    else if(!isNaN(parseFloat(parts[0]))){ dataStart=i; break; }
+  }
+  var grid=[];
+  for(var i=dataStart;i<lines.length;i++){
+    var vals=lines[i].trim().split(/\s+/).map(parseFloat).filter(function(v){return !isNaN(v);});
+    if(vals.length>0) grid.push(vals);
+  }
+  this.mdtData={ncols:ncols,nrows:nrows,xllcorner:xllcorner,yllcorner:yllcorner,cellsize:cellsize,nodata:nodata,grid:grid};
+  var info=document.getElementById('mdtInfo');
+  if(info){
+    info.innerHTML='<strong style="color:var(--accent)">\u2713 '+T.mdtLoaded+'</strong><br>'+
+      'Dimensions: '+ncols+'x'+nrows+'<br>Cel\u00b7la: '+cellsize+'m<br>Origen: '+xllcorner.toFixed(2)+', '+yllcorner.toFixed(2);
+  }
+  showToast(T.mdtLoaded,'success');
+},
+
+getElevationFromMDT:function(lat,lng){
+  if(!this.mdtData) return null;
+  var d=this.mdtData;
+  var x,y;
+  if(d.xllcorner > 100000){
+    x=this.lonToUTM(lng);
+    y=this.latToUTM(lat);
+  }else{
+    x=lng; y=lat;
+  }
+  var col=Math.floor((x-d.xllcorner)/d.cellsize);
+  var row=d.nrows-1-Math.floor((y-d.yllcorner)/d.cellsize);
+  if(row<0 || row>=d.nrows || col<0 || col>=d.ncols) return null;
+  var val=d.grid[row] ? d.grid[row][col] : null;
+  if(val===d.nodata || val==null || isNaN(val)) return null;
+  return Math.round(val*100)/100;
+},
+
+lonToUTM:function(lon){
+  return 260000 + (lon - 1.5) * 80000;
+},
+
+latToUTM:function(lat){
+  return 4620000 + (lat - 41.7) * 111000;
+},
+
+handleFileImport:function(event){
+  var file=event.target.files[0];
+  if(!file) return;
+  this.parseFile(file);
+},
+
+parseFile:function(file){
+  var reader=new FileReader();
+  var self=this;
+  reader.onload=function(e){
+    try{
+      var content=e.target.result;
+      var points=[];
+      if(file.name.endsWith('.gpx')) points=self.parseGPX(content);
+      else points=self.parseGeoJSON(content);
+      if(points.length===0){
+        showToast("No s'han trobat punts al fitxer",'error');
+        return;
+      }
+      var newPath={
+        id:crypto.randomUUID(),
+        name:file.name.replace(/\.[^/.]+$/,''),
+        description:'Importat des de QGIS',
+        points:points.map(function(p){
+          return {
+            station:self.formatStation(0),
+            lat:p.lat,lng:p.lng,
+            elevation:p.elevation,
+            width:3.5,slopeType:'cut',
+            distance:0,slope:0
+          };
+        }),
+        sections:[],calculations:null,
+        created_at:new Date().toISOString(),
+        updated_at:new Date().toISOString()
+      };
+      self.paths.unshift(newPath);
+      self.currentPath=newPath;
+      self.recalculateDistancesAndSlopes();
+      self.saveLocalPaths();
+      self.closeModal('importModal');
+      showToast('Importats '+points.length+' punts','success');
+      self.switchView('editor');
+    }catch(err){
+      console.error('Import error:',err);
+      showToast(T.error+': '+err.message,'error');
+    }
+  };
+  reader.readAsText(file);
+},
+
+parseGeoJSON:function(content){
+  var geojson=JSON.parse(content);
+  var points=[];
+  if(geojson.type==='FeatureCollection'){
+    geojson.features.forEach(function(f){
+      if(f.geometry.type==='LineString'){
+        f.geometry.coordinates.forEach(function(c){
+          points.push({lng:c[0],lat:c[1],elevation:c.length>=3?c[2]:null});
+        });
+      }else if(f.geometry.type==='MultiLineString'){
+        f.geometry.coordinates.forEach(function(line){
+          line.forEach(function(c){
+            points.push({lng:c[0],lat:c[1],elevation:c.length>=3?c[2]:null});
+          });
+        });
+      }
+    });
+  }
+  return points;
+},
+
+parseGPX:function(xmlContent){
+  var parser=new DOMParser();
+  var doc=parser.parseFromString(xmlContent,'text/xml');
+  var trackPoints=doc.querySelectorAll('trkpt');
+  var points=[];
+  trackPoints.forEach(function(pt){
+    var lat=parseFloat(pt.getAttribute('lat'));
+    var lng=parseFloat(pt.getAttribute('lon'));
+    var eleNode=pt.querySelector('ele');
+    var elevation=eleNode?parseFloat(eleNode.textContent):null;
+    points.push({lat:lat,lng:lng,elevation:elevation});
+  });
+  return points;
+},
+
+calculateAll:function(){
+  if(!this.currentPath || this.currentPath.points.length<2){
+    showToast(T.noPoints,'warning');
+    return;
+  }
+  var points=this.currentPath.points;
+  var slopes=[];
+  for(var i=1;i<points.length;i++) slopes.push(points[i].slope);
+  var totalLength=points[points.length-1].distance;
+  var maxSlope=0,minSlope=999,sumSlope=0;
+  for(var i=0;i<slopes.length;i++){
+    var absSlope=Math.abs(slopes[i]);
+    if(absSlope>maxSlope) maxSlope=absSlope;
+    if(absSlope<minSlope) minSlope=absSlope;
+    sumSlope+=absSlope;
+  }
+  var avgSlope=slopes.length>0?sumSlope/slopes.length:0;
+  var variance=0;
+  for(var i=0;i<slopes.length;i++){
+    variance+=Math.pow(Math.abs(slopes[i])-avgSlope,2);
+  }
+  variance=slopes.length>0?variance/slopes.length:0;
+  var stdDev=Math.sqrt(variance);
+  var cv=avgSlope>0?(stdDev/avgSlope)*100:0;
+  var cutVol=0,fillVol=0;
+  for(var i=1;i<points.length;i++){
+    var dist=points[i].distance-points[i-1].distance;
+    var avgWidth=(points[i].width+points[i-1].width)/2;
+    var eleDiff=(points[i].elevation||0)-(points[i-1].elevation||0);
+    var area=avgWidth*0.5;
+    var vol=area*dist;
+    if(eleDiff>0) fillVol+=vol;
+    else cutVol+=vol;
+  }
+  this.currentPath.calculations={
+    totalLength:totalLength,
+    maxSlope:maxSlope,
+    minSlope:minSlope,
+    avgSlope:avgSlope,
+    cv:cv,
+    cutVol:cutVol,
+    fillVol:fillVol,
+    balance:fillVol-cutVol
+  };
+  this.saveLocalPaths();
+  showToast(T.calculate+' OK','success');
+  this.renderCalcs();
+},
+
+exportCSV:function(){
+  if(!this.currentPath || this.currentPath.points.length===0) return;
+  var csv='Estacio,Latitud,Longitud,Cota_Z,Distancia_m,Pendent_pct,Ample_m,Tipus\n';
+  for(var i=0;i<this.currentPath.points.length;i++){
+    var p=this.currentPath.points[i];
+    csv+=p.station+','+p.lat+','+p.lng+','+(p.elevation||'')+','+p.distance.toFixed(2)+','+p.slope.toFixed(2)+','+p.width+','+p.slopeType+'\n';
+  }
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download=this.currentPath.name+'_punts.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportat','success');
+},
+
+render:function(){
+  switch(this.currentView){
+    case'list':this.renderList();break;
+    case'editor':this.renderEditor();break;
+    case'profile':this.renderProfile();break;
+    case'sections':this.renderSections();break;
+    case'calcs':this.renderCalcs();break;
+  }
+  this.updateNav();
+},
+
+switchView:function(view){
+  if(this.currentView==='editor' && view!=='editor'){
+    this.destroyMap();
+  }
+  this.currentView=view;
+  this.render();
+},
+
+updateNav:function(){
+  var self=this;
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.classList.toggle('active',el.dataset.view===self.currentView);
+  });
+},
+
+renderList:function(){
+  var container=document.getElementById('mainContent');
+  var html='<div style="display:flex;gap:10px;margin-bottom:16px">'+
+    '<button class="btn btn-primary" style="flex:1" onclick="app.openModal(\'newPathModal\')"><span>+</span> '+T.newPath+'</button>'+
+    '<button class="btn btn-secondary" onclick="app.openModal(\'importModal\')">\ud83d\udcc1 '+T.importQGIS+'</button>'+
+    '</div>';
+  if(this.paths.length===0){
+    html+='<div class="card" style="text-align:center;padding:40px">'+
+      '<div style="font-size:48px;margin-bottom:12px">\ud83d\udee5\ufe0f</div>'+
+      '<p style="color:var(--text-muted);font-size:14px">'+T.noPaths+'</p>'+
+      '</div>';
+  }else{
+    for(var i=0;i<this.paths.length;i++){
+      var path=this.paths[i];
+      var ptCount=path.points?path.points.length:0;
+      var length=path.points && path.points.length>1?(path.points[path.points.length-1].distance/1000).toFixed(2)+' '+T.km:'0 '+T.km;
+      html+='<div class="path-item" onclick="app.openPath(\''+path.id+'\')">'+
+        '<div class="path-item-info">'+
+          '<h3>'+path.name+'</h3>'+
+          '<p>'+ptCount+' '+T.points.toLowerCase()+' \u00b7 '+length+'</p>'+
+        '</div>'+
+        '<div class="path-item-actions" onclick="event.stopPropagation()">'+
+          '<button class="btn btn-sm btn-secondary" onclick="app.duplicatePath(\''+path.id+'\')">'+T.duplicate+'</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="app.deletePath(\''+path.id+'\')">'+T.delete+'</button>'+
+        '</div>'+
+      '</div>';
+    }
+  }
+  container.innerHTML=html;
+},
+
+renderEditor:function(){
+  var container=document.getElementById('mainContent');
+  if(!this.currentPath){
+    container.innerHTML='<div class="card" style="text-align:center;padding:40px">'+
+      '<p style="color:var(--text-muted)">'+T.noPaths+'</p>'+
+      '<button class="btn btn-primary" style="margin-top:16px" onclick="app.switchView(\'list\')">'+T.navList+'</button>'+
+      '</div>';
+    return;
+  }
+  var path=this.currentPath;
+  var html='<div class="card">'+
+    '<div class="card-title">'+path.name+'</div>'+
+    '<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">'+(path.description||'')+'</div>'+
+    '<div id="map"></div>'+
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      '<button class="btn btn-sm btn-secondary" onclick="app.fetchElevationsForAll()">\u26f0\ufe0f '+T.elevationAuto+'</button>'+
+      '<button class="btn btn-sm btn-secondary" onclick="app.openModal(\'mdtModal\')">\ud83d\udd10 '+T.mdtLoad+'</button>'+
+      '<button class="btn btn-sm btn-secondary" onclick="document.getElementById(\'fileInput\').click()">\ud83d\udcc1 '+T.importFile+'</button>'+
+      '<button class="btn btn-sm btn-danger" onclick="app.clearAllPoints()">\ud83d\uddd1\ufe0f Esborrar punts</button>'+
+    '</div>'+
+    '<p style="font-size:11px;color:var(--text-muted);margin-top:8px">'+T.elevationTip+'</p>'+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="card-title">\ud83d\udccd '+T.points+' ('+path.points.length+')</div>'+
+    '<div class="table-container">'+
+      '<table class="data-table">'+
+        '<thead><tr><th>#</th><th>'+T.station+'</th><th>'+T.elevation+'</th><th>'+T.distance+'</th><th>'+T.slope+'</th><th></th></tr></thead>'+
+        '<tbody>';
+  for(var i=0;i<path.points.length;i++){
+    var p=path.points[i];
+    var slopeClass=Math.abs(p.slope)>12?'slope-red':Math.abs(p.slope)>8?'slope-yellow':'slope-green';
+    html+='<tr onclick="app.editPoint('+i+')" style="cursor:pointer">'+
+      '<td>'+(i+1)+'</td>'+
+      '<td>'+p.station+'</td>'+
+      '<td>'+(p.elevation!=null?p.elevation.toFixed(2):'-')+'</td>'+
+      '<td>'+(p.distance/1000).toFixed(3)+' '+T.km+'</td>'+
+      '<td><span class="slope-badge '+slopeClass+'">'+p.slope.toFixed(1)+T.percent+'</span></td>'+
+      '<td style="text-align:right">\u270f\ufe0f</td>'+
+    '</tr>';
+  }
+  html+='</tbody></table></div></div>';
+  container.innerHTML=html;
+  var self=this;
+  setTimeout(function(){self.initMap();},50);
+},
+
+initMap:function(){
+  if(!this.currentPath) return;
+  var mapEl=document.getElementById('map');
+  if(!mapEl) return;
+  this.destroyMap();
+  this.map=L.map('map');
+  var ortoLayer=L.tileLayer('https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/orto/MON3857NW/{z}/{x}/{y}.png',{
+    attribution:'\u00a9 ICGC',
+    maxZoom:19
+  });
+  var topoLayer=L.tileLayer('https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/topografic/MON3857NW/{z}/{x}/{y}.png',{
+    attribution:'\u00a9 ICGC',
+    maxZoom:19
+  });
+  var stdLayer=L.tileLayer('https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/estandard/MON3857NW/{z}/{x}/{y}.png',{
+    attribution:'\u00a9 ICGC',
+    maxZoom:19
+  });
+  ortoLayer.addTo(this.map);
+  L.control.layers({
+    'Ortofoto ICGC': ortoLayer,
+    'Topografic ICGC': topoLayer,
+    'Estandard ICGC': stdLayer
+  }).addTo(this.map);
+  this.mapMarkers=[];
+  var latlngs=[];
+  for(var i=0;i<this.currentPath.points.length;i++){
+    var p=this.currentPath.points[i];
+    var marker=L.marker([p.lat,p.lng]).addTo(this.map);
+    marker.bindPopup(T.station+': '+p.station+'<br>Cota: '+(p.elevation||'-')+'m');
+    this.mapMarkers.push(marker);
+    latlngs.push([p.lat,p.lng]);
+  }
+  if(latlngs.length>1){
+    this.mapPolyline=L.polyline(latlngs,{color:'#4ade80',weight:4}).addTo(this.map);
+    this.map.fitBounds(this.mapPolyline.getBounds().pad(0.1));
+  }else if(latlngs.length===1){
+    this.map.setView(latlngs[0],16);
+  }else{
+    this.map.setView([41.7,1.8],8);
+  }
+  var self=this;
+  this.map.on('click',function(e){
+    var lat=e.latlng.lat;
+    var lng=e.latlng.lng;
+    var ele=null;
+    if(self.mdtData){
+      ele=self.getElevationFromMDT(lat,lng);
+    }
+    if(ele===null && navigator.onLine){
+      self.fetchElevation(lat,lng).then(function(fetchedEle){
+        self.addPoint(lat,lng,fetchedEle);
+        showToast(T.station+': '+self.currentPath.points[self.currentPath.points.length-1].station,'success');
+      });
+    }else{
+      self.addPoint(lat,lng,ele);
+      showToast(T.station+': '+self.currentPath.points[self.currentPath.points.length-1].station,'success');
+    }
+  });
+},
+
+destroyMap:function(){
+  if(this.map){
+    this.map.remove();
+    this.map=null;
+    this.mapMarkers=[];
+    this.mapPolyline=null;
+  }
+},
+
+clearAllPoints:function(){
+  if(!this.currentPath) return;
+  if(!confirm('Eliminar tots els punts?')) return;
+  this.currentPath.points=[];
+  this.saveLocalPaths();
+  this.renderEditor();
+},
+
+editPoint:function(index){
+  this.editingPointIndex=index;
+  var p=this.currentPath.points[index];
+  document.getElementById('editStation').value=p.station;
+  document.getElementById('editElevation').value=p.elevation!=null?p.elevation:'';
+  document.getElementById('editCoordX').value=p.lng;
+  document.getElementById('editCoordY').value=p.lat;
+  document.getElementById('editWidth').value=p.width;
+  document.getElementById('editSlopeType').value=p.slopeType;
+  this.openModal('editPointModal');
+},
+
+savePointEdit:function(){
+  if(this.editingPointIndex<0) return;
+  var p=this.currentPath.points[this.editingPointIndex];
+  p.station=document.getElementById('editStation').value;
+  p.elevation=parseFloat(document.getElementById('editElevation').value)||null;
+  p.lng=parseFloat(document.getElementById('editCoordX').value);
+  p.lat=parseFloat(document.getElementById('editCoordY').value);
+  p.width=parseFloat(document.getElementById('editWidth').value)||3.5;
+  p.slopeType=document.getElementById('editSlopeType').value;
+  this.recalculateDistancesAndSlopes();
+  this.saveLocalPaths();
+  this.closeModal('editPointModal');
+  this.renderEditor();
+  showToast(T.saved,'success');
+},
+
+deleteCurrentPoint:function(){
+  if(this.editingPointIndex<0) return;
+  this.currentPath.points.splice(this.editingPointIndex,1);
+  this.recalculateDistancesAndSlopes();
+  this.saveLocalPaths();
+  this.closeModal('editPointModal');
+  this.renderEditor();
+},
+
+renderProfile:function(){
+  var container=document.getElementById('mainContent');
+  if(!this.currentPath || this.currentPath.points.length<2){
+    container.innerHTML='<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">'+T.noPoints+'</p></div>';
+    return;
+  }
+  var points=this.currentPath.points;
+  var canvasId='profileCanvas';
+  var tableRows='';
+  for(var i=1;i<points.length;i++){
+    var p=points[i];
+    var prev=points[i-1];
+    var dist=p.distance-prev.distance;
+    var desn=(p.elevation||0)-(prev.elevation||0);
+    var slope=p.slope;
+    var status=Math.abs(slope)>12?'<span class="slope-badge slope-red">\u274c</span>':Math.abs(slope)>8?'<span class="slope-badge slope-yellow">\u26a0\ufe0f</span>':'<span class="slope-badge slope-green">\u2713</span>';
+    tableRows+='<tr><td>'+prev.station+' \u2192 '+p.station+'</td><td>'+dist.toFixed(1)+' m</td><td>'+(desn>0?'+':'')+desn.toFixed(2)+' m</td><td><span class="slope-badge '+(Math.abs(slope)>12?'slope-red':Math.abs(slope)>8?'slope-yellow':'slope-green')+'">'+slope.toFixed(1)+'%</span></td><td>'+status+'</td></tr>';
+  }
+  container.innerHTML='<div class="card">'+
+    '<div class="card-title">\ud83d\udcc8 Perfil Longitudinal</div>'+
+    '<div class="chart-container"><canvas id="'+canvasId+'" class="chart-canvas"></canvas></div>'+
+    '<div style="display:flex;gap:12px;margin-top:12px;justify-content:center;flex-wrap:wrap">'+
+      '<span class="slope-badge slope-green">&lt;8% OK</span>'+
+      '<span class="slope-badge slope-yellow">8-12% \u26a0\ufe0f</span>'+
+      '<span class="slope-badge slope-red">&gt;12% \u274c</span>'+
+    '</div>'+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="card-title">\ud83d\udcca Taula de Pendents</div>'+
+    '<div class="table-container">'+
+      '<table class="data-table">'+
+        '<thead><tr><th>Tram</th><th>'+T.distance+'</th><th>Desnivell</th><th>'+T.slope+'</th><th>Estat</th></tr></thead>'+
+        '<tbody>'+tableRows+'</tbody>'+
+      '</table>'+
+    '</div>'+
+  '</div>';
+  var self=this;
+  setTimeout(function(){self.drawProfileChart(canvasId);},100);
+},
+
+drawProfileChart:function(canvasId){
+  var canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  var ctx=canvas.getContext('2d');
+  var points=this.currentPath.points;
+  var rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*2;
+  canvas.height=400;
+  canvas.style.width=rect.width+'px';
+  canvas.style.height='200px';
+  ctx.scale(2,2);
+  var w=rect.width,h=200;
+  var padding={top:20,right:20,bottom:30,left:40};
+  var chartW=w-padding.left-padding.right;
+  var chartH=h-padding.top-padding.bottom;
+  var eles=[];
+  for(var i=0;i<points.length;i++){
+    if(points[i].elevation!=null) eles.push(points[i].elevation);
+  }
+  if(eles.length===0) return;
+  var minEle=Math.min.apply(null,eles)-5;
+  var maxEle=Math.max.apply(null,eles)+5;
+  var maxDist=points[points.length-1].distance;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='#2d5a40';
+  ctx.lineWidth=0.5;
+  ctx.setLineDash([3,3]);
+  for(var i=0;i<=5;i++){
+    var y=padding.top+(chartH*i/5);
+    ctx.beginPath();
+    ctx.moveTo(padding.left,y);
+    ctx.lineTo(w-padding.right,y);
+    ctx.stroke();
+    var eleVal=maxEle-((maxEle-minEle)*i/5);
+    ctx.fillStyle='#6b9e7c';
+    ctx.font='10px DM Mono';
+    ctx.textAlign='right';
+    ctx.fillText(eleVal.toFixed(0)+'m',padding.left-5,y+3);
+  }
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.strokeStyle='#4ade80';
+  ctx.lineWidth=2;
+  var first=true;
+  for(var i=0;i<points.length;i++){
+    if(points[i].elevation==null) continue;
+    var x=padding.left+(points[i].distance/maxDist)*chartW;
+    var y=padding.top+((maxEle-points[i].elevation)/(maxEle-minEle))*chartH;
+    if(first){ ctx.moveTo(x,y); first=false; }
+    else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  first=true;
+  for(var i=0;i<points.length;i++){
+    if(points[i].elevation==null) continue;
+    var x=padding.left+(points[i].distance/maxDist)*chartW;
+    var y=padding.top+((maxEle-points[i].elevation)/(maxEle-minEle))*chartH;
+    if(first){ ctx.moveTo(x,y); first=false; }
+    else ctx.lineTo(x,y);
+  }
+  var lastX=padding.left+chartW;
+  var lastY=padding.top+chartH;
+  ctx.lineTo(lastX,lastY);
+  ctx.lineTo(padding.left,lastY);
+  ctx.closePath();
+  ctx.fillStyle='rgba(74,222,128,0.1)';
+  ctx.fill();
+  for(var i=0;i<points.length;i++){
+    if(points[i].elevation==null) continue;
+    var x=padding.left+(points[i].distance/maxDist)*chartW;
+    var y=padding.top+((maxEle-points[i].elevation)/(maxEle-minEle))*chartH;
+    ctx.beginPath();
+    ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle='#4ade80';
+    ctx.fill();
+    ctx.strokeStyle='#11291d';
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+  }
+  ctx.fillStyle='#6b9e7c';
+  ctx.font='10px DM Mono';
+  ctx.textAlign='center';
+  for(var i=0;i<=4;i++){
+    var dist=(maxDist*i/4)/1000;
+    var x=padding.left+(chartW*i/4);
+    ctx.fillText(dist.toFixed(2)+'km',x,h-10);
+  }
+},
+
+renderSections:function(){
+  var container=document.getElementById('mainContent');
+  if(!this.currentPath || this.currentPath.points.length===0){
+    container.innerHTML='<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">'+T.noPoints+'</p></div>';
+    return;
+  }
+  var html='<div class="card"><div class="card-title">\u25fb\ufe0f '+T.sectionView+'</div>';
+  for(var i=0;i<this.currentPath.points.length;i++){
+    var p=this.currentPath.points[i];
+    var canvasId='sectionCanvas_'+i;
+    html+='<div style="margin-bottom:16px;padding:12px;background:var(--bg-primary);border-radius:10px;border:1px solid var(--border)">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+        '<span style="font-weight:600;color:var(--accent);font-size:13px">'+T.station+': '+p.station+'</span>'+
+        '<span class="slope-badge '+(p.slopeType==='cut'?'slope-green':p.slopeType==='fill'?'slope-yellow':'slope-red')+'">'+(p.slopeType==='cut'?T.cut:p.slopeType==='fill'?T.fill:T.mixed)+'</span>'+
+      '</div>'+
+      '<canvas id="'+canvasId+'" style="width:100%;height:120px;background:var(--bg-secondary);border-radius:8px"></canvas>'+
+      '<div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text-muted)">'+
+        '<span>Ample: '+p.width+'m</span>'+
+        '<span>Cota: '+(p.elevation!=null?p.elevation.toFixed(2)+'m':'-')+'</span>'+
+        '<span>Pendent: '+p.slope.toFixed(1)+'%</span>'+
+      '</div>'+
+    '</div>';
+  }
+  html+='</div>';
+  container.innerHTML=html;
+  var self=this;
+  setTimeout(function(){
+    for(var i=0;i<self.currentPath.points.length;i++){
+      self.drawSectionCanvas('sectionCanvas_'+i,self.currentPath.points[i]);
+    }
+  },100);
+},
+
+drawSectionCanvas:function(canvasId,point){
+  var canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  var ctx=canvas.getContext('2d');
+  var rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*2;
+  canvas.height=240;
+  canvas.style.width=rect.width+'px';
+  canvas.style.height='120px';
+  ctx.scale(2,2);
+  var w=rect.width,h=120;
+  var centerY=h*0.6;
+  var roadWidth=Math.min(point.width*8,w*0.5);
+  var roadHalf=roadWidth/2;
+  var centerX=w/2;
+  ctx.clearRect(0,0,w,h);
+  ctx.beginPath();
+  ctx.moveTo(0,centerY+20);
+  ctx.lineTo(centerX-roadHalf-30,centerY);
+  ctx.lineTo(centerX+roadHalf+30,centerY);
+  ctx.lineTo(w,centerY+20);
+  ctx.strokeStyle='#6b9e7c';
+  ctx.lineWidth=2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0,centerY+20);
+  ctx.lineTo(centerX-roadHalf-30,centerY);
+  ctx.lineTo(centerX+roadHalf+30,centerY);
+  ctx.lineTo(w,centerY+20);
+  ctx.lineTo(w,h);
+  ctx.lineTo(0,h);
+  ctx.closePath();
+  ctx.fillStyle=point.slopeType==='fill'?'rgba(245,158,11,0.2)':'rgba(74,222,128,0.1)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(centerX-roadHalf,centerY-5);
+  ctx.lineTo(centerX+roadHalf,centerY-5);
+  ctx.strokeStyle='#a7c4b0';
+  ctx.lineWidth=4;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.setLineDash([5,5]);
+  ctx.moveTo(centerX,centerY-5);
+  ctx.lineTo(centerX,centerY-5);
+  ctx.strokeStyle='#f59e0b';
+  ctx.lineWidth=1;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#a7c4b0';
+  ctx.font='10px DM Sans';
+  ctx.textAlign='center';
+  ctx.fillText(point.width+'m',centerX,centerY-12);
+  ctx.fillStyle='#6b9e7c';
+  ctx.font='9px DM Mono';
+  ctx.fillText('Z='+(point.elevation!=null?point.elevation.toFixed(1):'?'),centerX,centerY+35);
+},
+
+renderCalcs:function(){
+  var container=document.getElementById('mainContent');
+  if(!this.currentPath || this.currentPath.points.length<2){
+    container.innerHTML='<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text-muted)">'+T.noPoints+'</p></div>';
+    return;
+  }
+  if(!this.currentPath.calculations) this.calculateAll();
+  var c=this.currentPath.calculations||{};
+  var pts=this.currentPath.points;
+  container.innerHTML='<div class="card">'+
+    '<div style="display:flex;gap:10px;margin-bottom:16px">'+
+      '<button class="btn btn-primary" style="flex:1" onclick="app.calculateAll()">\ud83e\uddee '+T.calculate+'</button>'+
+      '<button class="btn btn-secondary" onclick="app.exportCSV()">\ud83d\udcc4 '+T.exportCSV+'</button>'+
+    '</div>'+
+    '<div class="stat-grid">'+
+      '<div class="stat-card"><div class="stat-value">'+((c.totalLength||0)/1000).toFixed(2)+'</div><div class="stat-unit">'+T.km+'</div><div class="stat-label">'+T.totalLength+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:var(--danger)">'+(c.maxSlope||0).toFixed(1)+'</div><div class="stat-unit">'+T.percent+'</div><div class="stat-label">'+T.maxSlope+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value">'+(c.minSlope||0).toFixed(1)+'</div><div class="stat-unit">'+T.percent+'</div><div class="stat-label">'+T.minSlope+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:var(--accent)">'+(c.avgSlope||0).toFixed(1)+'</div><div class="stat-unit">'+T.percent+'</div><div class="stat-label">'+T.avgSlope+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:var(--info)">'+(c.cv||0).toFixed(1)+'</div><div class="stat-unit">'+T.percent+'</div><div class="stat-label">'+T.cvSlope+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:var(--warning)">'+(c.cutVol||0).toFixed(0)+'</div><div class="stat-unit">'+T.m3+'</div><div class="stat-label">'+T.cutVol+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:var(--accent-dim)">'+(c.fillVol||0).toFixed(0)+'</div><div class="stat-unit">'+T.m3+'</div><div class="stat-label">'+T.fillVol+'</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:'+((c.balance||0)>=0?'var(--accent)':'var(--danger)')+'">'+((c.balance||0)>=0?'+':'')+(c.balance||0).toFixed(0)+'</div><div class="stat-unit">'+T.m3+'</div><div class="stat-label">'+T.balance+'</div></div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="card-title">\ud83d\udccb Resum del cami</div>'+
+    '<div style="font-size:13px;color:var(--text-secondary);line-height:1.8">'+
+      '<p><strong style="color:var(--accent)">Nom:</strong> '+this.currentPath.name+'</p>'+
+      '<p><strong style="color:var(--accent)">Descripcio:</strong> '+(this.currentPath.description||'-')+'</p>'+
+      '<p><strong style="color:var(--accent)">Punts:</strong> '+pts.length+'</p>'+
+      '<p><strong style="color:var(--accent)">Data creacio:</strong> '+new Date(this.currentPath.created_at).toLocaleDateString()+'</p>'+
+    '</div>'+
+  '</div>';
+},
+
+openModal:function(id){ document.getElementById(id).classList.add('open'); },
+closeModal:function(id){ document.getElementById(id).classList.remove('open'); },
+
+setupDragDrop:function(){
+  var dropZone=document.getElementById('fileDrop');
+  if(!dropZone) return;
+  ['dragenter','dragover','dragleave','drop'].forEach(function(eventName){
+    dropZone.addEventListener(eventName,function(e){e.preventDefault();e.stopPropagation();},false);
+  });
+  ['dragenter','dragover'].forEach(function(eventName){
+    dropZone.addEventListener(eventName,function(){dropZone.classList.add('dragover');},false);
+  });
+  ['dragleave','drop'].forEach(function(eventName){
+    dropZone.addEventListener(eventName,function(){dropZone.classList.remove('dragover');},false);
+  });
+  var self=this;
+  dropZone.addEventListener('drop',function(e){
+    var files=e.dataTransfer.files;
+    if(files.length>0) self.parseFile(files[0]);
+  },false);
+  var mdtDrop=document.getElementById('mdtDrop');
+  if(mdtDrop){
+    ['dragenter','dragover','dragleave','drop'].forEach(function(eventName){
+      mdtDrop.addEventListener(eventName,function(e){e.preventDefault();e.stopPropagation();},false);
+    });
+    ['dragenter','dragover'].forEach(function(eventName){
+      mdtDrop.addEventListener(eventName,function(){mdtDrop.classList.add('dragover');},false);
+    });
+    ['dragleave','drop'].forEach(function(eventName){
+      mdtDrop.addEventListener(eventName,function(){mdtDrop.classList.remove('dragover');},false);
+    });
+    mdtDrop.addEventListener('drop',function(e){
+      var files=e.dataTransfer.files;
+      if(files.length>0){
+        var ev={target:{files:files}};
+        self.handleMDTUpload(ev);
+      }
+    },false);
+  }
+}
+};
+
+function showToast(message,type,duration){
+  type=type||'info';
+  duration=duration||3000;
+  var container=document.getElementById('toastContainer');
+  var toast=document.createElement('div');
+  toast.className='toast '+type;
+  var icons={success:'\u2713',error:'\u2717',warning:'\u26a0',info:'\u2139'};
+  toast.innerHTML='<span style="font-size:16px">'+icons[type]+'</span> <span>'+message+'</span>';
+  container.appendChild(toast);
+  setTimeout(function(){
+    toast.style.opacity='0';
+    toast.style.transform='translateY(-20px)';
+    setTimeout(function(){toast.remove();},300);
+  },duration);
 }
 
-function closeModal() {
-    document.getElementById('sectionsModal').style.display = 'none';
-}
-
-// Tancar modal amb ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+document.addEventListener('DOMContentLoaded',function(){
+  app.init();
 });
 </script>
 </body>
