@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#1a3d2b">
+<title>TreeDetect · M.S.i.X</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f0f4f1;color:#1c2b22;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+.hd{background:#1a3d2b;padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:1000;height:50px}
+.hd a{color:#fff;text-decoration:none;font-size:18px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hd h2{color:#fff;font-size:16px;font-weight:700;flex:1}
+.hd .user{color:rgba(255,255,255,.5);font-size:11px;white-space:nowrap}
+#app{display:flex;height:calc(100vh - 50px)}
+#map-panel{flex:1;position:relative;min-width:0}
+#map{width:100%;height:100%}
+#side{width:380px;background:#fff;border-left:1px solid #dce8df;display:flex;flex-direction:column;flex-shrink:0}
+@media(max-width:768px){#side{width:100%;position:fixed;bottom:0;left:0;right:0;height:60vh;border-left:none;border-top:1px solid #dce8df;z-index:500;border-radius:16px 16px 0 0}}
+.side-tabs{display:flex;background:#f0f4f1;padding:4px;gap:3px;margin:10px 12px;border-radius:10px;flex-shrink:0}
+.side-tabs button{flex:1;padding:7px;border:none;border-radius:8px;background:transparent;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;color:#5a7060}
+.side-tabs button.act{background:#fff;color:#1a3d2b;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.side-content{flex:1;overflow-y:auto;padding:8px 14px 14px}
+.tab-page{display:none}
+.tab-page.act{display:block;animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.pt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#2d6a4f;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.fg label{font-size:11px;font-weight:600;color:#1a3d2b}
+.fg input,.fg select{padding:8px 10px;border:1px solid #dce8df;border-radius:8px;font-size:12px;background:#f0f4f1}
+.btn{width:100%;padding:10px;background:linear-gradient(135deg,#1a3d2b,#2d6a4f);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,106,79,.25)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-sm{padding:6px 12px;font-size:11px;width:auto;background:#f0f4f1;color:#2d6a4f;border:1px solid #dce8df;border-radius:6px;font-weight:600;cursor:pointer}
+.btn-sm:hover{background:#d8f3dc}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sc{background:#f0f4f1;padding:8px;border-radius:8px;text-align:center}
+.sn{font-size:1.2em;font-weight:700;color:#2d6a4f}
+.sl{font-size:9px;color:#5a7060}
+.tw{max-height:200px;overflow:auto;border:1px solid #dce8df;border-radius:8px}
+.tw table{width:100%;border-collapse:collapse;font-size:10px}
+.tw th{background:#1a3d2b;color:#fff;padding:5px 6px;text-align:left;position:sticky;top:0}
+.tw td{padding:4px 6px;border-bottom:1px solid #dce8df;font-size:10px}
+.exp{display:flex;gap:6px;margin-top:8px}
+.exp button{flex:1;padding:6px;background:#f0f4f1;border:1px solid #dce8df;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer}
+.exp button:hover{background:#d8f3dc}
+.sm{padding:8px 12px;border-radius:8px;font-size:11px;margin:8px 0;display:none;line-height:1.5}
+.sm.i{background:#e3f2fd;border-left:3px solid #1976d2;display:block}
+.sm.s{background:#e8f5e9;border-left:3px solid #388e3c;display:block}
+.sm.w{background:#fff8e1;border-left:3px solid #f9a825;display:block}
+.sm.e{background:#ffebee;border-left:3px solid #d32f2f;display:block}
+.pb{display:none;margin:8px 0}
+.pb.a{display:block}
+.pb .bar{width:100%;height:5px;background:#dce8df;border-radius:3px;overflow:hidden}
+.pb .fi{height:100%;background:linear-gradient(90deg,#40916c,#2d6a4f);width:0%;transition:width .3s}
+.pb .tx{font-size:10px;color:#5a7060;text-align:center;margin-top:2px}
+.flex{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.proj-item{padding:8px 10px;background:#f0f4f1;border-radius:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:11px;border-left:3px solid #40916c}
+.proj-item .del{background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <a href="index.html">&larr;</a>
+  <h2>🌲 TreeDetect</h2>
+  <span class="user" id="userStatus">carregant...</span>
+</header>
+
+<div id="app">
+  <!-- MAPA -->
+  <div id="map-panel"><div id="map"></div></div>
+
+  <!-- PANELL LATERAL -->
+  <div id="side">
+    <div class="side-tabs" id="sideTabs">
+      <button class="act" data-tab="zona">🗺️ Zona</button>
+      <button data-tab="detectar">🚀 Detectar</button>
+      <button data-tab="resultats">📊 Resultats</button>
+      <button data-tab="projectes">💾 Projectes</button>
+      <button data-tab="camp">📋 Camp</button>
+    </div>
+
+    <div class="side-content" id="sideContent">
+      <!-- TAB ZONA -->
+      <div class="tab-page act" id="tab-zona">
+        <div class="pt">Selecciona la zona d'estudi</div>
+        <div class="sm i">Dibuixa un rectangle o polígon al mapa, o puja un fitxer</div>
+        <div class="flex" style="margin:8px 0">
+          <button class="btn-sm" onclick="drawRect()">▭ Rectangle</button>
+          <button class="btn-sm" onclick="drawPoly()">⬠ Polígon</button>
+          <button class="btn-sm" onclick="clearDraw()">✖ Netejar</button>
+          <button class="btn-sm" onclick="fitMap()">⊞ Ajustar</button>
+        </div>
+        <div class="fg">
+          <label>Pujar finca (GeoJSON)</label>
+          <input type="file" id="geojsonFile" accept=".geojson,.json" onchange="loadGeoJSON(this)">
+        </div>
+        <div id="zoneInfo" style="font-size:11px;color:#5a7060;padding:6px;background:#f0f4f1;border-radius:6px;margin-top:4px">
+          Cap zona seleccionada
+        </div>
+      </div>
+
+      <!-- TAB DETECTAR -->
+      <div class="tab-page" id="tab-detectar">
+        <div class="pt">Configuració i detecció</div>
+        <div class="fg">
+          <label>🌲 Espècie</label>
+          <select id="species"></select>
+        </div>
+        <div class="sm i" id="detectStatus">Dibuixa una zona primer</div>
+        <div class="pb" id="pb"><div class="bar"><div class="fi" id="pf"></div></div><div class="tx" id="ptx"></div></div>
+        <button class="btn" id="detectBtn" onclick="startDetect()" disabled>🚀 Descarregar i detectar</button>
+      </div>
+
+      <!-- TAB RESULTATS -->
+      <div class="tab-page" id="tab-resultats">
+        <div class="pt">📊 Resultats</div>
+        <div id="statsArea"></div>
+        <div style="margin:8px 0"><div class="tw" id="treeTable"><div style="padding:16px;text-align:center;color:#5a7060;font-size:11px">Processa una zona per veure resultats</div></div></div>
+        <div class="exp" id="expButtons" style="display:none">
+          <button onclick="expCSV()">📄 CSV</button>
+          <button onclick="expJSON()">🌐 GeoJSON</button>
+          <button onclick="expKML()">🗺️ KML</button>
+        </div>
+      </div>
+
+      <!-- TAB CAMP (INVENTARI) -->
+      <div class="tab-page" id="tab-camp">
+        <div class="pt">📋 Inventari de Camp</div>
+        <div class="sm i">Fes clic al mapa per marcar un arbre mesurat, o selecciona'n un de detectat</div>
+        <div id="gtForm" style="display:none;margin-top:6px;padding:8px;background:#f0f4f1;border-radius:8px">
+          <div class="fg">
+            <label style="font-size:10px">📍 Coordenades</label>
+            <div id="gtCoords" style="font-size:10px;color:#5a7060"></div>
+          </div>
+          <div class="fg">
+            <label>🌲 Copa real (m)</label>
+            <input type="number" id="gtCd" step="0.1" min="0.5" max="30" placeholder="Ex: 4.2">
+          </div>
+          <div class="fg">
+            <label>📐 Alçada real (m)</label>
+            <input type="number" id="gtH" step="0.5" min="1" max="50" placeholder="Ex: 8.5">
+          </div>
+          <div class="fg">
+            <label>📏 DBH real (cm)</label>
+            <input type="number" id="gtDbh" step="0.1" min="1" max="200" placeholder="Ex: 25.4">
+          </div>
+          <div class="fg">
+            <label>🌲 Espècie</label>
+            <select id="gtSpecies"></select>
+          </div>
+          <div class="fg">
+            <label>📝 Notes</label>
+            <input type="text" id="gtNotes" placeholder="opcional">
+          </div>
+          <div class="flex" style="margin-top:4px">
+            <button class="btn-sm" onclick="saveGroundTruth()" style="background:#2d6a4f;color:#fff">💾 Desa</button>
+            <button class="btn-sm" onclick="cancelGroundTruth()">✖ Cancel·la</button>
+          </div>
+        </div>
+        <div id="gtCalib" style="margin:8px 0;display:none">
+          <div class="pt">📊 Calibratge</div>
+          <div id="gtCalibInfo" style="font-size:11px"></div>
+        </div>
+        <div style="margin-top:4px">
+          <div class="flex" style="justify-content:space-between">
+            <div class="pt">📂 Arbres mesurats</div>
+            <div>
+              <button class="btn-sm" onclick="toggleGtMode()" id="gtModeBtn">📍 Afegeix</button>
+              <button class="btn-sm" onclick="exportGroundTruth()">📄 CSV</button>
+            </div>
+          </div>
+          <div id="gtItems" style="font-size:10px;color:#5a7060">Cap arbre mesurat</div>
+        </div>
+      </div>
+
+      <!-- TAB PROJECTES -->
+      <div class="tab-page" id="tab-projectes">
+        <div class="pt">💾 Projectes al núvol</div>
+        <div id="projStatus" class="sm i">Carregant...</div>
+        <div class="flex" style="margin:8px 0">
+          <input id="projName" placeholder="Nom del projecte" style="flex:1;padding:8px 10px;border:1px solid #dce8df;border-radius:8px;font-size:12px">
+          <button class="btn-sm" onclick="saveProject()">💾 Desar</button>
+        </div>
+        <div style="margin-top:4px">
+          <div class="pt" style="margin-top:8px">📂 Projectes guardats</div>
+          <div id="projList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUPABASE + LEAFLET -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://hkkxgzdopvimgarmxdnj.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_dG2BbEcuF_W7fefkSPHK6Q_ka6iQAyM';
+
+const TILE_URL = 'https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/orto/MON3857NW/{z}/{x}/{y}.png';
+
+const SPECIES = {
+  generic:[3.50,0.65,9.20,0.70,'Genèric'],
+  pinus_halepensis:[3.87,0.58,8.91,0.72,'Pi blanc'],
+  pinus_pinea:[3.45,0.62,7.85,0.75,'Pi pinyer'],
+  pinus_sylvestris:[4.12,0.55,9.56,0.68,'Pi roig'],
+  pinus_nigra:[4.01,0.56,9.23,0.69,'Pi negre'],
+  pinus_pinaster:[3.78,0.59,8.67,0.73,'Pi pinastre'],
+  quercus_ilex:[2.89,0.72,7.12,0.78,'Alzina'],
+  quercus_suber:[2.75,0.74,6.85,0.80,'Suro'],
+  quercus_pubescens:[3.15,0.68,7.56,0.76,'Roure martinenc'],
+  fagus_sylvatica:[4.45,0.52,10.12,0.65,'Faig'],
+  populus_nigra:[5.12,0.48,11.45,0.62,'Pollancre'],
+  eucalyptus_globulus:[5.56,0.45,12.34,0.60,'Eucaliptus'],
+  arbutus_unedo:[2.45,0.76,6.23,0.82,'Arboç'],
+  ceratonia_siliqua:[2.34,0.78,6.01,0.83,'Garrofer'],
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ESTAT
+// ═══════════════════════════════════════════════════════════════
+let map, drawnItems, drawControl, drawLayer=null;
+let sb=null, sbUser=null, appMode=null;
+let tiles=[], trees=[], results=[], currentBbox=null, currentZoom=19;
+let gsd=0.25, processing=false;
+
+// ═══════════════════════════════════════════════════════════════
+// SUPABASE INIT
+// ═══════════════════════════════════════════════════════════════
+function initSupabase(){
+  try {
+    const mode=JSON.parse(localStorage.getItem('M.S.i.X_app_mode')||'{}');
+    appMode=mode.mode||'guest';
+    sbUser=mode.userId||null;
+    if(window.supabase) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    document.getElementById('userStatus').textContent=appMode==='guest'?'👤 Convidat':`👤 ${mode.email||''}`;
+    if(appMode==='guest') showProjectsLocal();
+    else showProjectsCloud();
+  } catch(e){console.error(e);document.getElementById('userStatus').textContent='⚠️ Error';}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAPA + DRAW
+// ═══════════════════════════════════════════════════════════════
+function initMap(){
+  map=L.map('map',{zoomControl:true}).setView([41.60,2.20],14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,attribution:'OSM'
+  }).addTo(map);
+
+  drawnItems=new L.FeatureGroup();
+  map.addLayer(drawnItems);
+
+  drawControl=new L.Control.Draw({
+    edit:{featureGroup:drawnItems},
+    draw:{
+      polygon:{allowIntersection:false,showArea:true},
+      rectangle:{},
+      circle:false,circlemarker:false,marker:false,polyline:false
+    }
+  });
+  map.addControl(drawControl);
+
+  map.on(L.Draw.Event.CREATED,function(e){
+    if(drawLayer) drawnItems.removeLayer(drawLayer);
+    drawLayer=e.layer;
+    drawnItems.addLayer(drawLayer);
+    updateZoneInfo();
+    document.getElementById('detectBtn').disabled=false;
+    setStatus('detectStatus','✅ Zona seleccionada! Ves a "Detectar"','s');
+  });
+
+  map.on(L.Draw.Event.EDITED,function(){updateZoneInfo();});
+
+  // Poblar espècies
+  const sel=document.getElementById('species');
+  for(const[k,v]of Object.entries(SPECIES)){
+    const o=document.createElement('option');
+    o.value=k;o.textContent=v[4];sel.appendChild(o);
+  }
+}
+
+function drawRect(){
+  if(drawLayer){drawnItems.removeLayer(drawLayer);drawLayer=null;}
+  new L.Draw.Rectangle(map).enable();
+}
+function drawPoly(){
+  if(drawLayer){drawnItems.removeLayer(drawLayer);drawLayer=null;}
+  new L.Draw.Polygon(map).enable();
+}
+function clearDraw(){
+  drawnItems.clearLayers();drawLayer=null;
+  document.getElementById('zoneInfo').textContent='Cap zona seleccionada';
+  document.getElementById('detectBtn').disabled=true;
+  document.getElementById('detectStatus').textContent='Dibuixa una zona primer';
+  document.getElementById('detectStatus').className='sm i';
+}
+function fitMap(){if(drawLayer)map.fitBounds(drawLayer.getBounds());}
+
+function updateZoneInfo(){
+  if(!drawLayer){document.getElementById('zoneInfo').textContent='Cap zona seleccionada';return;}
+  const b=drawLayer.getBounds();
+  const latCenter=(b.getNorth()+b.getSouth())/2;
+  const mPerDeg=111320*Math.cos(latCenter*Math.PI/180);
+  const w=(b.getEast()-b.getWest())*mPerDeg;
+  const h=(b.getNorth()-b.getSouth())*111320;
+  const areaHa=w*h/10000;
+  currentBbox=b;
+  document.getElementById('zoneInfo').innerHTML=
+    `<b>Centre:</b> ${latCenter.toFixed(5)}, ${(b.getEast()+b.getWest())/2} &nbsp;|&nbsp; <b>Mida:</b> ${w.toFixed(0)}×${h.toFixed(0)}m &nbsp;|&nbsp; <b>Area:</b> ${areaHa.toFixed(2)} ha`;
+}
+
+function loadGeoJSON(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const gj=JSON.parse(e.target.result);
+      const layer=L.geoJSON(gj);
+      if(drawLayer)drawnItems.removeLayer(drawLayer);
+      drawLayer=layer;
+      drawnItems.addLayer(layer);
+      map.fitBounds(layer.getBounds());
+      updateZoneInfo();
+      document.getElementById('detectBtn').disabled=false;
+      setStatus('detectStatus','✅ Finca carregada!','s');
+    }catch(err){setStatus('detectStatus','❌ Fitxer invàlid','e');}
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DETECCIÓ: TILES + EXG + WATERSHED
+// ═══════════════════════════════════════════════════════════════
+async function startDetect(){
+  if(!drawLayer||processing)return;
+  const btn=document.getElementById('detectBtn');
+  btn.disabled=true;btn.textContent='⏳ Processant...';
+  processing=true;
+  setStatus('detectStatus','📥 Descarregant ortofoto...','i');
+  document.getElementById('pb').classList.add('a');
+
+  try {
+    const b=drawLayer.getBounds();
+
+    // Calcular zoom òptim
+    const lat=(b.getNorth()+b.getSouth())/2;
+    const mPerDeg=111320*Math.cos(lat*Math.PI/180);
+    const wM=(b.getEast()-b.getWest())*mPerDeg;
+    const hM=(b.getNorth()-b.getSouth())*111320;
+
+    // Escollir zoom: maximitzar però limitar tiles (ICGC WMTS max zoom=18)
+    let zoom=18;
+    for(let z=18;z>=15;z--){
+      const tileSize=256*(156543.03*Math.cos(lat*Math.PI/180)/Math.pow(2,z));
+      const nTiles=Math.ceil(wM/tileSize)*Math.ceil(hM/tileSize);
+      if(nTiles<=60){zoom=z;break;}
+    }
+    currentZoom=zoom;
+    gsd=156543.03*Math.cos(lat*Math.PI/180)/Math.pow(2,zoom);
+
+    pct(5,'Calculant tiles...');
+
+    // Calculem tiles
+    const n=Math.pow(2,zoom);
+    const lo=lng2tile(b.getWest(),n);
+    const hi=lng2tile(b.getEast(),n);
+    const la=tileY(b.getNorth(),zoom);
+    const hb=tileY(b.getSouth(),zoom);
+    const xMin=Math.floor(lo),xMax=Math.floor(hi);
+    const yMin=Math.floor(Math.min(la,hb)),yMax=Math.floor(Math.max(la,hb));
+    const nTiles=(xMax-xMin+1)*(yMax-yMin+1);
+
+    if(nTiles>120){setStatus('detectStatus','⚠️ Zona massa gran. Fes zoom o redueix l\'àrea.','w');processing=false;btn.disabled=false;btn.textContent='🚀 Descarregar i detectar';document.getElementById('pb').classList.remove('a');return;}
+
+    pct(10,'Descarregant '+nTiles+' tiles...');
+
+    // Descarregar tiles
+    const loaded=await downloadTiles(xMin,xMax,yMin,yMax,zoom);
+
+    if(!loaded||loaded.length===0){
+      setStatus('detectStatus','❌ No s\'han pogut descarregar les ortofotos.','e');
+      processing=false;btn.disabled=false;btn.textContent='🚀 Descarregar i detectar';
+      document.getElementById('pb').classList.remove('a');return;
+    }
+
+    pct(40,'Cosint tiles...');
+
+    // Cosir tiles en un canvas
+    const canvas=stitchTiles(loaded,xMin,yMin,xMax,yMax,zoom);
+    if(!canvas){setStatus('detectStatus','❌ Error cosint tiles','e');processing=false;btn.disabled=false;btn.textContent='🚀 Descarregar i detectar';document.getElementById('pb').classList.remove('a');return;}
+
+    pct(50,'Detectant arbres...');
+
+    // Detectar
+    trees.length=0; // Buidar global
+    const detected=detectTrees(canvas);
+    trees=detected; results=detected;
+
+    pct(90,'Mostrant resultats...');
+
+    // Mostrar al mapa
+    if(trees.length===0){
+      setStatus('detectStatus','⚠️ No s\'han detectat arbres. Prova amb una altra zona.','w');
+    }else{
+      showTreesOnMap(trees,canvas,zoom);
+      showStats(trees);
+      showTreeTable(trees);
+      document.getElementById('expButtons').style.display='flex';
+      setStatus('detectStatus',`✅ ${trees.length} arbres detectats! Mira la pestanya "Resultats"`,`s`);
+      switchTab('resultats');
+    }
+
+  } catch(e){
+    console.error(e);
+    setStatus('detectStatus','❌ Error: '+e.message,'e');
+  }
+
+  pct(100,'Fet!');
+  document.getElementById('pb').classList.remove('a');
+  processing=false;
+  btn.disabled=false;
+  btn.textContent='🚀 Descarregar i detectar';
+}
+
+function lng2tile(lng,n){return (lng+180)/360*n;}
+function tileY(lat,zoom){const r=lat*Math.PI/180;return(1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,zoom);}
+
+async function downloadTiles(xMin,xMax,yMin,yMax,zoom){
+  const tiles=[];
+  const total=(xMax-xMin+1)*(yMax-yMin+1);
+  let done=0;
+
+  for(let y=yMin;y<=yMax;y++){
+    for(let x=xMin;x<=xMax;x++){
+      const url=TILE_URL.replace('{z}',zoom).replace('{x}',x).replace('{y}',y);
+      try{
+        const img=await loadTile(url);
+        if(img){tiles.push({x,y,img,xOff:x-xMin,yOff:y-yMin});}
+      }catch(e){}
+      done++;
+      pct(10+Math.floor(30*done/total),`Tiles: ${done}/${total}`);
+    }
+  }
+  return tiles;
+}
+
+function loadTile(url){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject();
+    img.src=url;
+    // Timeout
+    setTimeout(()=>reject(),5000);
+  });
+}
+
+function stitchTiles(tiles,xMin,yMin,xMax,yMax,zoom){
+  if(!tiles.length)return null;
+  const ts=256;
+  const w=(xMax-xMin+1)*ts;
+  const h=(yMax-yMin+1)*ts;
+  const canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+
+  for(const t of tiles){
+    ctx.drawImage(t.img,t.xOff*ts,t.yOff*ts,ts,ts);
+  }
+  return canvas;
+}
+
+// ═══ DETECCIÓ MILLORADA ═══════════════════════════════════════
+// Usa ExG-ExR (millor contrast que ExG sol), llindar Otsu automàtic,
+// marcadors proporcionals a la mida d'arbre esperada,
+// diàmetre de copa per eix Feret (no circular),
+// i filtratge per forma (evita falsos positius).
+
+function detectTrees(canvas){
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  const d=ctx.getImageData(0,0,w,h).data;
+
+  // 1. Índex de vegetació ExG-ExR = 3G - 2.4R - B
+  pct(55,'Índex vegetació...');
+  const veg=new Float32Array(w*h);
+  for(let i=0;i<w*h;i++){const idx=i*4;veg[i]=3*d[idx+1]-2.4*d[idx]-d[idx+2];}
+
+  // 2. Llindar Otsu automàtic
+  pct(60,'Llindar Otsu...');
+  const thresh=otsu(veg,w*h);
+
+  // 3. Màscara binària
+  const mask=new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++)mask[i]=veg[i]>thresh?1:0;
+
+  // 4. Neteja morfològica (obrir + tancar)
+  pct(63,'Netejant...');
+  let m2=dil(er(mask,w,h,3),w,h,3); // obrir (treu soroll)
+  m2=er(dil(m2,w,h,3),w,h,3);       // tancar (omple forats)
+
+  // 5. Distància
+  pct(67,'Distància...');
+  const dist=dt(m2,w,h);
+
+  // 6. Marcadors adaptatius: radi proporcional a la copa esperada
+  pct(72,'Marcadors...');
+  const minCrownPx=Math.max(3,1.5/gsd); // copa mínima ~1.5m en píxels
+  const markerR=Math.max(2,Math.round(minCrownPx*0.35));
+  const mk=fm(dist,w,h,markerR);
+
+  // 7. Watershed
+  pct(76,'Watershed...');
+  const lbl=ws(m2,mk,w,h);
+
+  // 8. Extracció amb filtratge
+  pct(80,'Extraient...');
+  const trees=ext(lbl,w,h,veg,Math.max(20,Math.round(Math.PI*(minCrownPx/2)**2)));
+
+  return trees;
+}
+
+// Llindar Otsu: troba el llindar òptim automàticament
+function otsu(data,n){
+  let hist=new Uint32Array(256);
+  for(let i=0;i<n;i++){
+    let v=Math.max(0,Math.min(255,Math.round(data[i]+128)));
+    hist[v]++;
+  }
+  let total=n,sum=0;
+  for(let i=0;i<256;i++)sum+=i*hist[i];
+  let sumB=0,wB=0,maxV=0,thr=30;
+  for(let i=0;i<256;i++){
+    wB+=hist[i];if(wB===0)continue;
+    let wF=total-wB;if(wF===0)break;
+    sumB+=i*hist[i];
+    let mB=sumB/wB,mF=(sum-sumB)/wF;
+    let v=wB*wF*(mB-mF)*(mB-mF);
+    if(v>maxV){maxV=v;thr=i;}
+  }
+  return thr;
+}
+
+// Morfologia
+function er(m,w,h,k){
+  const r=new Uint8Array(w*h),hf=Math.floor(k/2);
+  for(let y=hf;y<h-hf;y++)for(let x=hf;x<w-hf;x++){
+    let ok=1;
+    for(let dy=-hf;dy<=hf&&ok;dy++)for(let dx=-hf;dx<=hf&&ok;dx++)if(!m[(y+dy)*w+(x+dx)]){ok=0;dx=k;dy=k;}
+    r[y*w+x]=ok;
+  }
+  return r;
+}
+function dil(m,w,h,k){
+  const r=new Uint8Array(w*h),hf=Math.floor(k/2);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(m[y*w+x])
+    for(let dy=-hf;dy<=hf;dy++)for(let dx=-hf;dx<=hf;dx++){
+      const ny=y+dy,nx=x+dx;
+      if(ny>=0&&ny<h&&nx>=0&&nx<w)r[ny*w+nx]=1;
+    }
+  return r;
+}
+function dt(m,w,h){
+  const INF=1e9,d=new Float32Array(w*h);
+  for(let i=0;i<w*h;i++)d[i]=m[i]?INF:0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(!m[i])continue;
+    if(x>0&&d[i-1]+1<d[i])d[i]=d[i-1]+1;if(y>0&&d[i-w]+1<d[i])d[i]=d[i-w]+1;}
+  for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;if(!m[i])continue;
+    if(x<w-1&&d[i+1]+1<d[i])d[i]=d[i+1]+1;if(y<h-1&&d[i+w]+1<d[i])d[i]=d[i+w]+1;}
+  return d;
+}
+function fm(d,w,h,r){
+  const mk=new Int32Array(w*h);
+  for(let y=r;y<h-r;y++)for(let x=r;x<w-r;x++){const i=y*w+x;if(d[i]<=0)continue;
+    let mx=true;
+    for(let dy=-r;dy<=r&&mx;dy++)for(let dx=-r;dx<=r&&mx;dx++)if((dy||dx)&&d[(y+dy)*w+(x+dx)]>d[i])mx=false;
+    if(mx)mk[i]=i+1;}
+  return mk;
+}
+function ws(m,mk,w,h){
+  const l=new Int32Array(w*h),q=[];
+  for(let i=0;i<w*h;i++){if(!m[i])l[i]=-1;else if(mk[i]>0){l[i]=mk[i];q.push(i);}}
+  const dir=[-1,1,-w,w,-w-1,-w+1,w-1,w+1];let hd=0;
+  while(hd<q.length){const p=q[hd++],lab=l[p];for(const d of dir){const np=p+d;if(np>=0&&np<w*h&&l[np]===0){l[np]=lab;q.push(np);}}}
+  return l;
+}
+
+// Extracció millorada: diàmetre Feret (eix major real) + filtratge per forma
+function ext(l,w,h,veg,minPx){
+  const cnt=new Map(),sum=new Map(),bbox=new Map();
+  for(let i=0;i<w*h;i++){
+    const v=l[i];if(v<=0)continue;
+    cnt.set(v,(cnt.get(v)||0)+1);
+    sum.set(v,(sum.get(v)||0)+veg[i]);
+    if(!bbox.has(v))bbox.set(v,{x1:w,y1:h,x2:0,y2:0,sx:0,sy:0,px:[]});
+    const bb=bbox.get(v);
+    const x=i%w,y=Math.floor(i/w);
+    if(x<bb.x1)bb.x1=x;if(x>bb.x2)bb.x2=x;
+    if(y<bb.y1)bb.y1=y;if(y>bb.y2)bb.y2=y;
+    bb.sx+=x;bb.sy+=y;
+  }
+  const sp=document.getElementById('species').value,eq=SPECIES[sp]||SPECIES.generic;
+  const res=[];
+  for(const[id,c]of cnt){
+    if(c<minPx)continue;
+    const bb=bbox.get(id);
+    const cx=bb.sx/c,cy=bb.sy/c;
+    const bw=bb.x2-bb.x1,bh=bb.y2-bb.y1;
+    
+    // Filtratge per forma: refús si massa allargat o massa buit
+    const aspect=bw>bh?bw/(bh+1):bh/(bw+1);
+    const bboxArea=(bw+1)*(bh+1);
+    const fill=c/bboxArea;
+    if(aspect>3.5||fill<0.25)continue; // massa allargat o massa foradat → no és arbre
+    
+    // Diàmetre de copa: eix Feret (màxima dimensió de la bounding box)
+    const crownPx=Math.max(bw,bh);
+    const cd=crownPx*gsd;
+    
+    // Confiança basada en ExG-ExR mitjà (normalitzat 0-1)
+    const mExg=(sum.get(id)||0)/c;
+    const conf=Math.min(1,Math.max(0,(mExg+50)/180));
+    
+    // Alçada i DBH per equacions al·lomètriques
+    const hh=eq[0]*Math.pow(cd,eq[1]);
+    const dbh=eq[2]*Math.pow(cd,eq[3]);
+    
+    // Més mètriques per calibratge futur
+    const circularity=4*Math.PI*c/((bw+bh)*2*(bw+bh)*2+1); // aproximació
+    res.push({
+      id:res.length+1,cx,cy,
+      c, // àrea en píxels
+      bw,bh, // amplada/altura bounding box
+      conf,cd,hh,dbh,
+      fill,aspect,circularity:Math.min(1,circularity),
+      am:Math.PI*(cd/2)**2
+    });
+  }
+  return res.sort((a,b)=>b.conf-a.conf);
+}
+
+// ═══ MOSTRAR AL MAPA ══════════════════════════════════════════
+function showTreesOnMap(treeList,canvas,zoom){
+  if(window.treeMarkers)map.removeLayer(window.treeMarkers);
+  const markers=L.featureGroup();
+  const n=Math.pow(2,zoom);
+  const ts=256;
+
+  const b=drawLayer.getBounds();
+  const xMin=Math.floor(lng2tile(b.getWest(),n));
+  const yMin=Math.floor(Math.min(tileY(b.getNorth(),zoom),tileY(b.getSouth(),zoom)));
+
+  for(const t of treeList){
+    // Pixel a coordenades
+    const px=t.cx,py=t.cy;
+    const tileX=xMin+Math.floor(px/ts);
+    const tileY2=yMin+Math.floor(py/ts);
+    const offX=px%ts,offY=py%ts;
+    const lon=tile2lng(tileX+offX/ts,n);
+    const lat=tile2lat(tileY2+offY/ts,zoom);
+    // Guardar coordenades al propi objecte
+    t.lon=lon; t.lat=lat;
+
+    const col=t.conf>0.6?'#4caf50':t.conf>0.3?'#ff9800':'#f44336';
+    const marker=L.circleMarker([lat,lon],{
+      radius:5+Math.min(t.cd*2,15),color:col,fillColor:col,fillOpacity:0.6,weight:2
+    });
+    marker.bindPopup(
+      `<b>🌲 Arbre #${t.id}</b><br>`+
+      `Copa: ${t.cd.toFixed(2)} m<br>`+
+      `Alçada: ${t.hh.toFixed(1)} m<br>`+
+      `DBH: ${t.dbh.toFixed(1)} cm<br>`+
+      `Confiança: ${(t.conf*100).toFixed(0)}%`
+    );
+    markers.addLayer(marker);
+  }
+  window.treeMarkers=markers;
+  map.addLayer(markers);
+}
+
+function tile2lng(x,n){return x/n*360-180;}
+function tile2lat(y,zoom){const r=Math.PI-2*Math.PI*y/Math.pow(2,zoom);return 180/Math.PI*Math.atan(0.5*(Math.exp(r)-Math.exp(-r)));}
+
+// ═══ RESULTATS ════════════════════════════════════════════════
+function showStats(trees){
+  const n=trees.length;
+  const hm=avg(trees.map(t=>t.hh)),dm=avg(trees.map(t=>t.dbh)),cm=avg(trees.map(t=>t.cd));
+  document.getElementById('statsArea').innerHTML=
+    `<div class="st">
+      <div class="sc"><div class="sn">${n}</div><div class="sl">🌲 Arbres</div></div>
+      <div class="sc"><div class="sn">${hm.toFixed(1)}</div><div class="sl">📐 H mitjana (m)</div></div>
+      <div class="sc"><div class="sn">${dm.toFixed(1)}</div><div class="sl">🌲 DBH mitjà (cm)</div></div>
+      <div class="sc"><div class="sn">${cm.toFixed(2)}</div><div class="sl">🌳 Copa (m)</div></div>
+    </div>`;
+}
+function showTreeTable(trees){
+  if(!trees.length){document.getElementById('treeTable').innerHTML='<div style="padding:16px;text-align:center;color:#5a7060;font-size:11px">Cap arbre detectat</div>';return;}
+  let h='<table><tr><th>#</th><th>Copa(m)</th><th>H(m)</th><th>DBH(cm)</th><th>Conf.</th></tr>';
+  for(const t of trees)h+=`<tr><td>${t.id}</td><td>${t.cd.toFixed(2)}</td><td>${t.hh.toFixed(1)}</td><td>${t.dbh.toFixed(1)}</td><td>${t.conf.toFixed(2)}</td></tr>`;
+  h+='</table>';
+  document.getElementById('treeTable').innerHTML=h;
+}
+function avg(a){return a.reduce((a,b)=>a+b,0)/a.length;}
+
+// ═══ EXPORT ═══════════════════════════════════════════════════
+function expCSV(){
+  if(!results.length)return;
+  let c='ID,Lat,Lon,Copa_m,Alcada_m,DBH_cm,Confianca\n';
+  for(const t of trees)if(t.lat!==undefined)c+=`${t.id},${t.lat},${t.lon},${t.cd.toFixed(4)},${t.hh.toFixed(4)},${t.dbh.toFixed(4)},${t.conf.toFixed(4)}\n`;
+  dl(c,'treedetect.csv','text/csv');
+}
+function expJSON(){
+  if(!results.length)return;
+  const fs=trees.filter(t=>t.lat!==undefined).map(t=>({
+    type:'Feature',properties:{id:t.id,cd_m:+(t.cd.toFixed(4)),h_m:+(t.hh.toFixed(4)),dbh_cm:+(t.dbh.toFixed(4))},
+    geometry:{type:'Point',coordinates:[t.lon,t.lat]}
+  }));
+  dl(JSON.stringify({type:'FeatureCollection',features:fs},null,2),'treedetect.geojson','application/geo+json');
+}
+function expKML(){
+  if(!results.length)return;
+  let k='<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document>';
+  for(const t of trees)if(t.lat!==undefined)k+=`<Placemark><name>#${t.id}</name><description>H:${t.hh.toFixed(1)}m DBH:${t.dbh.toFixed(1)}cm</description><Point><coordinates>${t.lon},${t.lat},0</coordinates></Point></Placemark>`;
+  k+='</Document></kml>';
+  dl(k,'treedetect.kml','application/vnd.google-earth.kml+xml');
+}
+function dl(c,f,m){
+  const b=new Blob([c],{type:m}),u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=f;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+// ═══ PROJECTES ════════════════════════════════════════════════
+function saveProject(){
+  const name=document.getElementById('projName').value.trim()||'Projecte '+new Date().toLocaleDateString();
+  const data={
+    bbox:currentBbox?{s:currentBbox.getSouth(),n:currentBbox.getNorth(),w:currentBbox.getWest(),e:currentBbox.getEast()}:null,
+    species:document.getElementById('species').value,
+    gsd,results:trees.slice(0,5000), // Limitar
+    stats:results.length?{n:results.length,hm:avg(results.map(t=>t.hh)),dm:avg(results.map(t=>t.dbh))}:null,
+    created:new Date().toISOString()
+  };
+
+  if(appMode==='guest'){
+    const proj=JSON.parse(localStorage.getItem('td_projects')||'[]');
+    proj.push({id:Date.now(),name,data});
+    localStorage.setItem('td_projects',JSON.stringify(proj));
+    showProjectsLocal();
+  }else if(sb){
+    sb.from('treedetect_projects').insert({user_id:sbUser,name,data}).then(({error})=>{
+      if(error)alert('Error al desar: '+error.message);
+      else showProjectsCloud();
+    });
+  }
+  document.getElementById('projName').value='';
+}
+
+function showProjectsLocal(){
+  const el=document.getElementById('projList');
+  const proj=JSON.parse(localStorage.getItem('td_projects')||'[]');
+  if(!proj.length){el.innerHTML='<div style="font-size:11px;color:#5a7060">No hi ha projectes guardats</div>';return;}
+  el.innerHTML=proj.map((p,i)=>`<div class="proj-item">
+    <div><b>${p.name}</b><br>${new Date(p.data.created).toLocaleDateString()} · ${p.data.stats?p.data.stats.n+' arbres':''}</div>
+    <div class="flex">
+      <button class="btn-sm" onclick="loadProj(${i})">📂</button>
+      <button class="del" onclick="delProj(${i})">✖</button>
+    </div>
+  </div>`).join('');
+  document.getElementById('projStatus').className='sm s';document.getElementById('projStatus').textContent=proj.length+' projectes (local)';
+}
+
+function loadProj(i){
+  const proj=JSON.parse(localStorage.getItem('td_projects')||'[]');
+  const p=proj[i];if(!p)return;
+  // Restaurar
+  if(p.data.bbox){
+    const b=p.data.bbox;
+    if(drawLayer)drawnItems.removeLayer(drawLayer);
+    drawLayer=L.rectangle([[b.s,b.w],[b.n,b.e]]);
+    drawnItems.addLayer(drawLayer);
+    map.fitBounds(drawLayer.getBounds());
+    currentBbox=drawLayer.getBounds();
+    updateZoneInfo();
+  }
+  if(p.data.species)document.getElementById('species').value=p.data.species;
+  if(p.data.results){results=p.data.results;showStats(results);showTreeTable(results);
+    document.getElementById('expButtons').style.display='flex';}
+  switchTab('resultats');
+  // Mostrar arbres al mapa
+  showMapMarkers(results);
+  setStatus('detectStatus','📂 Projecte carregat','s');
+}
+
+function delProj(i){
+  const proj=JSON.parse(localStorage.getItem('td_projects')||'[]');
+  proj.splice(i,1);
+  localStorage.setItem('td_projects',JSON.stringify(proj));
+  showProjectsLocal();
+}
+
+function showProjectsCloud(){
+  const el=document.getElementById('projList');
+  if(!sb){el.innerHTML='<div style="font-size:11px;color:#5a7060">Supabase no disponible</div>';return;}
+  sb.from('treedetect_projects').select('id,name,data').eq('user_id',sbUser).order('created_at',{ascending:false}).then(({data,error})=>{
+    if(error||!data||!data.length){el.innerHTML='<div style="font-size:11px;color:#5a7060">No hi ha projectes al núvol</div>';return;}
+    el.innerHTML=data.map(p=>`<div class="proj-item">
+      <div><b>${p.name}</b><br>${p.data.created?new Date(p.data.created).toLocaleDateString():''} · ${p.data.stats?p.data.stats.n+' arbres':''}</div>
+      <div class="flex">
+        <button class="btn-sm" onclick="loadCloudProj('${p.id}')">📂</button>
+        <button class="del" onclick="delCloudProj('${p.id}')">✖</button>
+      </div>
+    </div>`).join('');
+  });
+  document.getElementById('projStatus').className='sm s';document.getElementById('projStatus').textContent='Projectes al núvol';
+}
+
+function loadCloudProj(id){
+  if(!sb)return;
+  sb.from('treedetect_projects').select('data').eq('id',id).single().then(({data,error})=>{
+    if(error||!data)return;
+    const p=data.data;
+    if(p.bbox){
+      const b=p.bbox;
+      if(drawLayer)drawnItems.removeLayer(drawLayer);
+      drawLayer=L.rectangle([[b.s,b.n],[b.w,b.e]]);
+      drawnItems.addLayer(drawLayer);
+      map.fitBounds(drawLayer.getBounds());
+      currentBbox=drawLayer.getBounds();
+      updateZoneInfo();
+    }
+    if(p.species)document.getElementById('species').value=p.species;
+    if(p.results){results=p.results;showStats(results);showTreeTable(results);
+      showMapMarkers(results);
+      document.getElementById('expButtons').style.display='flex';}
+    switchTab('resultats');
+  });
+}
+function delCloudProj(id){
+  if(!sb)return;
+  sb.from('treedetect_projects').delete().eq('id',id).then(()=>showProjectsCloud());
+}
+
+// ═══ INVENTARI DE CAMP ════════════════════════════════════════
+let groundTruths=[], gtPending=null, gtMode=false, gtMarkers=null;
+
+function toggleGtMode(){
+  gtMode=!gtMode;
+  const btn=document.getElementById('gtModeBtn');
+  if(gtMode){
+    btn.textContent='📍 Clic al mapa...';
+    btn.style.background='#2d6a4f';btn.style.color='#fff';
+    map.getContainer().style.cursor='crosshair';
+    if(window.treeMarkers)map.removeLayer(window.treeMarkers);
+  } else {
+    btn.textContent='📍 Afegeix';
+    btn.style.background='';btn.style.color='';
+    map.getContainer().style.cursor='';
+    if(window.treeMarkers&&results.length)map.addLayer(window.treeMarkers);
+  }
+}
+
+function onMapClick(e){
+  if(!gtMode)return;
+  const lat=e.latlng.lat.toFixed(6),lon=e.latlng.lng.toFixed(6);
+  gtPending={lat:+lat,lon:+lon};
+  document.getElementById('gtCoords').textContent=lat+', '+lon;
+  document.getElementById('gtForm').style.display='block';
+  document.getElementById('gtCd').value='';
+  document.getElementById('gtH').value='';
+  document.getElementById('gtDbh').value='';
+  document.getElementById('gtNotes').value='';
+  // Buscar arbre detectat proper per suggerir mides
+  const nearest=findNearestTree(e.latlng.lat,e.latlng.lng);
+  if(nearest){
+    document.getElementById('gtCd').placeholder='Det.: '+nearest.cd.toFixed(1)+'m';
+    document.getElementById('gtH').placeholder='Det.: '+nearest.hh.toFixed(1)+'m';
+    document.getElementById('gtDbh').placeholder='Det.: '+nearest.dbh.toFixed(0)+'cm';
+  }
+}
+
+function findNearestTree(lat,lon){
+  let best=null,minD=Infinity;
+  for(const t of results){
+    if(t.lat===undefined)continue;
+    const d=(t.lat-lat)**2+(t.lon-lon)**2;
+    if(d<minD){minD=d;best=t;}
+  }
+  return minD<0.0001?best:null; // ~10m
+}
+
+function saveGroundTruth(){
+  const cd=parseFloat(document.getElementById('gtCd').value);
+  const h=parseFloat(document.getElementById('gtH').value);
+  const dbh=parseFloat(document.getElementById('gtDbh').value);
+  const sp=document.getElementById('gtSpecies').value;
+  const notes=document.getElementById('gtNotes').value.trim();
+  if(!gtPending||!cd){alert('Introdueix almenys el diàmetre de copa');return;}
+  const gt={
+    id:Date.now(),lat:gtPending.lat,lon:gtPending.lon,
+    cd_measured:cd,h_measured:h||null,dbh_measured:dbh||null,
+    species:sp,notes,created:new Date().toISOString()
+  };
+  // Enllaçar amb arbre detectat proper
+  const nearest=findNearestTree(gtPending.lat,gtPending.lon);
+  if(nearest)gt.detectedId=nearest.id;
+  groundTruths.push(gt);
+  saveGroundTruths();
+  renderGroundTruths();
+  updateCalibration();
+  cancelGroundTruth();
+  showGtMarkers();
+}
+
+function cancelGroundTruth(){
+  gtPending=null;
+  document.getElementById('gtForm').style.display='none';
+}
+
+function loadGroundTruths(){
+  groundTruths=JSON.parse(localStorage.getItem('td_groundtruth')||'[]');
+}
+
+function saveGroundTruths(){
+  localStorage.setItem('td_groundtruth',JSON.stringify(groundTruths));
+  if(sb&&sbUser&&appMode!=='guest'){
+    sb.from('treedetect_groundtruth').upsert(
+      {user_id:sbUser,data:groundTruths,updated_at:new Date().toISOString()},
+      {onConflict:'user_id'}
+    ).catch(()=>{});
+  }
+}
+
+function renderGroundTruths(){
+  const el=document.getElementById('gtItems');
+  if(!groundTruths.length){el.innerHTML='<div style="padding:8px;text-align:center">Cap arbre mesurat</div>';return;}
+  el.innerHTML='<table><tr><th>#</th><th>Copa(m)</th><th>H(m)</th><th>DBH(cm)</th><th>Detectat?</th><th></th></tr>'+
+    groundTruths.map((g,i)=>`<tr>
+      <td>${i+1}</td>
+      <td>${g.cd_measured.toFixed(1)}</td>
+      <td>${g.h_measured?g.h_measured.toFixed(1):'-'}</td>
+      <td>${g.dbh_measured?g.dbh_measured.toFixed(1):'-'}</td>
+      <td>${g.detectedId?'✅ #'+g.detectedId:'❌ No'}</td>
+      <td><button class="del" onclick="deleteGroundTruth(${i})" style="font-size:12px">✖</button></td>
+    </tr>`).join('')+'</table>';
+}
+
+function deleteGroundTruth(i){
+  groundTruths.splice(i,1);
+  saveGroundTruths();
+  renderGroundTruths();
+  updateCalibration();
+  showGtMarkers();
+}
+
+function showGtMarkers(){
+  if(gtMarkers)map.removeLayer(gtMarkers);
+  if(!groundTruths.length)return;
+  gtMarkers=L.featureGroup();
+  for(const g of groundTruths){
+    const m=L.circleMarker([g.lat,g.lon],{
+      radius:6,color:'#e74c3c',fillColor:'#e74c3c',fillOpacity:0.7,weight:2
+    });
+    m.bindPopup(
+      `<b>📋 Inventari #${g.id.toString().slice(-4)}</b><br>`+
+      `Copa real: <b>${g.cd_measured.toFixed(1)}m</b><br>`+
+      (g.h_measured?`Alçada: ${g.h_measured.toFixed(1)}m<br>`:'')+
+      (g.dbh_measured?`DBH: ${g.dbh_measured.toFixed(1)}cm<br>`:'')+
+      (g.detectedId?`✅ Coincideix amb detecció #${g.detectedId}`:'❌ Sense detecció')
+    );
+    gtMarkers.addLayer(m);
+  }
+  map.addLayer(gtMarkers);
+}
+
+// ═══ CALIBRATGE ═══════════════════════════════════════════════
+function updateCalibration(){
+  const el=document.getElementById('gtCalib');
+  const info=document.getElementById('gtCalibInfo');
+  const matched=groundTruths.filter(g=>g.detectedId);
+  if(!matched.length||!results.length){el.style.display='none';return;}
+  const ratios=[];
+  for(const g of matched){
+    const det=results.find(r=>r.id===g.detectedId);
+    if(det)ratios.push({cd:g.cd_measured/det.cd,det,gt:g});
+  }
+  if(!ratios.length){el.style.display='none';return;}
+  const avgRatio=ratios.reduce((a,b)=>a+b.cd,0)/ratios.length;
+  el.style.display='block';
+  info.innerHTML=
+    `<div style="background:#e8f5e9;padding:8px;border-radius:8px;font-size:11px">
+      <b>${ratios.length}</b> arbres aparellats &nbsp;|&nbsp;
+      Factor correcció copa: <b>${avgRatio.toFixed(3)}</b><br>
+      <span style="color:#5a7060">
+        Detectat × ${avgRatio.toFixed(3)} = copa real estimada
+        ${avgRatio>1.2?'⬆️ (subestima)':avgRatio<0.8?'⬇️ (sobreestima)':'✅ (bé)'}
+      </span>
+    </div>`;
+}
+
+function exportGroundTruth(){
+  if(!groundTruths.length)return;
+  let c='ID,Lat,Lon,Copa_m,Alcada_m,DBH_cm,Especie,Notes,Detectat\n';
+  for(const g of groundTruths){
+    c+=`${g.id},${g.lat},${g.lon},${g.cd_measured},${g.h_measured||''},${g.dbh_measured||''},${g.species},"${g.notes||''}",${g.detectedId||''}\n`;
+  }
+  const b=new Blob([c],{type:'text/csv'}),u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download='inventari_camp.csv';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+// ═══ MOSTRAR MARCADORS AMB MIDA DE COPAL REAL ════════════
+function showMapMarkers(treeList){
+  if(!treeList||!treeList.length)return;
+  if(window.treeMarkers)map.removeLayer(window.treeMarkers);
+  const markers=L.featureGroup();
+  for(const t of treeList){
+    if(t.lat===undefined||t.lon===undefined)continue;
+    const col=t.conf>0.6?'#4caf50':t.conf>0.3?'#ff9800':'#f44336';
+    const marker=L.circleMarker([t.lat,t.lon],{
+      radius:5+Math.min(t.cd*2,15),color:col,fillColor:col,fillOpacity:0.6,weight:2
+    });
+    marker.bindPopup(
+      `<b>🌲 Arbre #${t.id}</b><br>`+
+      `Copa: ${t.cd.toFixed(2)} m<br>`+
+      `Alçada: ${t.hh.toFixed(1)} m<br>`+
+      `DBH: ${t.dbh.toFixed(1)} cm<br>`+
+      `Confiança: ${(t.conf*100).toFixed(0)}%`
+    );
+    markers.addLayer(marker);
+  }
+  window.treeMarkers=markers;
+  map.addLayer(markers);
+}
+
+// ═══ TABS ═════════════════════════════════════════════════════
+document.querySelectorAll('.side-tabs button').forEach(b=>{
+  b.addEventListener('click',function(){switchTab(this.dataset.tab);});
+});
+function switchTab(name){
+  document.querySelectorAll('.side-tabs button').forEach(b=>b.classList.toggle('act',b.dataset.tab===name));
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.toggle('act',p.id==='tab-'+name));
+  if(name==='projectes'){
+    if(appMode==='guest')showProjectsLocal();
+    else showProjectsCloud();
+  }
+  if(name==='camp'){
+    renderGroundTruths();
+    showGtMarkers();
+    updateCalibration();
+  }
+}
+
+function setStatus(id,msg,type){
+  const el=document.getElementById(id);
+  el.className='sm '+type;el.textContent=msg;el.style.display='block';
+}
+function pct(p,t){
+  document.getElementById('pf').style.width=p+'%';
+  document.getElementById('ptx').textContent=t+' ('+p+'%)';
+}
+
+// ═══ INIT ═════════════════════════════════════════════════════
+initSupabase();
+initMap();
+
+// Popular espècies al formulari d'inventari
+const gtSel=document.getElementById('gtSpecies');
+if(gtSel)for(const[k,v]of Object.entries(SPECIES)){
+  const o=document.createElement('option');
+  o.value=k;o.textContent=v[4];gtSel.appendChild(o);
+}
+
+// Carregar dades d'inventari
+loadGroundTruths();
+
+// Clic al mapa per inventari
+map.on('click',onMapClick);
+</script>
+</body>
+</html>
